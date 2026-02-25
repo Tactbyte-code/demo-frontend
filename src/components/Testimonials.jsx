@@ -66,26 +66,8 @@ export default function Testimonials() {
     const t = testimonials[active];
 
     return (
-        <section className="relative pb-24 overflow-hidden select-none">
-
-            {/* Ambient top glow using primary color */}
-            <div
-                className="absolute top-0 left-1/2 -translate-x-1/2 w-175 h-75 pointer-events-none"
-                style={{
-                    background: 'radial-gradient(ellipse at top, rgba(14,165,233,0.12), transparent 70%)'
-                }}
-            />
-
-            {/* Subtle dot-grid texture */}
-            <div
-                className="absolute inset-0 opacity-[0.4] pointer-events-none"
-                style={{
-                    backgroundImage: 'radial-gradient(circle, rgba(14,165,233,0.15) 1px, transparent 1px)',
-                    backgroundSize: '32px 32px'
-                }}
-            />
-
-            <div className="relative max-w-6xl mx-auto px-6 lg:px-12">
+        <section className="relative pb-24 overflow-hidden select-none bg-white">
+            <div className="relative max-w-7xl mx-auto px-6 lg:px-12">
 
                 {/* Header */}
                 <div className="flex items-end justify-between mb-16">
@@ -95,7 +77,7 @@ export default function Testimonials() {
                         </p>
                         <h2 className="text-4xl lg:text-5xl font-black text-foreground tracking-tight leading-none">
                             Real results.<br />
-                            <span className="text-muted">Real conviction.</span>
+                            <span className="text-primary">Real conviction.</span>
                         </h2>
                     </div>
 

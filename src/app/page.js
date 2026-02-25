@@ -1,5 +1,7 @@
 import ComparisonSection from '@/components/ComparisonSection';
+import FAQSection from '@/components/FAQSection';
 import FeaturesSection from '@/components/FeaturesSection';
+import FinalCTA from '@/components/FinalCTA';
 import Hero from '@/components/Hero';
 import ProblemSection from '@/components/ProblemSection';
 import SampleInsights from '@/components/SampleInsights';
@@ -19,6 +21,8 @@ const page = () => {
       <SampleInsights />
       <ComparisonSection />
       <Testimonials />
+      <FAQSection />
+      <FinalCTA />
     </>
   )
 }
