@@ -23,7 +23,7 @@
 
   /* Glassmorphism Overlays */
   --overlay-light: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(14, 165, 233, 0.1);
+  --glass-border: rgba(14, 165, 233, 0.2);
   /* Tinted border for the 85% bar */
 }
 

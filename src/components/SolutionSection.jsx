@@ -1,4 +1,5 @@
 "use client";
+
 import { motion } from 'framer-motion';
 import {
     Target,
@@ -36,7 +37,7 @@ const workflowSteps = [
 
 export default function SolutionSection() {
     return (
-        <section className="pb-20 bg-surface relative overflow-hidden">
+        <section className="pb-24 bg-surface relative overflow-hidden">
             {/* Background Decorative Gradient */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full opacity-40 pointer-events-none -z-10">
                 <div className="absolute top-[10%] left-[5%] w-[30%] h-[30%] bg-primary/10 blur-[120px] rounded-full" />

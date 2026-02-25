@@ -6,8 +6,8 @@ import {
     Github,
     Linkedin,
     Youtube,
-    Mail,
-    ArrowUpRight
+    ArrowUpRight,
+    Mail
 } from 'lucide-react';
 
 const footerLinks = {
@@ -15,40 +15,36 @@ const footerLinks = {
         { name: 'Features', href: '/#features' },
         { name: 'How it Works', href: '/#how-it-works' },
         { name: 'Pricing', href: '/pricing' },
-        { name: 'Changelog', href: '/changelog' },
     ],
     resources: [
         { name: 'Documentation', href: '/docs' },
         { name: 'API Reference', href: '/api' },
         { name: 'Community', href: '/community' },
-        { name: 'Research Lab', href: '/lab' },
     ],
     company: [
         { name: 'About Us', href: '/about' },
-        { name: 'Careers', href: '/careers' },
-        { name: 'Privacy Policy', href: '/privacy' },
-        { name: 'Terms of Service', href: '/terms' },
+        { name: 'Privacy', href: '/privacy' },
+        { name: 'Terms', href: '/terms' },
     ]
 };
 
 const socialLinks = [
-    { name: 'Twitter', icon: Twitter, href: 'https://twitter.com' },
-    { name: 'GitHub', icon: Github, href: 'https://github.com' },
-    { name: 'LinkedIn', icon: Linkedin, href: 'https://linkedin.com' },
-    { name: 'YouTube', icon: Youtube, href: 'https://youtube.com' },
+    { name: 'Twitter', icon: Twitter, href: '#' },
+    { name: 'GitHub', icon: Github, href: '#' },
+    { name: 'LinkedIn', icon: Linkedin, href: '#' },
 ];
 
 export default function Footer() {
     const currentYear = new Date().getFullYear();
 
     return (
-        <footer className="bg-white border-t border-glass-border pt-20 pb-10 overflow-hidden">
+        <footer className="bg-white border-t border-glass-border pt-16 pb-8 overflow-hidden">
             <div className="max-w-7xl mx-auto px-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-16">
+                <div className="flex flex-col lg:flex-row gap-5 lg:gap-20">
 
-                    {/* Brand Section */}
-                    <div className="lg:col-span-4 space-y-6">
-                        <Link href="/" className="flex items-center gap-2 group">
+                    {/* Left: Brand Section (Constant) */}
+                    <div className="lg:w-1/3 flex flex-col justify-center space-y-6">
+                        <Link href="/" className="flex items-center gap-2 group w-fit">
                             <div className="relative h-10 w-10">
                                 <Image
                                     src="/images/logo2.png"
@@ -78,78 +74,69 @@ export default function Footer() {
                         </div>
                     </div>
 
-                    {/* Links Sections */}
-                    <div className="lg:col-span-2 space-y-6">
-                        <h4 className="font-bold text-foreground text-sm uppercase tracking-widest">Product</h4>
-                        <ul className="space-y-4">
-                            {footerLinks.product.map((link) => (
-                                <li key={link.name}>
-                                    <Link href={link.href} className="text-sm text-muted hover:text-primary transition-colors">
-                                        {link.name}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+                    {/* Right: Stacked Newsletter and Links */}
+                    <div className="lg:w-2/3 flex flex-col gap-12">
 
-                    <div className="lg:col-span-2 space-y-6">
-                        <h4 className="font-bold text-foreground text-sm uppercase tracking-widest">Resources</h4>
-                        <ul className="space-y-4">
-                            {footerLinks.resources.map((link) => (
-                                <li key={link.name}>
-                                    <Link href={link.href} className="text-sm text-muted hover:text-primary transition-colors">
-                                        {link.name}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+                        {/* Top: Newsletter Container */}
+                        <div className="bg-background border border-glass-border p-6 rounded-4xl flex flex-col md:flex-row items-center justify-between gap-6">
+                            <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                                    <Mail className="w-5 h-5 text-primary" />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-foreground text-sm">Join the pulse</h4>
+                                    <p className="text-[11px] text-muted uppercase tracking-widest font-semibold">Weekly market insights</p>
+                                </div>
+                            </div>
+                            <form className="relative flex-1 max-w-md w-full">
+                                <input
+                                    type="email"
+                                    placeholder="your@email.com"
+                                    className="w-full bg-white border border-glass-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                />
+                                <button className="absolute right-1.75 top-2.25 px-4 py-1.5 rounded-lg bg-primary text-white hover:brightness-110 transition-all text-xs font-bold flex items-center gap-1">
+                                    Join
+                                    <ArrowUpRight className="w-3.5 h-3.5" />
+                                </button>
+                            </form>
+                        </div>
 
-                    <div className="lg:col-span-2 space-y-6">
-                        <h4 className="font-bold text-foreground text-sm uppercase tracking-widest">Company</h4>
-                        <ul className="space-y-4">
-                            {footerLinks.company.map((link) => (
-                                <li key={link.name}>
-                                    <Link href={link.href} className="text-sm text-muted hover:text-primary transition-colors">
-                                        {link.name}
-                                    </Link>
-                                </li>
+                        {/* Bottom: Links Container (Right Aligned) */}
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-8 pb-4 justify-items-end">
+                            {Object.entries(footerLinks).map(([category, links]) => (
+                                <div key={category} className="space-y-4">
+                                    <h4 className="font-black text-foreground text-[10px] uppercase tracking-[0.2em] opacity-80">
+                                        {category}
+                                    </h4>
+                                    <ul className="space-y-3">
+                                        {links.map((link) => (
+                                            <li key={link.name}>
+                                                <Link
+                                                    href={link.href}
+                                                    className="text-sm text-muted hover:text-primary transition-colors inline-block"
+                                                >
+                                                    {link.name}
+                                                </Link>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
                             ))}
-                        </ul>
-                    </div>
+                        </div>
 
-                    {/* Newsletter / CTA Section */}
-                    <div className="lg:col-span-2 space-y-6">
-                        <h4 className="font-bold text-foreground text-sm uppercase tracking-widest">Stay Updated</h4>
-                        <p className="text-xs text-muted leading-relaxed">
-                            Join our newsletter for the latest in AI market research.
-                        </p>
-                        <form className="relative">
-                            <input
-                                type="email"
-                                placeholder="Email address"
-                                className="w-full bg-background border border-glass-border rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-primary/50 transition-colors"
-                            />
-                            <button className="absolute right-1.5 top-1.5 p-1 rounded-lg bg-primary text-white hover:brightness-110 transition-all">
-                                <ArrowUpRight className="w-3.5 h-3.5" />
-                            </button>
-                        </form>
                     </div>
                 </div>
 
-                {/* Bottom Bar */}
-                <div className="pt-8 border-t border-glass-border flex flex-col md:flex-row justify-between items-center gap-4">
-                    <p className="text-xs text-muted/60">
-                        © {currentYear} Demo. All rights reserved.
+                {/* Final Bottom Bar */}
+                <div className="mt-5 pt-8 border-t border-glass-border flex flex-col md:flex-row justify-between items-center gap-4">
+                    <p className="text-[11px] font-medium text-muted/50">
+                        © {currentYear} Demo. Built with precision for the future.
                     </p>
-                    <div className="flex items-center gap-6">
-                        <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                            <span className="text-[10px] font-bold text-muted/60 uppercase tracking-tighter">Systems Operational</span>
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            <span className="text-[10px] font-bold text-muted/40 uppercase tracking-tighter">Engine Status: Online</span>
                         </div>
-                        <Link href="/contact" className="text-xs text-muted hover:text-foreground font-medium">
-                            Contact Support
-                        </Link>
                     </div>
                 </div>
             </div>
