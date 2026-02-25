@@ -42,10 +42,9 @@ export default function Hero() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
-                    className="mt-8 text-lg lg:text-xl text-muted max-w-2xl mx-auto leading-relaxed"
+                    className="mt-8 text-lg lg:text-xl text-muted max-w-3xl mx-auto leading-relaxed"
                 >
-                    Empower your workflow with AI-driven insights and enterprise-grade
-                    infrastructure. The only platform built for speed and scale.
+                    Find the gap in any market. Our AI scans millions of reviews and threads to highlight the exact solutions users are searching for right now.
                 </motion.p>
 
                 {/* CTAs */}

@@ -42,7 +42,7 @@ export default function ProblemSection() {
 
             <div className="max-w-7xl mx-auto px-6">
                 <div className="text-center mb-16">
-                    <motion.div
+                    {/* <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true }}
@@ -50,7 +50,7 @@ export default function ProblemSection() {
                     >
                         <AlertCircle className="w-4 h-4" />
                         The Problem
-                    </motion.div>
+                    </motion.div> */}
 
                     <motion.h2
                         initial={{ opacity: 0, y: 20 }}
@@ -94,7 +94,6 @@ export default function ProblemSection() {
                     ))}
                 </div>
 
-                {/* Visual Contrast Illustration */}
                 {/* Visual Contrast Illustration - Strategic Analysis Look */}
                 <motion.div
                     initial={{ opacity: 0, y: 40 }}
