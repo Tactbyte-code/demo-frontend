@@ -1,3 +1,4 @@
+import ComparisonSection from '@/components/ComparisonSection';
 import FeaturesSection from '@/components/FeaturesSection';
 import Hero from '@/components/Hero';
 import ProblemSection from '@/components/ProblemSection';
@@ -15,6 +16,7 @@ const page = () => {
       <FeaturesSection />
       <TargetAudience />
       <SampleInsights />
+      <ComparisonSection />
     </>
   )
 }
