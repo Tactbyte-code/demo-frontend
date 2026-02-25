@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Database,
@@ -48,11 +48,22 @@ const features = [
 ];
 
 export default function FeaturesSection() {
+
     const [activeId, setActiveId] = useState(features[0].id);
+    const [hasMounted, setHasMounted] = useState(false);
 
     // Find the current active feature object once per render
     const activeFeature = features.find(f => f.id === activeId) || features[0];
     const ActiveIcon = activeFeature.icon;
+
+    useEffect(() => {
+        setHasMounted(true);
+    }, []);
+
+    if (!hasMounted) {
+        // Render a "skeleton" or a consistent placeholder for the server
+        return <div className="h-10 w-full bg-surface animate-pulse rounded-xl" />;
+    }
 
     return (
         <section id="features" className="pb-24 bg-white relative overflow-hidden">
@@ -65,7 +76,7 @@ export default function FeaturesSection() {
                             <div className="h-px w-12 bg-primary" />
                             <span className="text-primary font-bold text-xs uppercase tracking-[0.3em]">System Capabilities</span>
                         </div>
-                        <h2 className="text-5xl lg:text-6xl font-black text-foreground tracking-tighter leading-none">
+                        <h2 className="text-4xl lg:text-5xl font-black text-foreground tracking-tighter leading-none">
                             High-fidelity <br />
                             <span className="text-primary">market decoding.</span>
                         </h2>
@@ -91,11 +102,11 @@ export default function FeaturesSection() {
                                 {activeId === feature.id && (
                                     <motion.div
                                         layoutId="activeBar"
-                                        className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-12 bg-primary rounded-full"
+                                        className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-14 bg-primary rounded-full"
                                     />
                                 )}
 
-                                <div className="flex items-center gap-6">
+                                <div className="flex items-center gap-3">
                                     <feature.icon className={`w-6 h-6 transition-colors ${activeId === feature.id ? 'text-primary' : 'text-muted'}`} />
                                     <h3 className={`text-2xl font-bold tracking-tight transition-all ${activeId === feature.id ? 'text-foreground' : 'text-muted'}`}>
                                         {feature.title}
@@ -110,7 +121,7 @@ export default function FeaturesSection() {
                                             exit={{ height: 0, opacity: 0 }}
                                             className="overflow-hidden"
                                         >
-                                            <p className="mt-4 text-muted text-lg leading-relaxed max-w-sm">
+                                            <p className="mt-4 text-muted text-[16px] leading-relaxed max-w-sm">
                                                 {feature.description}
                                             </p>
                                         </motion.div>
@@ -160,7 +171,7 @@ export default function FeaturesSection() {
                                             <p><span className="text-primary font-bold">status:</span> "operational"</p>
                                             <p><span className="text-primary font-bold">metric:</span> "{activeFeature.stats}"</p>
                                             <p><span className="text-primary font-bold">integrity_check:</span> true</p>
-                                            <p><span className="text-primary font-bold">last_sync:</span> "{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}"</p>
+                                            <p><span className="text-primary font-bold">last_sync:</span> "{new Date().toLocaleTimeString()}"</p>
                                         </div>
                                         <Terminal className="absolute bottom-6 right-6 w-8 h-8 opacity-10" />
                                     </div>

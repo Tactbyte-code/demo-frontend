@@ -5,6 +5,7 @@ import ProblemSection from '@/components/ProblemSection';
 import SampleInsights from '@/components/SampleInsights';
 import SolutionSection from '@/components/SolutionSection';
 import TargetAudience from '@/components/TargetAudience';
+import Testimonials from '@/components/Testimonials';
 import React from 'react';
 
 const page = () => {
@@ -17,6 +18,7 @@ const page = () => {
       <TargetAudience />
       <SampleInsights />
       <ComparisonSection />
+      <Testimonials />
     </>
   )
 }

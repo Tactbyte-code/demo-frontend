@@ -9,7 +9,8 @@ import {
     Target,
     TrendingUp,
     Search,
-    BrainCircuit
+    BrainCircuit,
+    Replace
 } from 'lucide-react';
 
 const comparisonData = [
