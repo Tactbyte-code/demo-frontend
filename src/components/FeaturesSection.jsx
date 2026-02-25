@@ -136,7 +136,7 @@ export default function FeaturesSection() {
                         {/* Fixed aspect ratio class */}
                         <div className="aspect-4/3 bg-surface rounded-[3rem] border border-glass-border relative overflow-hidden flex items-center justify-center p-12">
                             {/* Technical Mesh Background */}
-                            <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:20px_20px]" />
+                            <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#000_1px,transparent_1px)] bg-size-[20px_20px]" />
 
                             <AnimatePresence mode="wait">
                                 <motion.div

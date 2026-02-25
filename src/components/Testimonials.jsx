@@ -116,13 +116,13 @@ export default function Testimonials() {
                             </div>
 
                             {/* Quote */}
-                            <blockquote className="text-2xl lg:text-[1.65rem] font-semibold text-foreground leading-[1.5] mb-10 tracking-tight">
+                            <blockquote className="text-2xl lg:text-[1.65rem] font-semibold text-foreground leading-normal mb-10 tracking-tight">
                                 &ldquo;{t.content}&rdquo;
                             </blockquote>
 
                             {/* Author */}
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-2xl border border-glass-border bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                <div className="w-12 h-12 rounded-2xl border border-glass-border bg-primary/10 flex items-center justify-center shrink-0">
                                     <span className="text-primary font-black text-base tracking-tight">
                                         {t.name.split(' ').map(n => n[0]).join('')}
                                     </span>
@@ -138,7 +138,7 @@ export default function Testimonials() {
                         </div>
 
                         {/* Right — index panel */}
-                        <div className="hidden lg:flex flex-col items-center justify-between w-28 py-10 border-l border-glass-border bg-primary/[0.03]">
+                        <div className="hidden lg:flex flex-col items-center justify-between w-28 py-10 border-l border-glass-border bg-primary/3">
                             <span className="text-[80px] font-black leading-none tracking-tighter text-primary opacity-20">
                                 {t.index}
                             </span>

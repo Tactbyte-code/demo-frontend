@@ -60,10 +60,10 @@ export default function ComparisonSection() {
                     {/* Background Labels (Subtle) */}
                     <div className="absolute inset-0 flex pointer-events-none">
                         <div className="flex-1 border-r border-glass-border flex items-start justify-center pt-8">
-                            <span className="text-[60px] font-black text-black/[0.03] uppercase">Before</span>
+                            <span className="text-[60px] font-black text-black/3 uppercase">Before</span>
                         </div>
                         <div className="flex-1 flex items-start justify-center pt-8">
-                            <span className="text-[60px] font-black text-primary/[0.03] uppercase">After</span>
+                            <span className="text-[60px] font-black text-primary/3 uppercase">After</span>
                         </div>
                     </div>
 
@@ -92,7 +92,7 @@ export default function ComparisonSection() {
                                 </div>
 
                                 {/* After Side (The Power) */}
-                                <div className="flex-1 p-8 lg:p-12 flex items-center gap-6 bg-primary/[0.01] group">
+                                <div className="flex-1 p-8 lg:p-12 flex items-center gap-6 bg-primary/1 group">
                                     <div className="shrink-0 p-3 rounded-2xl bg-emerald-50 text-emerald-500 border border-emerald-100 group-hover:scale-110 transition-transform duration-500 shadow-sm">
                                         <CheckCircle2 className="w-6 h-6" />
                                     </div>
