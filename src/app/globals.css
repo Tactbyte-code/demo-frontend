@@ -1,26 +1,47 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fff;
-  --foreground: #171717;
+  /* The "Crystal Blue" Source of Truth */
+  --primary: #0ea5e9;
+  /* Sky 500 - Vibrant, modern light blue */
+  --secondary: #64748b;
+  /* Slate 500 - Neutral balance */
+  --accent: #22d3ee;
+  /* Cyan 400 - For highlights */
+
+  /* Backgrounds: Shifted to very light blue-tinted grays */
+  --background: #f0f9ff;
+  /* Sky 50 - Extremely light blue tint */
+  --surface: #ffffff;
+  /* Pure White for contrast */
+
+  /* Text: Deep Navy for better readability against light blue */
+  --text-main: #0c4a6e;
+  /* Sky 900 */
+  --text-muted: #334155;
+  /* Slate 700 */
+
+  /* Glassmorphism Overlays */
+  --overlay-light: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(14, 165, 233, 0.1);
+  /* Tinted border for the 85% bar */
 }
 
 @theme inline {
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-surface: var(--surface);
+  --color-foreground: var(--text-main);
+  --color-muted: var(--text-muted);
+  --color-overlay: var(--overlay-light);
+  --color-glass-border: var(--glass-border);
+  --font-sans: var(--font-poppins);
 }
 
-/* @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-} */
-
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--background);
+  color: var(--text-main);
+  font-family: var(--font-poppins), sans-serif;
 }

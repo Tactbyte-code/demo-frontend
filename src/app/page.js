@@ -1,10 +1,14 @@
-import React from 'react'
+import Hero from '@/components/Hero';
+import ProblemSection from '@/components/ProblemSection';
+import React from 'react';
 
 const page = () => {
   return (
-    <div className='text-red-300 text-2xl'>
-      Home Page
-    </div>
+    <>
+      <Hero />
+      <ProblemSection />
+      {/* <Hero /> */}
+    </>
   )
 }
 
