@@ -43,10 +43,10 @@ export default function FAQSection() {
             />
 
             <div className="max-w-7xl mx-auto px-6 relative z-10">
-                {/* Header Area */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-16">
-                    <div className="max-w-xl">
-                        <div className="flex items-center gap-2 mb-4">
+                {/* Header Area - Centered */}
+                <div className="flex flex-col items-center text-center gap-6 mb-20">
+                    <div className="max-w-2xl">
+                        <div className="flex items-center justify-center gap-2 mb-4">
                             <HelpCircle className="w-4 h-4 text-primary" />
                             <span className="text-primary font-bold text-xs uppercase tracking-[0.3em]">Support Center</span>
                         </div>
@@ -54,6 +54,10 @@ export default function FAQSection() {
                             Common
                             <span className="text-primary"> Inquiries.</span>
                         </h2>
+                        <p className="mt-6 text-sm text-muted font-medium max-w-lg mx-auto leading-relaxed">
+                            Everything you need to know about our intelligent market empathy engine
+                            and technical integrations.
+                        </p>
                     </div>
                 </div>
 

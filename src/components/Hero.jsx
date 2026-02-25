@@ -56,7 +56,7 @@ export default function Hero() {
                 >
                     {/* Primary CTA */}
                     <Link
-                        href="/signup"
+                        href="/dashboard"
                         className="w-full sm:w-auto bg-primary hover:brightness-110 text-white px-8 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-xl shadow-primary/30 transition-all hover:scale-105 active:scale-95"
                     >
                         Start Building Free
