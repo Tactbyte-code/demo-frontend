@@ -61,7 +61,7 @@ export default function FinalCTA() {
 
                         <div className="flex flex-col sm:flex-row items-center gap-6">
                             <Link
-                                href="/signup"
+                                href="/dashboard"
                                 className="group flex items-center gap-2 bg-primary text-white px-10 py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/25"
                             >
                                 Start Building Now
