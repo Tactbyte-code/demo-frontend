@@ -16,11 +16,12 @@ export default function DashboardLayout({ children }) {
 
     const menuItems = [
         { name: 'Overview', icon: LayoutDashboard, href: '/dashboard' },
-        { name: 'Intelligence', icon: Search, href: '/dashboard/search' },
-        { name: 'Industries', icon: Factory, href: '/dashboard/industries' },
-        { name: 'Signals', icon: Zap, href: '/dashboard/signals' },
-        { name: 'Reports', icon: BarChart3, href: '/dashboard/reports' },
-        { name: 'Settings', icon: Settings, href: '/dashboard/settings' },
+        { name: 'App Store Analysis', icon: Search, href: '/dashboard/appanalysis' },
+        { name: 'Reddit Analysis', icon: Search, href: '/dashboard/redditanalysis' },
+        // { name: 'Industries', icon: Factory, href: '/dashboard/industries' },
+        // { name: 'Signals', icon: Zap, href: '/dashboard/signals' },
+        // { name: 'Reports', icon: BarChart3, href: '/dashboard/reports' },
+        // { name: 'Settings', icon: Settings, href: '/dashboard/settings' },
     ];
 
     return (
@@ -43,8 +44,8 @@ export default function DashboardLayout({ children }) {
                                     key={item.name}
                                     href={item.href}
                                     className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${isActive
-                                            ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                                            : 'text-muted hover:bg-surface hover:text-foreground'
+                                        ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                                        : 'text-muted hover:bg-surface hover:text-foreground'
                                         }`}
                                 >
                                     <item.icon className="w-4 h-4" />
