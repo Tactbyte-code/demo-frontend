@@ -57,7 +57,7 @@ export default function Hero() {
                     {/* Primary CTA */}
                     <Link
                         href="/dashboard"
-                        className="w-full sm:w-auto bg-primary hover:brightness-110 text-white px-8 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-xl shadow-primary/30 transition-all hover:scale-105 active:scale-95"
+                        className="w-full sm:w-auto bg-primary hover:brightness-105 text-white px-8 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-xl shadow-primary/30 transition-all duration-500 ease-out hover:scale-102 active:scale-95"
                     >
                         Start Building Free
                         <ArrowRight className="w-5 h-5" />
@@ -66,7 +66,7 @@ export default function Hero() {
                     {/* Secondary CTA */}
                     <Link
                         href="/demo"
-                        className="w-full sm:w-auto bg-overlay backdrop-blur-md border border-glass-border text-foreground px-8 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-white/90 transition-all"
+                        className="w-full sm:w-auto bg-overlay backdrop-blur-md border border-glass-border text-foreground px-8 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-surface-raised transition-all"
                     >
                         <Play className="w-4 h-4 fill-current text-foreground" />
                         Watch Demo

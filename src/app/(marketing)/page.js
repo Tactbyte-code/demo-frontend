@@ -8,11 +8,13 @@ import SampleInsights from '@/components/SampleInsights';
 import SolutionSection from '@/components/SolutionSection';
 import TargetAudience from '@/components/TargetAudience';
 import Testimonials from '@/components/Testimonials';
+import AuthVerificationHandler from '@/components/AuthVerificationHandler';
 import React from 'react';
 
 const page = () => {
   return (
     <>
+      <AuthVerificationHandler />
       <Hero />
       <ProblemSection />
       <SolutionSection />

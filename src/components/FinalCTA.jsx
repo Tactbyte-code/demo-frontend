@@ -6,10 +6,10 @@ import Link from 'next/link';
 
 export default function FinalCTA() {
     return (
-        <section className="relative py-24 bg-white overflow-hidden">
+        <section className="relative py-24 bg-background overflow-hidden">
             <div className="max-w-8xl mx-auto px-6">
                 {/* The "Power" Container */}
-                <div className="relative bg-[#050505] rounded-[3.5rem] p-8 md:p-16 lg:p-24 overflow-hidden shadow-2xl shadow-primary/20">
+                <div className="relative bg-[#050505] rounded-[3.5rem] p-8 md:p-16 lg:p-24 overflow-hidden shadow-2xl shadow-primary/20 border border-primary">
 
                     {/* Background Decorative Elements */}
                     <div className="absolute inset-0 pointer-events-none">
@@ -37,7 +37,7 @@ export default function FinalCTA() {
                             className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8"
                         >
                             <Zap className="w-4 h-4 text-primary fill-primary" />
-                            <span className="text-[10px] font-black text-white uppercase tracking-[0.3em]">Ready to Deploy</span>
+                            <span className="text-[11px] font-bold text-white uppercase tracking-[0.3em]">Ready to Deploy</span>
                         </motion.div>
 
                         <motion.h2

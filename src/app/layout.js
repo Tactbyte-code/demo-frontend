@@ -1,31 +1,60 @@
 import { Poppins } from "next/font/google";
 import "./globals.css";
+import { Providers } from "@/components/Providers";
+import AuthGuard from "@/components/auth/AuthGuard";  // ← add this
 
-// 1. Configure the primary brand font
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800", "900"],
   variable: "--font-poppins",
 });
 
-// 2. Define global SEO metadata
 export const metadata = {
-  title: "Demo | High-Fidelity Market Intelligence",
-  description: "Decode digital noise and build with conviction using AI-powered sentiment analysis.",
+  title: "Demo",
+  description: "Problem Discovery System",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <body
-        className={`${poppins.variable} antialiased font-sans bg-white text-foreground selection:bg-primary/10 selection:text-primary`}
+        className={`
+            ${poppins.variable}
+            antialiased
+            font-sans
+            bg-background
+            text-foreground
+            selection:bg-primary/20
+            selection:text-primary
+        `}
       >
-        {/* The {children} here will either be wrapped by:
-            - (marketing)/layout.jsx (Navbar + Footer)
-            - OR (dashboard)/layout.jsx (Sidebar)
-        */}
-        {children}
+        <Providers>
+          <AuthGuard>  {/* ← wrap children */}
+            {children}
+          </AuthGuard>
+        </Providers>
       </body>
     </html>
   );
 }
+
+
+// ```
+
+// ---
+
+// ## What this does
+// ```
+// Every page load → AuthGuard runs
+//         ↓
+// Is this a public route ? → skip all checks
+//         ↓
+// No Firebase user → redirect to / login
+//         ↓
+// No localStorage user → redirect to / login
+//         ↓
+// is_onboarded = false → redirect to / onboarding
+//         ↓
+// is_onboarded = true + on login / signup → redirect to / dashboard
+//         ↓
+// All good → render page normally

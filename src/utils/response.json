@@ -1,0 +1,522 @@
+{
+  "query": "solo travel challenges in north east india",
+  "subreddit": "solotravel, SoloTravel_India",
+  "analyzed_at": "2026-03-02T13:36:00Z",
+  "executive_summary": "Across 2 Reddit posts and 58 filtered comments, solo travelers consistently describe India as one of the most challenging destinations globally — but ultimately rewarding. Key friction points include sensory overwhelm (crowds, noise, pollution), transportation complexity and cost (especially for solo travelers who can't split fares), safety concerns (particularly for women), and regional disparity in experience. North India — especially Delhi — is flagged as 'hard mode' for first-timers, while South India, Kerala, Kolkata, and the Northeast are recommended as gentler entry points. A strong undercurrent of 'spend more to suffer less' advice runs through both threads. Despite challenges, sentiment is net positive: most travelers report life-changing experiences once they adapt.",
+  "overall_sentiment": "mixed",
+  "total_signals": 58,
+
+  "themes": [
+    {
+      "id": "theme_01",
+      "title": "Sensory Overwhelm & Culture Shock",
+      "summary": "India is repeatedly described as an assault on the senses — crowds, noise, filth, poverty, and non-existent personal space. Travelers with extensive international experience still rank it as the most intense destination they've visited. The gap between rich and poor is cited as particularly jarring for Western visitors.",
+      "sentiment": "mixed",
+      "signal_count": 14,
+      "relevance_score": 95,
+      "brands_mentioned": [],
+      "demographic_signals": [
+        "22-year-old first-time solo backpackers",
+        "Seasoned travelers with 50+ countries",
+        "Americans and Western Europeans",
+        "Travelers transitioning from developed-country itineraries"
+      ],
+      "pain_points": [
+        {
+          "issue": "Extreme crowds and lack of personal space",
+          "severity": "High",
+          "sentiment": "negative",
+          "example_quote": "There are so so so many people. And they all have non-existent personal zones.",
+          "impact": "Triggers anxiety and decision fatigue, especially for first-time visitors and introverts"
+        },
+        {
+          "issue": "Pollution, filth, and visible poverty",
+          "severity": "High",
+          "sentiment": "negative",
+          "example_quote": "The overwhelming filth is beyond anything I've ever seen.",
+          "impact": "Causes psychological distress and culture shock; can deter return visits if Delhi is the first stop"
+        },
+        {
+          "issue": "Assault on senses never letting up",
+          "severity": "Medium",
+          "sentiment": "negative",
+          "example_quote": "It just never stops.",
+          "impact": "Mental fatigue; drives travelers toward more expensive, insulated accommodations"
+        }
+      ],
+      "quotes": [
+        {
+          "text": "India's the most challenging place I've ever been. The crowds, the traffic and the overwhelming filth is beyond anything I've ever seen. I enjoyed it, but it's definitely not for everyone.",
+          "author": "Notoriouslydishonest",
+          "comment_id": "nm6x4bm",
+          "permalink": "https://www.reddit.com/r/solotravel/comments/1ojzta0/is_india_really_that_overwhelming_for_first_solo/nm6x4bm",
+          "score": 534
+        },
+        {
+          "text": "Yeah I'm a seasoned traveler but I've never been somewhere as intense as India. It was like an assault on your senses.",
+          "author": "DanFlashes19",
+          "comment_id": "nm6zthd",
+          "permalink": "https://www.reddit.com/r/solotravel/comments/1ojzta0/is_india_really_that_overwhelming_for_first_solo/nm6zthd",
+          "score": 135
+        },
+        {
+          "text": "I found India to be the most intense place I've ever visited in my life. There's a level of human degradation that I witnessed in New Delhi that damn near brought me to tears.",
+          "author": "chillysaturday",
+          "comment_id": "nm6w7sv",
+          "permalink": "https://www.reddit.com/r/solotravel/comments/1ojzta0/is_india_really_that_overwhelming_for_first_solo/nm6w7sv",
+          "score": 260
+        }
+      ],
+      "sources": [
+        {
+          "kind": "comment",
+          "id": "nm6x4bm",
+          "permalink": "https://www.reddit.com/r/solotravel/comments/1ojzta0/is_india_really_that_overwhelming_for_first_solo/nm6x4bm",
+          "preview": "India's the most challenging place I've ever been...",
+          "author": "Notoriouslydishonest",
+          "score": 534,
+          "created": "2025-10-30T00:00:00Z"
+        },
+        {
+          "kind": "comment",
+          "id": "nm6w7sv",
+          "permalink": "https://www.reddit.com/r/solotravel/comments/1ojzta0/is_india_really_that_overwhelming_for_first_solo/nm6w7sv",
+          "preview": "I found India to be the most intense place I've ever visited...",
+          "author": "chillysaturday",
+          "score": 260,
+          "created": "2025-10-30T00:00:00Z"
+        }
+      ],
+      "reddit_user_actions": [
+        "Upvoting comments that validate the 'India is hard' narrative",
+        "Asking follow-up questions about specific regions to avoid",
+        "Sharing personal anecdotes of culture shock as warnings"
+      ],
+      "system_actions": [
+        "Flag 'sensory overwhelm' as a top onboarding challenge for travel apps targeting India",
+        "Develop mental preparation content or 'what to expect' guides for first-timers",
+        "Recommend staged entry points (smaller cities) to reduce drop-off from bad first impressions"
+      ]
+    },
+    {
+      "id": "theme_02",
+      "title": "Regional Disparity: North vs South vs Northeast",
+      "summary": "There is strong consensus that North India (especially Delhi) is the most challenging region, while South India (Kerala, Tamil Nadu), Kolkata, the Himalayas (Ladakh, Himachal), and the Northeast are consistently recommended as better starting points. Many travelers and Indians themselves advise avoiding Delhi as a first stop entirely.",
+      "sentiment": "mixed",
+      "signal_count": 16,
+      "relevance_score": 92,
+      "brands_mentioned": [],
+      "demographic_signals": [
+        "Indian locals advising foreign travelers",
+        "First-time international visitors",
+        "Travelers from the US and Western Europe",
+        "Female solo travelers seeking safer regions"
+      ],
+      "pain_points": [
+        {
+          "issue": "Delhi as a first impression taints the entire India experience",
+          "severity": "High",
+          "sentiment": "negative",
+          "example_quote": "Way too many people make the leap to straight up anti-Indian racism after Delhi.",
+          "impact": "Negative reviews spread online, reducing tourism intent for the broader country"
+        },
+        {
+          "issue": "Northeast India and alternative regions are underexplored due to lack of awareness",
+          "severity": "Medium",
+          "sentiment": "neutral",
+          "example_quote": "Go to the Northeast for nature and culture. There are so many nicer places but they remain unexplored.",
+          "impact": "Lost tourism revenue for Northeast states; travelers miss diverse, less overwhelming experiences"
+        },
+        {
+          "issue": "Language barriers in Tamil Nadu and regional states",
+          "severity": "Medium",
+          "sentiment": "negative",
+          "example_quote": "People there mostly understand only proper Tamil, not English, and not even broken Tamil.",
+          "impact": "Navigational difficulty; isolating for solo travelers without local language knowledge"
+        }
+      ],
+      "quotes": [
+        {
+          "text": "The biggest mistake people make is they land in North India and imagine the whole of India to be like that.",
+          "author": "nothingisforfree41",
+          "comment_id": "nm6ysna",
+          "permalink": "https://www.reddit.com/r/solotravel/comments/1ojzta0/is_india_really_that_overwhelming_for_first_solo/nm6ysna",
+          "score": 141
+        },
+        {
+          "text": "Go to the Northeast for nature and culture. There are so many nicer places but they remain unexplored.",
+          "author": "nothingisforfree41",
+          "comment_id": "nm6ysna",
+          "permalink": "https://www.reddit.com/r/solotravel/comments/1ojzta0/is_india_really_that_overwhelming_for_first_solo/nm6ysna",
+          "score": 141
+        },
+        {
+          "text": "Pro tip: never start in Delhi, especially on your first trip. Fly from Delhi to somewhere smaller and more manageable and work your way back.",
+          "author": "Evil_Mini_Cake",
+          "comment_id": "nm7wagt",
+          "permalink": "https://www.reddit.com/r/solotravel/comments/1ojzta0/is_india_really_that_overwhelming_for_first_solo/nm7wagt",
+          "score": 21
+        }
+      ],
+      "sources": [
+        {
+          "kind": "comment",
+          "id": "nm6ysna",
+          "permalink": "https://www.reddit.com/r/solotravel/comments/1ojzta0/is_india_really_that_overwhelming_for_first_solo/nm6ysna",
+          "preview": "Indian here. Go to the Northeast for nature and culture...",
+          "author": "nothingisforfree41",
+          "score": 141,
+          "created": "2025-10-30T00:00:00Z"
+        },
+        {
+          "kind": "comment",
+          "id": "nm8wydo",
+          "permalink": "https://www.reddit.com/r/solotravel/comments/1ojzta0/is_india_really_that_overwhelming_for_first_solo/nm8wydo",
+          "preview": "Delhi is a vital part of India, yet tourists go to Delhi and experience culture shock...",
+          "author": "hinjew_elevation",
+          "score": 9,
+          "created": "2025-10-30T00:00:00Z"
+        }
+      ],
+      "reddit_user_actions": [
+        "Recommending alternative regions to Delhi in nearly every India travel thread",
+        "Upvoting comments from Indian locals about regional diversity",
+        "Requesting specific Northeast India itineraries (implied by post context)"
+      ],
+      "system_actions": [
+        "Build region-specific travel guides highlighting Northeast India as a distinct, lower-intensity destination",
+        "Create 'India entry point' selector tools for travel platforms based on traveler experience level",
+        "Develop content marketing around hidden gems: Sikkim, Meghalaya, Assam, Arunachal Pradesh"
+      ]
+    },
+    {
+      "id": "theme_03",
+      "title": "Transportation Challenges & Cost Burden on Solo Travelers",
+      "summary": "Transportation is the single most cited practical challenge in the solo travel India thread. Issues include: inability to split cab costs, unreliable or absent public transport in remote/offbeat areas, overcharging of solo travelers, and difficulty navigating mountain terrain without two-wheeler confidence. This is acutely relevant to Northeast India where infrastructure is less developed.",
+      "sentiment": "negative",
+      "signal_count": 10,
+      "relevance_score": 88,
+      "brands_mentioned": [
+        "RedBus",
+        "IndiGo"
+      ],
+      "demographic_signals": [
+        "Budget solo travelers",
+        "Travelers without driving skills or two-wheeler confidence",
+        "Introverts who struggle to find cab-sharing partners",
+        "Heritage explorers visiting offbeat/remote sites"
+      ],
+      "pain_points": [
+        {
+          "issue": "No one to split cab costs with as a solo traveler",
+          "severity": "High",
+          "sentiment": "negative",
+          "example_quote": "Since there's no one to share costs, cabs end up costing higher.",
+          "impact": "Significantly increases travel budget; pushes budget travelers toward less safe or less convenient options"
+        },
+        {
+          "issue": "Lack of reliable local transport for offbeat and remote sites",
+          "severity": "High",
+          "sentiment": "negative",
+          "example_quote": "Lack of transportation for sure, I usually end up paying much more.",
+          "impact": "Restricts access to lesser-known destinations; key pain point for Northeast India travel specifically"
+        },
+        {
+          "issue": "Two-wheeler driving required in mountains but not all solo travelers can ride",
+          "severity": "Medium",
+          "sentiment": "negative",
+          "example_quote": "Definitely transportation — since I'm not very confident driving two-wheelers in mountains.",
+          "impact": "Limits mobility in hilly terrain; forces reliance on expensive private cabs"
+        },
+        {
+          "issue": "Solo travelers disadvantaged at bus stations vs groups/families",
+          "severity": "Medium",
+          "sentiment": "negative",
+          "example_quote": "Solo like me end up missing multiple buses because groups get priority.",
+          "impact": "Wastes time, adds stress, and reinforces the perception that solo travel in India is penalized"
+        }
+      ],
+      "quotes": [
+        {
+          "text": "Lack of transportation for sure, I usually end up paying much more.",
+          "author": "lettucefries",
+          "comment_id": "mn4g66a",
+          "permalink": "https://www.reddit.com/r/SoloTravel_India/comments/1jz5v3k/solo_travelers_what_are_your_biggest_challenges/mn4g66a",
+          "score": 8
+        },
+        {
+          "text": "Since there's no one to share costs, cabs end up costing higher.",
+          "author": "[deleted]",
+          "comment_id": "mnk6buc",
+          "permalink": "https://www.reddit.com/r/SoloTravel_India/comments/1jz5v3k/solo_travelers_what_are_your_biggest_challenges/mnk6buc",
+          "score": 1
+        },
+        {
+          "text": "Solo like me end up missing multiple buses because ladies of groups/family get priority.",
+          "author": "Dramatic_Respond7323",
+          "comment_id": "mn6234s",
+          "permalink": "https://www.reddit.com/r/SoloTravel_India/comments/1jz5v3k/solo_travelers_what_are_your_biggest_challenges/mn6234s",
+          "score": 5
+        }
+      ],
+      "sources": [
+        {
+          "kind": "comment",
+          "id": "mn4g66a",
+          "permalink": "https://www.reddit.com/r/SoloTravel_India/comments/1jz5v3k/solo_travelers_what_are_your_biggest_challenges/mn4g66a",
+          "preview": "Lack of transportation for sure...",
+          "author": "lettucefries",
+          "score": 8,
+          "created": "2025-04-14T00:00:00Z"
+        },
+        {
+          "kind": "post",
+          "id": "1jz5v3k",
+          "permalink": "https://www.reddit.com/r/SoloTravel_India/comments/1jz5v3k/solo_travelers_what_are_your_biggest_challenges",
+          "preview": "Lack of local transportation knowledge especially for offbeat or remote sites...",
+          "author": "the_absurd_jukebox",
+          "score": 21,
+          "created": "2025-04-14T00:00:00Z"
+        }
+      ],
+      "reddit_user_actions": [
+        "Upvoting transportation complaints as the most relatable solo travel issue",
+        "Sharing tips on RedBus pre-booking to avoid bus station queue problems",
+        "Asking for cab-sharing partners in hostel communities"
+      ],
+      "system_actions": [
+        "Identify product opportunity: solo traveler cab-sharing matching platform for India",
+        "Build transportation guides for Northeast India's remote circuits (Kaziranga, Ziro, Tawang)",
+        "Partner with local transport aggregators to offer solo-traveler-friendly pricing"
+      ]
+    },
+    {
+      "id": "theme_04",
+      "title": "Safety Concerns & Gender-Based Challenges",
+      "summary": "Safety — particularly for women — is a recurring undercurrent. Female travelers describe groping, unsolicited marriage proposals, staring, and near-kidnapping experiences even in 'safer' southern states. Dress code sensitivity, bag safety, and neighborhood risk assessment are practical daily challenges. Male travelers note unwanted attention and scams but at lower intensity.",
+      "sentiment": "negative",
+      "signal_count": 8,
+      "relevance_score": 82,
+      "brands_mentioned": [],
+      "demographic_signals": [
+        "Solo female travelers (22F, 19F mentioned explicitly)",
+        "Western women traveling alone",
+        "Young male travelers warned about scams",
+        "Travelers carrying visible luggage"
+      ],
+      "pain_points": [
+        {
+          "issue": "Physical harassment and groping for female solo travelers",
+          "severity": "High",
+          "sentiment": "negative",
+          "example_quote": "I only got groped 2 times, 1 food poisoning, 1 marriage proposal, almost kidnapped 1 time.",
+          "impact": "Significant deterrent for female solo travelers; drives negative word-of-mouth"
+        },
+        {
+          "issue": "Not knowing which neighborhoods to avoid",
+          "severity": "High",
+          "sentiment": "negative",
+          "example_quote": "Not knowing which neighbourhoods to avoid (and which ones to adventure into!).",
+          "impact": "Creates anxiety and decision paralysis; key reason travelers overpay for guided tours"
+        },
+        {
+          "issue": "Bag safety when traveling alone with no one to watch luggage",
+          "severity": "Medium",
+          "sentiment": "negative",
+          "example_quote": "I have to carry my bags into every place I go because I cannot keep it anywhere.",
+          "impact": "Physical burden; limits spontaneity and mobility throughout the day"
+        },
+        {
+          "issue": "Dress code sensitivity varying by region",
+          "severity": "Medium",
+          "sentiment": "negative",
+          "example_quote": "Even wearing a tank top or something sleeveless is an invitation for a pass or a cat call in certain parts.",
+          "impact": "Restricts freedom of expression; adds mental load for female travelers packing and planning outfits"
+        }
+      ],
+      "quotes": [
+        {
+          "text": "I only got groped 2 times, 1 food poisoning, 1 marriage proposal, almost kidnapped 1 time. This was in the south by the way so it's supposed to be safer.",
+          "author": "chonky_cakes",
+          "comment_id": "nm6zq75",
+          "permalink": "https://www.reddit.com/r/solotravel/comments/1ojzta0/is_india_really_that_overwhelming_for_first_solo/nm6zq75",
+          "score": 33
+        },
+        {
+          "text": "Safety, for self and my bags and the fact that I have to carry my bags into every place I go because I cannot keep it anywhere.",
+          "author": "[deleted]",
+          "comment_id": "mn6ct7p",
+          "permalink": "https://www.reddit.com/r/SoloTravel_India/comments/1jz5v3k/solo_travelers_what_are_your_biggest_challenges/mn6ct7p",
+          "score": 3
+        }
+      ],
+      "sources": [
+        {
+          "kind": "comment",
+          "id": "nm6zq75",
+          "permalink": "https://www.reddit.com/r/solotravel/comments/1ojzta0/is_india_really_that_overwhelming_for_first_solo/nm6zq75",
+          "preview": "I was there with two female friends when I was 19, it was hell especially when I walked around alone...",
+          "author": "chonky_cakes",
+          "score": 33,
+          "created": "2025-10-30T00:00:00Z"
+        },
+        {
+          "kind": "comment",
+          "id": "nm844jd",
+          "permalink": "https://www.reddit.com/r/solotravel/comments/1ojzta0/is_india_really_that_overwhelming_for_first_solo/nm844jd",
+          "preview": "How you dress in India really makes quite a difference...",
+          "author": "Hungry-Shelter6853",
+          "score": 5,
+          "created": "2025-10-30T00:00:00Z"
+        }
+      ],
+      "reddit_user_actions": [
+        "Female travelers explicitly warning others about harassment in comments",
+        "Requesting female-specific safety guides by region",
+        "Recommending Kolkata as safest city for solo women"
+      ],
+      "system_actions": [
+        "Create female solo traveler safety guides segmented by region, including Northeast India",
+        "Feature Kolkata and Kerala prominently in female-targeted India travel content",
+        "Develop neighborhood safety rating features for India travel apps"
+      ]
+    },
+    {
+      "id": "theme_05",
+      "title": "The 'Spend More to Suffer Less' Budget Optimization Dilemma",
+      "summary": "A consistent cross-thread theme: India's challenges are significantly reduced with a modest increase in budget. Travelers who stayed in cheap hostels in areas like Paharganj report worst experiences; those who splurged on private transport, mid-range hotels, and guided tours report dramatically better trips. This creates a clear market signal around premium-budget travel products for India.",
+      "sentiment": "mixed",
+      "signal_count": 8,
+      "relevance_score": 78,
+      "brands_mentioned": [
+        "Aquafina",
+        "Evian",
+        "Bisleri",
+        "IndiGo"
+      ],
+      "demographic_signals": [
+        "Budget backpackers reconsidering their approach",
+        "Mid-range travelers ($50-150/day)",
+        "Travelers from OECD countries with stronger currencies",
+        "First-timers willing to pay more for peace of mind"
+      ],
+      "pain_points": [
+        {
+          "issue": "Budget travel infrastructure in India is low-quality and exposes travelers to more risk",
+          "severity": "High",
+          "sentiment": "negative",
+          "example_quote": "A lot of travel experiences shared about India are from people who chose to live in filth in areas like Paharganj.",
+          "impact": "Budget travelers disproportionately have bad experiences and generate negative reviews"
+        },
+        {
+          "issue": "Food safety and water quality anxiety",
+          "severity": "Medium",
+          "sentiment": "negative",
+          "example_quote": "Do drink coke or soda over bottled water if you plan to eat street food as most bottled water brands might not have same standards.",
+          "impact": "Constant low-grade stress; medical incidents (Delhi belly) disrupt itineraries"
+        }
+      ],
+      "quotes": [
+        {
+          "text": "India is not a place where you want to be cheap. Spend a little bit more.",
+          "author": "dextert48",
+          "comment_id": "nm73cbv",
+          "permalink": "https://www.reddit.com/r/solotravel/comments/1ojzta0/is_india_really_that_overwhelming_for_first_solo/nm73cbv",
+          "score": 7
+        },
+        {
+          "text": "Splurge on a high quality hotel because they can be so helpful to you if you need something and you don't have to worry about being stolen from or ripped off.",
+          "author": "Wrong_Map5396",
+          "comment_id": "nm705c9",
+          "permalink": "https://www.reddit.com/r/solotravel/comments/1ojzta0/is_india_really_that_overwhelming_for_first_solo/nm705c9",
+          "score": 13
+        },
+        {
+          "text": "Your currency will have more value here so spend what the middle class here spends for a comfortable trip. You can easily treat yourself.",
+          "author": "baddyboy",
+          "comment_id": "nm771m1",
+          "permalink": "https://www.reddit.com/r/solotravel/comments/1ojzta0/is_india_really_that_overwhelming_for_first_solo/nm771m1",
+          "score": 37
+        }
+      ],
+      "sources": [
+        {
+          "kind": "comment",
+          "id": "nm771m1",
+          "permalink": "https://www.reddit.com/r/solotravel/comments/1ojzta0/is_india_really_that_overwhelming_for_first_solo/nm771m1",
+          "preview": "Would strongly suggest that don't spend the bare minimum...",
+          "author": "baddyboy",
+          "score": 37,
+          "created": "2025-10-30T00:00:00Z"
+        },
+        {
+          "kind": "comment",
+          "id": "nm6zuql",
+          "permalink": "https://www.reddit.com/r/solotravel/comments/1ojzta0/is_india_really_that_overwhelming_for_first_solo/nm6zuql",
+          "preview": "India is definitely chaotic but a lot of problems can be overcome by spending a bit more...",
+          "author": "amulx",
+          "score": 10,
+          "created": "2025-10-30T00:00:00Z"
+        }
+      ],
+      "reddit_user_actions": [
+        "Upvoting 'spend more' advice as most useful practical guidance",
+        "Recommending private car + driver as standard for India first-timers",
+        "Asking for mid-range hotel recommendations over hostels"
+      ],
+      "system_actions": [
+        "Position mid-range ($60-120/night) curated India travel packages as the sweet spot for solo Western travelers",
+        "Create 'smart budget India' guides that show where to splurge vs. save",
+        "Highlight bottled water brands (Bisleri) and food safety tips in pre-trip content"
+      ]
+    }
+  ],
+
+  "market_signals": {
+    "brands_mentioned": [
+      "Bisleri",
+      "RedBus",
+      "IndiGo",
+      "Aquafina",
+      "Evian"
+    ],
+    "demographic_signals": [
+      "22-year-old male first-time backpackers from the US",
+      "Solo female travelers aged 19-30 from Western countries",
+      "Seasoned travelers (50+ countries) benchmarking India against global destinations",
+      "Indian diaspora travelers returning to explore beyond familiar routes",
+      "Budget-to-mid-range solo travelers reconsidering spend levels",
+      "Introverts struggling with social/logistical aspects of solo India travel"
+    ],
+    "geographic_signals": [
+      "Northeast India (Sikkim, Meghalaya, Assam, Arunachal Pradesh) — underexplored, emerging",
+      "Kerala — top recommended entry point for first-timers",
+      "Kolkata — safest major city, praised for culture and people",
+      "Rajasthan (Jaipur, Jodhpur, Jaisalmer, Udaipur) — established tourist circuit",
+      "Delhi — high intensity, recommended only after acclimatization",
+      "Ladakh / Himachal Pradesh — adventure segment, altitude risk flagged",
+      "Goa — relaxed but safety concerns for women in touristy areas",
+      "Tamil Nadu — language barrier cited as significant challenge",
+      "Nepal — mentioned as a softer alternative gateway to South Asia"
+    ],
+    "emerging_topics": [
+      "Northeast India as an underrated, low-overwhelm alternative to North India",
+      "Solo traveler cab-sharing networks and cost-splitting platforms",
+      "Female solo travel safety by region — demand for granular, up-to-date guides",
+      "India travel tiers by intensity — need for 'difficulty rating' systems for destinations",
+      "Stage-entry travel strategy (start small, build up to Delhi)",
+      "Heritage and offbeat site exploration beyond the Golden Triangle",
+      "Food safety protocols for street food — beyond generic 'be careful' advice",
+      "Language app needs for regional Indian languages (Tamil, Bengali, Assamese)"
+    ]
+  },
+
+  "meta": {
+    "confidence": "Medium-High — 58 signals across 2 posts with strong upvote validation on key comments (top comment: 534 upvotes). Sample size is limited but highly relevant; top comments reflect broad consensus across diverse traveler profiles.",
+    "caveats": "Data skews toward Western (primarily American) solo travelers. Northeast India is mentioned but not the primary focus of either thread — signals are inferred from general India solo travel discourse. Comments from 2025 only; traveler conditions may shift. Reddit self-selects for travelers willing to share experiences online.",
+    "total_posts": 2,
+    "total_comments": 58,
+    "model": "claude-sonnet-4-20250514",
+    "date_range": "2025-04-14 to 2025-10-31"
+  }
+}

@@ -1,140 +1,272 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
     LayoutDashboard,
-    Search,
     Database,
     Globe,
-    Zap,
     ChevronRight,
-    CircleDot
+    CircleDot,
+    PanelLeftClose,
+    PanelLeftOpen,
+    Zap,
+    RefreshCw,
+    Plus
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import UserProfileButton from '@/components/ui/UserProfileButton';
 
 export default function DashboardLayout({ children }) {
     const pathname = usePathname();
+    const [sidebarOpen, setSidebarOpen] = useState(true);
+
+    // Status logic to add later
+    // const percentage = (creditsUsed / creditsTotal) * 100;
+    // const status = percentage >= 80 ? "Low" : percentage >= 50 ? "Good" : "Healthy";
+    // const statusColor = percentage >= 80 ? "text-destructive bg-destructive-bg" : percentage >= 50 ? "text-warning bg-warning-bg" : "text-success bg-success-bg";
 
     const mainItems = [
         { name: 'Overview', icon: LayoutDashboard, href: '/dashboard' },
     ];
 
     const engineItems = [
-        { name: 'App Store Analysis', icon: Globe, href: '/dashboard/appanalysis', color: 'text-blue-500' },
-        { name: 'Reddit Analysis', icon: Database, href: '/dashboard/redditanalysis', color: 'text-orange-500' },
+        { name: 'App Store Analysis', icon: Globe, href: '/dashboard/appanalysis' },
+        { name: 'Reddit Analysis', icon: Database, href: '/dashboard/redditanalysis' },
     ];
 
     return (
-        <div className="flex h-screen bg-white text-foreground overflow-hidden font-sans">
-            {/* --- REFINED SIDEBAR --- */}
-            <aside className="w-72 border-r border-slate-100 flex flex-col bg-slate-50/40 backdrop-blur-xl shrink-0">
+        <div
+            className="flex h-screen overflow-hidden font-sans"
+            style={{ backgroundColor: 'var(--background)', color: 'var(--text-main)' }}
+        >
+            {/* ── SIDEBAR ── */}
+            <AnimatePresence initial={false}>
+                {sidebarOpen && (
+                    <motion.aside
+                        key="sidebar"
+                        initial={{ width: 0, opacity: 0 }}
+                        animate={{ width: 260, opacity: 1 }}
+                        exit={{ width: 0, opacity: 0 }}
+                        transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+                        className="shrink-0 overflow-hidden flex flex-col"
+                        style={{
+                            backgroundColor: 'var(--sidebar-bg)',
+                            borderRight: '1px solid var(--sidebar-border)',
+                        }}
+                    >
+                        <div className="w-65 flex flex-col h-full">
 
-                {/* Brand Section */}
-                <div className="p-8">
-                    <Link href="/" className="flex items-center gap-3 mb-10 group px-2">
-                        <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center text-white shadow-xl shadow-primary/30 transition-all group-hover:scale-110 group-hover:rotate-6">
-                            <Zap className="w-5 h-5 fill-white" />
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="font-black tracking-tighter text-xl leading-none">DEMO</span>
-                            <span className="text-[10px] font-bold text-primary tracking-[0.2em] uppercase mt-1">Intelligence</span>
-                        </div>
-                    </Link>
+                            {/* Brand */}
+                            <div className="px-6 pt-7 pb-5">
+                                <Link href="/" className="flex items-center gap-3 mb-8 no-underline group">
+                                    <div
+                                        className="w-9 h-9 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform"
+                                        style={{
+                                            background: 'linear-gradient(135deg, var(--primary), var(--accent))',
+                                            boxShadow: '0 4px 12px color-mix(in srgb, var(--primary) 30%, transparent)',
+                                        }}
+                                    >
+                                        <Zap className="w-4 h-4 fill-white text-white" />
+                                    </div>
+                                    <div>
+                                        <p
+                                            className="text-base font-black tracking-tighter leading-none"
+                                            style={{ color: 'var(--text-main)' }}
+                                        >
+                                            DEMO
+                                        </p>
+                                        <p
+                                            className="text-[9px] font-bold tracking-[0.2em] uppercase mt-0.5"
+                                            style={{ color: 'var(--primary)' }}
+                                        >
+                                            Intelligence
+                                        </p>
+                                    </div>
+                                </Link>
 
-                    {/* Navigation Groups */}
-                    <div className="space-y-8">
-                        {/* Group 1: General */}
-                        <div>
-                            <p className="px-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">General</p>
-                            <nav className="space-y-1">
-                                {mainItems.map((item) => {
-                                    const isActive = pathname === item.href;
-                                    return (
-                                        <SidebarLink key={item.name} item={item} isActive={isActive} />
-                                    );
-                                })}
-                            </nav>
+                                <NavGroup label="General" items={mainItems} pathname={pathname} />
+
+                                <div className="mt-7">
+                                    <NavGroup label="Intelligence Engines" items={engineItems} pathname={pathname} />
+                                </div>
+                            </div>
+
+                            {/* Bottom */}
+                            <div
+                                className="mt-auto px-6 py-5 space-y-4"
+                                style={{ borderTop: '1px solid var(--sidebar-border)' }}
+                            >
+                                <div className="flex items-center gap-2 px-1">
+                                    <span className="relative flex h-2 w-2">
+                                        <span
+                                            className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60"
+                                            style={{ backgroundColor: 'var(--success)' }}
+                                        />
+                                        <span
+                                            className="relative inline-flex h-2 w-2 rounded-full"
+                                            style={{ backgroundColor: 'var(--success)' }}
+                                        />
+                                    </span>
+                                    <span
+                                        className="text-[9px] font-bold uppercase tracking-[0.18em] font-mono"
+                                        style={{ color: 'var(--sidebar-muted)' }}
+                                    >
+                                        Made in India with ❤️
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.aside>
+                )}
+            </AnimatePresence>
+
+            {/* ── MAIN ── */}
+            <div className="flex-1 flex flex-col overflow-hidden">
+                {/* Topbar */}
+                <div className="flex items-center justify-between h-17.5 px-5 shrink-0 bg-sidebar border-b border-sidebar-border">
+
+                    {/* Left: toggle + page name */}
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={() => setSidebarOpen(o => !o)}
+                            title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+                            className="flex items-center justify-center w-8 h-8 rounded-lg transition-colors cursor-pointer border border-border-solid text-subtle hover:bg-sidebar-hover hover:text-foreground hover:border-primary"
+                        >
+                            {sidebarOpen
+                                ? <PanelLeftClose className="w-4 h-4" />
+                                : <PanelLeftOpen className="w-4 h-4" />
+                            }
+                        </button>
+
+                        <div className="w-px h-4 bg-border-solid" />
+
+                        <span className="text-[16px] font-bold text-muted">
+                            {[...engineItems, ...mainItems].find(i => i.href === pathname)?.name || "Dashboard"}
+                        </span>
+                    </div>
+
+                    {/* Right */}
+                    <div className="flex items-center gap-3">
+
+                        {/* Credits widget */}
+                        <div className="flex items-center gap-3 px-4 py-2 rounded-2xl border border-border-solid bg-surface">
+
+                            {/* Icon + label */}
+                            <div className="flex items-center gap-2">
+                                <div className="w-7 h-7 rounded-full bg-info-bg flex items-center justify-center">
+                                    <Zap className="w-3.5 h-3.5 text-primary" />
+                                </div>
+                                <span className="text-xs font-bold text-muted uppercase tracking-widest">Credits</span>
+                            </div>
+
+                            <div className="w-px h-4 bg-border-solid" />
+
+                            {/* Credit count */}
+                            <div className="flex items-center gap-1.5">
+                                <span className="text-sm font-black text-foreground">247</span>
+                                <span className="text-xs font-medium text-subtle">/ 500</span>
+                            </div>
+
+                            {/* Progress bar */}
+                            <div className="w-20 h-1.5 rounded-full bg-surface-raised overflow-hidden">
+                                <div
+                                    className="h-full rounded-full bg-primary transition-all duration-500"
+                                    style={{ width: `${(247 / 500) * 100}%` }}
+                                />
+                            </div>
+
+                            {/* Status badge */}
+                            {/* <div className="px-2 py-0.5 rounded-full bg-success-bg">
+                                <span className="text-[10px] font-black text-success uppercase tracking-widest">Healthy</span>
+                            </div> */}
+
                         </div>
 
-                        {/* Group 2: Intelligence Engines */}
-                        <div>
-                            <p className="px-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Intelligence Engines</p>
-                            <nav className="space-y-1">
-                                {engineItems.map((item) => {
-                                    const isActive = pathname === item.href;
-                                    return (
-                                        <SidebarLink key={item.name} item={item} isActive={isActive} />
-                                    );
-                                })}
-                            </nav>
+                        {/* Resets info */}
+                        <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border-solid bg-surface">
+                            <RefreshCw className="w-3 h-3 text-subtle" />
+                            <span className="text-[11px] font-semibold text-subtle">Expires in</span>
+                            <span className="text-[11px] font-black text-foreground">18d</span>
+                        </div>
+
+                        {/* Buy credits button */}
+                        <Link href="/pricing" className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary text-white text-[11px] font-bold hover:bg-primary-hover transition-all active:scale-95 cursor-pointer">
+                            <Plus className="w-3.5 h-3.5" />
+                            Buy Credits
+                        </Link>
+
+                        {/* User profile */}
+                        <div className="rounded-full bg-foreground/85">
+                            <UserProfileButton />
                         </div>
                     </div>
                 </div>
 
-                {/* Bottom Section: System Health & Plan */}
-                <div className="mt-auto p-6 space-y-4">
-                    {/* System Status */}
-                    <div className="px-4 flex items-center gap-3">
-                        <div className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                        </div>
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Engine Live</span>
-                    </div>
-
-                    {/* Plan Card */}
-                    <div className="bg-slate-900 rounded-[2rem] p-5 text-white shadow-2xl shadow-slate-200 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 blur-2xl -mr-10 -mt-10 group-hover:bg-primary/20 transition-all" />
-                        <p className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-1">Compute Power</p>
-                        <p className="text-sm font-bold mb-4">Enterprise Pro</p>
-
-                        <div className="space-y-2">
-                            <div className="flex justify-between text-[10px] font-bold">
-                                <span className="opacity-60 uppercase">Tokens Used</span>
-                                <span>84%</span>
-                            </div>
-                            <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                                <div className="h-full w-[84%] bg-primary shadow-[0_0_8px_rgba(14,165,233,0.8)]" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </aside>
-
-            {/* --- CONTENT AREA --- */}
-            <main className="flex-1 overflow-y-auto relative bg-white">
-                {/* Soft gradient background for the content area */}
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(14,165,233,0.03),transparent_50%)] pointer-events-none" />
-                <div className="relative z-10">
+                <main className="flex-1 overflow-y-auto">
                     {children}
-                </div>
-            </main>
+                </main>
+            </div>
         </div>
     );
-}
+};
 
-// Helper Component for Sidebar Links
-function SidebarLink({ item, isActive }) {
+function NavGroup({ label, items, pathname }) {
     return (
-        <Link
-            href={item.href}
-            className={`flex items-center justify-between px-4 py-3.5 rounded-2xl text-sm font-bold transition-all duration-300 group ${isActive
-                    ? 'bg-white text-primary shadow-sm border border-slate-100'
-                    : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
-                }`}
-        >
-            <div className="flex items-center gap-3">
-                <div className={`transition-colors ${isActive ? 'text-primary' : 'text-slate-400 group-hover:text-slate-600'}`}>
-                    <item.icon className="w-4.5 h-4.5" />
-                </div>
-                <span className="tracking-tight">{item.name}</span>
-            </div>
-            {isActive ? (
-                <CircleDot className="w-3 h-3 text-primary animate-pulse" />
-            ) : (
-                <ChevronRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
-            )}
-        </Link>
+        <div>
+            <p
+                className="px-1 text-[9px] font-black uppercase tracking-[0.2em] mb-1.5 font-mono"
+                style={{ color: 'var(--sidebar-muted)' }}
+            >
+                {label}
+            </p>
+            <nav className="flex flex-col gap-2">
+                {items.map(item => {
+                    const isActive = pathname === item.href;
+                    return (
+                        <Link
+                            key={item.name}
+                            href={item.href}
+                            className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all no-underline group"
+                            style={{
+                                backgroundColor: isActive ? 'var(--sidebar-item-active-bg)' : 'transparent',
+                                color: isActive ? 'var(--sidebar-item-active-text)' : 'var(--text-muted)',
+                                border: isActive
+                                    ? '1px solid color-mix(in srgb, var(--primary) 25%, transparent)'
+                                    : '1px solid transparent',
+                            }}
+                            onMouseEnter={e => {
+                                if (!isActive) {
+                                    e.currentTarget.style.backgroundColor = 'var(--sidebar-item-hover)';
+                                    e.currentTarget.style.color = 'var(--text-main)';
+                                }
+                            }}
+                            onMouseLeave={e => {
+                                if (!isActive) {
+                                    e.currentTarget.style.backgroundColor = 'transparent';
+                                    e.currentTarget.style.color = 'var(--text-muted)';
+                                }
+                            }}
+                        >
+                            <div className="flex items-center gap-2.5">
+                                <item.icon
+                                    className="w-4 h-4"
+                                    style={{ color: isActive ? 'var(--sidebar-item-active-text)' : 'var(--sidebar-main)' }}
+                                />
+                                <span className="tracking-tight text-muted">{item.name}</span>
+                            </div>
+                            {isActive
+                                ? <CircleDot className="w-3 h-3" style={{ color: 'var(--accent)' }} />
+                                : <ChevronRight
+                                    className="w-3 h-3 -translate-x-1 group-hover:translate-x-0 transition-transform"
+                                    style={{ color: 'var(--border-solid)' }}
+                                />
+                            }
+                        </Link>
+                    );
+                })}
+            </nav>
+        </div>
     );
-}
+};

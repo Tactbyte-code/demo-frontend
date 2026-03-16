@@ -8,6 +8,7 @@ import {
     MessageCircle,
     ArrowRight
 } from 'lucide-react';
+import Link from 'next/link';
 
 const faqs = [
     {
@@ -32,61 +33,105 @@ export default function FAQSection() {
     const [openIndex, setOpenIndex] = useState(0);
 
     return (
-        <section className="pb-24 bg-white relative overflow-hidden">
-            {/* Subtle neutral texture to avoid the "blue wash" */}
-            <div
-                className="absolute inset-0 opacity-[0.03] pointer-events-none"
-                style={{
-                    backgroundImage: 'radial-gradient(circle, #000 1px, transparent 1px)',
-                    backgroundSize: '40px 40px'
-                }}
-            />
+        <section className="pb-24 bg-background relative overflow-hidden">
+
+            {/* Background glow */}
+            <div className="absolute inset-0 pointer-events-none -z-10">
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[55%] h-[40%] bg-primary/5 blur-[120px] rounded-full" />
+            </div>
 
             <div className="max-w-7xl mx-auto px-6 relative z-10">
-                {/* Header Area - Centered */}
-                <div className="flex flex-col items-center text-center gap-6 mb-20">
-                    <div className="max-w-2xl">
-                        <div className="flex items-center justify-center gap-2 mb-4">
-                            <HelpCircle className="w-4 h-4 text-primary" />
-                            <span className="text-primary font-bold text-xs uppercase tracking-[0.3em]">Support Center</span>
-                        </div>
-                        <h2 className="text-4xl lg:text-5xl font-black text-foreground tracking-tight leading-none">
-                            Common
-                            <span className="text-primary"> Inquiries.</span>
-                        </h2>
-                        <p className="mt-6 text-sm text-muted font-medium max-w-lg mx-auto leading-relaxed">
-                            Everything you need to know about our intelligent market empathy engine
-                            and technical integrations.
-                        </p>
-                    </div>
+
+                {/* ── Header ───────────────────────────── */}
+                <div className="flex flex-col items-center text-center gap-6 mb-16">
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="inline-flex items-center gap-2 bg-primary/8 border border-primary/15 text-primary font-bold text-xs uppercase tracking-[0.3em] px-4 py-2 rounded-full"
+                    >
+                        <HelpCircle className="w-3.5 h-3.5" />
+                        Support Center
+                    </motion.div>
+                    <motion.h2
+                        initial={{ opacity: 0, y: 16 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.1 }}
+                        className="text-4xl lg:text-5xl font-black text-foreground tracking-tight leading-none"
+                    >
+                        Common
+                        <span className="text-primary"> Inquiries.</span>
+                    </motion.h2>
+                    <motion.p
+                        initial={{ opacity: 0, y: 16 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.2 }}
+                        className="text-sm text-muted font-medium max-w-lg leading-relaxed"
+                    >
+                        Everything you need to know about our intelligent market empathy engine
+                        and technical integrations.
+                    </motion.p>
                 </div>
 
-                {/* --- NON-CARD ACCORDION UI --- */}
-                <div className="border-t border-glass-border">
+                {/* ── Accordion ─────────────────────────── */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.15 }}
+                    className="rounded-[2rem] border border-border-solid overflow-hidden bg-surface shadow-md mb-6"
+                >
                     {faqs.map((faq, index) => {
                         const isOpen = openIndex === index;
+                        const isLast = index === faqs.length - 1;
+
                         return (
                             <div
                                 key={index}
-                                className={`border-b border-glass-border transition-all duration-500 ${isOpen ? 'bg-surface/50' : 'hover:bg-surface/30'}`}
+                                className={`
+                                    transition-colors duration-300
+                                    ${!isLast ? 'border-b border-border' : ''}
+                                    ${isOpen ? 'bg-primary/[0.02]' : 'hover:bg-surface-raised'}
+                                `}
                             >
+                                {/* Question row */}
                                 <button
                                     onClick={() => setOpenIndex(isOpen ? -1 : index)}
-                                    className="w-full py-8 flex items-center justify-between text-left group"
+                                    className="w-full py-7 px-8 flex items-center justify-between text-left gap-6 group cursor-pointer"
                                 >
-                                    <div className="flex items-center gap-6">
-                                        <span className={`text-xs font-mono font-bold transition-colors ${isOpen ? 'text-primary' : 'text-muted/40'}`}>
+                                    <div className="flex items-center gap-5">
+                                        <span className={`
+                                            text-xs font-mono font-black shrink-0 transition-colors duration-300
+                                            ${isOpen ? 'text-primary' : 'text-subtle'}
+                                        `}>
                                             0{index + 1}
                                         </span>
-                                        <h3 className={`text-lg lg:text-xl font-bold tracking-tight transition-colors ${isOpen ? 'text-foreground' : 'text-muted group-hover:text-foreground'}`}>
+                                        <h3 className={`
+                                            text-base lg:text-lg font-bold tracking-tight transition-colors duration-300
+                                            ${isOpen ? 'text-foreground' : 'text-muted group-hover:text-foreground'}
+                                        `}>
                                             {faq.question}
                                         </h3>
                                     </div>
-                                    <div className={`shrink-0 ml-4 p-2 cursor-pointer rounded-full border transition-all duration-300 ${isOpen ? 'bg-primary border-primary text-white rotate-180' : 'border-glass-border text-muted'}`}>
-                                        {isOpen ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+
+                                    <div className={`
+                                        shrink-0 w-8 h-8 rounded-full border flex items-center justify-center
+                                        transition-all duration-300
+                                        ${isOpen
+                                            ? 'bg-primary border-primary text-white'
+                                            : 'border-border-solid text-subtle group-hover:border-primary/30 group-hover:text-primary'
+                                        }
+                                    `}>
+                                        {isOpen
+                                            ? <Minus className="w-3.5 h-3.5" />
+                                            : <Plus className="w-3.5 h-3.5" />
+                                        }
                                     </div>
                                 </button>
 
+                                {/* Answer */}
                                 <AnimatePresence initial={false}>
                                     {isOpen && (
                                         <motion.div
@@ -94,16 +139,18 @@ export default function FAQSection() {
                                             animate={{ height: 'auto', opacity: 1 }}
                                             exit={{ height: 0, opacity: 0 }}
                                             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                                            className="overflow-hidden"
                                         >
-                                            <div className="pb-8 pl-14 pr-12">
-                                                <p className="text-muted text-base leading-relaxed max-w-3xl border-l-2 border-primary/20 pl-6">
-                                                    {faq.answer}
-                                                </p>
-                                                {/* <div className="mt-6 pl-6">
-                                                    <button className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2 hover:gap-3 transition-all">
-                                                        Read Documentation <ArrowRight className="w-3 h-3" />
+                                            <div className="px-8 pb-7 pl-[4.5rem]">
+                                                <div className="border-l-2 border-primary/25 pl-5">
+                                                    <p className="text-muted text-sm leading-relaxed max-w-3xl">
+                                                        {faq.answer}
+                                                    </p>
+                                                    <button className="mt-4 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-primary/60 hover:text-primary transition-colors duration-200 group">
+                                                        Read Documentation
+                                                        <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                                                     </button>
-                                                </div> */}
+                                                </div>
                                             </div>
                                         </motion.div>
                                     )}
@@ -111,23 +158,40 @@ export default function FAQSection() {
                             </div>
                         );
                     })}
-                </div>
+                </motion.div>
 
-                {/* Footer CTA */}
-                <div className="mt-12 p-8 rounded-4xl bg-foreground text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl shadow-primary/10">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center">
-                            <MessageCircle className="w-6 h-6 text-primary" />
+                {/* ── Footer CTA ────────────────────────── */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.1 }}
+                    className="relative rounded-[2rem] overflow-hidden border border-border-solid"
+                >
+                    {/* Dark background */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#0f172a] to-[#1e293b]" />
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,var(--color-primary),transparent_60%)] opacity-10" />
+
+                    <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 p-8 lg:p-10">
+                        <div className="flex items-center gap-5">
+                            <div className="w-12 h-12 rounded-xl bg-white/8 border border-white/10 flex items-center justify-center shrink-0">
+                                <MessageCircle className="w-5 h-5 text-primary" />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-lg text-white">
+                                    Still have questions?
+                                </h4>
+                                <p className="text-xs text-white/40 uppercase tracking-widest mt-0.5">
+                                    Speak with a product specialist
+                                </p>
+                            </div>
                         </div>
-                        <div>
-                            <h4 className="font-bold text-lg">Still have questions?</h4>
-                            <p className="text-xs text-white/50 uppercase tracking-widest">Speak with a product specialist</p>
-                        </div>
+                        <Link href="/contact" className="group flex items-center gap-2 cursor-pointer bg-white/10 hover:bg-primary border border-white/15 hover:border-primary text-white px-7 py-3 rounded-xl font-bold text-sm">
+                            Contact Support
+                            <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                        </Link>
                     </div>
-                    <button className="bg-white cursor-pointer text-foreground px-8 py-3 rounded-xl font-bold text-sm hover:bg-primary hover:text-white transition-all">
-                        Contact Support
-                    </button>
-                </div>
+                </motion.div>
             </div>
         </section>
     );

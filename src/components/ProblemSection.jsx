@@ -36,7 +36,7 @@ const painPoints = [
 
 export default function ProblemSection() {
     return (
-        <section className="py-24 bg-surface relative overflow-hidden">
+        <section className="bg-background relative overflow-hidden pb-24">
             {/* Subtle background glow */}
             <div className="absolute top-1/2 left-0 -translate-y-1/2 w-64 h-64 bg-accent/10 blur-[100px] rounded-full -z-10" />
 
@@ -81,7 +81,7 @@ export default function ProblemSection() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: index * 0.1 }}
-                            className="p-8 rounded-3xl bg-background border border-glass-border hover:border-primary/30 transition-all duration-300 group"
+                            className="p-8 rounded-3xl bg-surface border border-glass-border hover:border-primary/30 transition-all duration-300 group"
                         >
                             <div className={`w-12 h-12 ${point.bg} ${point.color} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
                                 <point.icon className="w-6 h-6" />
@@ -99,7 +99,7 @@ export default function ProblemSection() {
                     initial={{ opacity: 0, y: 40 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    className="mt-20 p-8 lg:p-12 rounded-[2.5rem] bg-white border border-glass-border shadow-sm flex flex-col lg:flex-row items-center gap-12"
+                    className="mt-20 p-8 lg:p-12 rounded-[2.5rem] bg-surface border border-glass-border shadow-sm flex flex-col lg:flex-row items-center gap-12"
                 >
                     <div className="flex-1 space-y-8">
                         <div>
@@ -117,7 +117,7 @@ export default function ProblemSection() {
                                 { label: "Silos", issue: "Disconnected data leads to wrong conclusions.", stat: "Fragmented" },
                                 { label: "Latency", issue: "Weeks to validate what takes hours to build.", stat: "Slow Loop" }
                             ].map((item, i) => (
-                                <div key={i} className="flex items-start gap-4 p-4 rounded-2xl bg-background border border-glass-border group hover:bg-white hover:shadow-md transition-all">
+                                <div key={i} className="flex items-start gap-4 p-4 rounded-2xl bg-background border border-glass-border group hover:bg-surface-raised hover:shadow-md transition-all">
                                     <div className="mt-1 w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]" />
                                     <div className="flex-1">
                                         <div className="flex justify-between items-center mb-1">

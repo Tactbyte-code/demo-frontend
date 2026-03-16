@@ -66,7 +66,7 @@ export default function FeaturesSection() {
     }
 
     return (
-        <section id="features" className="pb-24 bg-white relative overflow-hidden">
+        <section id="features" className="pt-8 pb-24 bg-background relative overflow-hidden">
             <div className="max-w-7xl mx-auto px-6">
 
                 {/* Header Area */}

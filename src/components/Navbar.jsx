@@ -1,53 +1,57 @@
 "use client";
+
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
-    ChevronDown,
-    LogIn,
-    Activity,
-    Shield,
-    Zap,
-    Globe,
-    Briefcase,
-    LayoutGrid,
-    Tag,
-    BookOpen
+    ChevronDown, LogIn, Activity, Shield, Zap,
+    Globe, Briefcase, LayoutGrid, Tag, Book
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import UserProfileButton from '@/components/ui/UserProfileButton';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 
 export default function Navbar() {
     const [isFeaturesOpen, setIsFeaturesOpen] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const timeoutRef = useRef(null);
+    const router = useRouter();
+
+    const checkUser = () => {
+        const stored = localStorage.getItem("user");
+        setIsLoggedIn(!!stored);
+    };
+
+    useEffect(() => {
+        checkUser();
+        window.addEventListener("storage", checkUser);
+        window.addEventListener("userUpdated", checkUser);
+        return () => {
+            window.removeEventListener("storage", checkUser);
+            window.removeEventListener("userUpdated", checkUser);
+        };
+    }, []);
 
     const handleMouseEnter = () => {
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
-        timeoutRef.current = setTimeout(() => {
-            setIsFeaturesOpen(true);
-        }, 100);
+        timeoutRef.current = setTimeout(() => setIsFeaturesOpen(true), 100);
     };
 
     const handleMouseLeave = () => {
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
-        timeoutRef.current = setTimeout(() => {
-            setIsFeaturesOpen(false);
-        }, 200);
+        timeoutRef.current = setTimeout(() => setIsFeaturesOpen(false), 200);
     };
 
     useEffect(() => {
-        if (isFeaturesOpen) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
+        document.body.style.overflow = isFeaturesOpen ? 'hidden' : 'unset';
     }, [isFeaturesOpen]);
 
-    // Mapping icons to your tab names
     const navItems = [
         { name: 'How It Works', href: '/how-it-works', icon: Briefcase },
         { name: 'Use Cases', href: '/use-cases', icon: LayoutGrid },
         { name: 'Pricing', href: '/pricing', icon: Tag },
-        { name: 'Resources', href: '/resources', icon: BookOpen },
+        { name: 'Resources', href: '/resources', icon: Book },
     ];
 
     return (
@@ -65,8 +69,7 @@ export default function Navbar() {
             </AnimatePresence>
 
             <nav className="fixed top-0 left-0 w-full flex justify-center z-50 py-3 px-4">
-                <div className="w-[93%] flex justify-between items-center bg-black/30 backdrop-blur-xl border border-white/10 rounded-[14px] px-4 py-3 shadow-2xl transition-all duration-300 relative">
-
+                <div className="w-[93%] flex justify-between items-center border border-navbar-border backdrop-blur-xl bg-black/40 rounded-2xl px-4 py-3 shadow-2xl transition-all duration-300 relative">
                     {/* Left: Navigation */}
                     <div className="flex gap-1 text-[13px] font-medium">
                         <button
@@ -88,7 +91,7 @@ export default function Navbar() {
                                 href={item.href}
                                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-all duration-300"
                             >
-                                <item.icon className="w-3.5 h-3.5 opacity-70 group-hover:opacity-100" />
+                                <item.icon className="w-3.5 h-3.5 opacity-70" />
                                 <span>{item.name}</span>
                             </Link>
                         ))}
@@ -102,17 +105,24 @@ export default function Navbar() {
                         <span className="font-bold text-lg tracking-tight text-white">DEMO</span>
                     </Link>
 
-                    {/* Right: Login Button */}
-                    <Link
-                        href="/login"
-                        className="bg-white/10 hover:bg-white/60 text-white hover:text-black px-4 py-2 rounded-full text-[13px] font-medium flex items-center gap-2 border border-white/10 transition-all active:scale-95"
-                    >
-                        <LogIn className="w-3.5 h-3.5" />
-                        Login
-                    </Link>
+                    {/* Right: Theme Toggle + Auth */}
+                    <div className="flex items-center gap-2">
+                        {/* <ThemeToggle /> */}
+                        {isLoggedIn ? (
+                            <UserProfileButton />
+                        ) : (
+                            <Link
+                                href="/login"
+                                className="bg-white/10 hover:bg-white/60 text-white hover:text-black px-4 py-2 rounded-full text-[13px] font-medium flex items-center gap-2 border border-white/10 transition-all active:scale-95"
+                            >
+                                <LogIn className="w-3.5 h-3.5" />
+                                Login
+                            </Link>
+                        )}
+                    </div>
                 </div>
 
-                {/* Features Mega Menu Dropdown adjusted to match Crystal Blue Theme */}
+                {/* Features Mega Menu */}
                 <AnimatePresence>
                     {isFeaturesOpen && (
                         <motion.div
@@ -122,86 +132,55 @@ export default function Navbar() {
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: -10, scale: 0.98 }}
                             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                            // Updated: Using var(--surface) and var(--glass-border)
                             className="absolute top-full left-1/2 -translate-x-1/2 w-[93%] mt-4 bg-surface/90 backdrop-blur-2xl border border-glass-border rounded-4xl p-8 shadow-2xl z-50 origin-top"
                         >
                             <div className="grid grid-cols-12 gap-8">
-                                {/* Left Sidebar: Using Theme Variables */}
                                 <div className="col-span-4 space-y-2 border-r border-glass-border pr-8">
                                     <div className="p-3 hover:bg-primary/5 rounded-2xl transition-all cursor-pointer group">
                                         <div className="flex items-center gap-3 mb-1">
-                                            {/* Icon color now uses var(--primary) */}
                                             <Activity className="w-5 h-5 text-primary" />
-                                            <h4 className="font-bold text-foreground group-hover:text-primary transition-colors">
-                                                Real-time Analytics
-                                            </h4>
+                                            <h4 className="font-bold text-foreground group-hover:text-primary transition-colors">Real-time Analytics</h4>
                                         </div>
-                                        <p className="text-xs text-muted ml-8">
-                                            Track your app performance with instant data insights.
-                                        </p>
+                                        <p className="text-xs text-muted ml-8">Track your app performance with instant data insights.</p>
                                     </div>
-
                                     <div className="p-3 hover:bg-primary/5 rounded-2xl transition-all cursor-pointer group">
                                         <div className="flex items-center gap-3 mb-1">
                                             <Shield className="w-5 h-5 text-primary" />
-                                            <h4 className="font-bold text-foreground group-hover:text-primary transition-colors">
-                                                Enterprise Security
-                                            </h4>
+                                            <h4 className="font-bold text-foreground group-hover:text-primary transition-colors">Enterprise Security</h4>
                                         </div>
-                                        <p className="text-xs text-muted ml-8">
-                                            Bank-grade encryption and advanced threat protection.
-                                        </p>
+                                        <p className="text-xs text-muted ml-8">Bank-grade encryption and advanced threat protection.</p>
                                     </div>
-
                                     <div className="p-3 hover:bg-primary/5 rounded-2xl transition-all cursor-pointer group">
                                         <div className="flex items-center gap-3 mb-1">
                                             <Globe className="w-5 h-5 text-primary" />
-                                            <h4 className="font-bold text-foreground group-hover:text-primary transition-colors">
-                                                Global Scale
-                                            </h4>
+                                            <h4 className="font-bold text-foreground group-hover:text-primary transition-colors">Global Scale</h4>
                                         </div>
-                                        <p className="text-xs text-muted ml-8">
-                                            Deploy infrastructure across 30+ edge regions.
-                                        </p>
+                                        <p className="text-xs text-muted ml-8">Deploy infrastructure across 30+ edge regions.</p>
                                     </div>
                                 </div>
 
-                                {/* Right Content Showcase */}
                                 <div className="col-span-8">
                                     <div className="flex justify-between items-center mb-6">
-                                        <p className="text-xs font-bold text-muted uppercase tracking-widest">
-                                            Featured Innovation
-                                        </p>
+                                        <p className="text-xs font-bold text-muted uppercase tracking-widest">Featured Innovation</p>
                                         <Link href="/features" className="text-xs font-bold text-primary hover:text-primary/80 transition-colors">
                                             View all features →
                                         </Link>
                                     </div>
-
                                     <div className="grid grid-cols-2 gap-6">
-                                        {/* Feature Cards with Theme Accent Glows */}
                                         <div className="relative aspect-video rounded-3xl overflow-hidden bg-background border border-glass-border group cursor-pointer shadow-sm">
                                             <div className="absolute inset-0 bg-linear-to-t from-primary/60 to-transparent z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                                             <Image src="/images/f1.png" alt="Feature 1" fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
                                             <div className="absolute bottom-4 left-4 z-20">
-                                                <span className="bg-primary/20 backdrop-blur-md text-primary text-[10px] px-2 py-0.5 rounded-full border border-primary/20 mb-2 block w-fit font-bold">
-                                                    New Update
-                                                </span>
-                                                <p className="text-foreground group-hover:text-white font-bold text-sm transition-colors">
-                                                    AI-Powered Optimization
-                                                </p>
+                                                <span className="bg-primary/20 backdrop-blur-md text-primary text-[10px] px-2 py-0.5 rounded-full border border-primary/20 mb-2 block w-fit font-bold">New Update</span>
+                                                <p className="text-foreground group-hover:text-white font-bold text-sm transition-colors">AI-Powered Optimization</p>
                                             </div>
                                         </div>
-
                                         <div className="relative aspect-video rounded-3xl overflow-hidden bg-background border border-glass-border group cursor-pointer shadow-sm">
                                             <div className="absolute inset-0 bg-linear-to-t from-primary/60 to-transparent z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                                             <Image src="/images/f2.png" alt="Feature 2" fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
                                             <div className="absolute bottom-4 left-4 z-20">
-                                                <span className="bg-primary/20 backdrop-blur-md text-primary text-[10px] px-2 py-0.5 rounded-full border border-primary/20 mb-2 block w-fit font-bold">
-                                                    Case Study
-                                                </span>
-                                                <p className="text-foreground group-hover:text-white font-bold text-sm transition-colors">
-                                                    Scaling for 1M+ Users
-                                                </p>
+                                                <span className="bg-primary/20 backdrop-blur-md text-primary text-[10px] px-2 py-0.5 rounded-full border border-primary/20 mb-2 block w-fit font-bold">Case Study</span>
+                                                <p className="text-foreground group-hover:text-white font-bold text-sm transition-colors">Scaling for 1M+ Users</p>
                                             </div>
                                         </div>
                                     </div>
