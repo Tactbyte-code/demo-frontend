@@ -1,4 +1,5 @@
 "use client"
+
 import React, { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 
@@ -9,7 +10,7 @@ const PostsPage = () => {
     const [posts, setPosts] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
-    const [toggling, setToggling] = useState(new Set())   // post IDs mid-PATCH
+    const [toggling, setToggling] = useState(new Set())
     const [summarizing, setSummarizing] = useState(false)
     const [summarizeError, setSummarizeError] = useState(null)
     const [summarizeSuccess, setSummarizeSuccess] = useState(false)
@@ -23,6 +24,7 @@ const PostsPage = () => {
             setLoading(false)
             return
         }
+
         setLoading(true)
         setError(null)
         try {
