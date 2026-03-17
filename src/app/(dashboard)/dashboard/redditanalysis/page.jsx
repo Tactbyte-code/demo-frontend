@@ -287,13 +287,13 @@ function JobRow({ job }) {
             </td>
             <td className="px-6 py-4">
                 {job.status === "USER_PENDING" ? (
-                    <Link href={`/ dashboard / posts ? jobId = ${job.id}`}
+                    <Link href={`/dashboard/posts?jobId=${job.id}`}
                         className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-white hover:opacity-90 transition-all shadow-sm"
                         style={{ backgroundColor: "var(--text-main)" }}>
                         Select Post <Zap className="w-3 h-3 fill-current" />
                     </Link>
                 ) : job.status === "COMPLETED" ? (
-                    <Link href={`/ dashboard / posts / summary ? jobId = ${job.id}`}
+                    <Link href={`/dashboard/posts/summary?jobId=${job.id}`}
                         className="text-xs font-bold flex items-center gap-1 hover:underline"
                         style={{ color: "var(--primary)" }}>
                         View Summary <ChevronRight className="w-3 h-3" />
