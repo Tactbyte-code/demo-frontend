@@ -112,7 +112,7 @@ export default function SignupPage() {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             await updateProfile(userCredential.user, { displayName: name });
             await sendEmailVerification(userCredential.user, {
-                url: `${apiUrl}/dashboard`
+                url: `https://demo-frontend-ecru.vercel.app/dashboard`
             });
 
             setWaitingForVerification(true);
