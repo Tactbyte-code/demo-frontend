@@ -37,6 +37,8 @@ export default function RedditIntelligencePage() {
 
     const [countdown, setCountdown] = useState(REFRESH_INTERVAL_MS / 1000);
 
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
     useEffect(() => {
         const stored = localStorage.getItem('user');
         if (stored) {
@@ -49,7 +51,7 @@ export default function RedditIntelligencePage() {
         if (!isSilent) setLoading(true);
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`http://localhost:8000/jobs`, {
+            const res = await fetch(`${apiUrl}/jobs`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
@@ -96,13 +98,13 @@ export default function RedditIntelligencePage() {
             const firebaseUser = auth.currentUser;
             const token = await firebaseUser.getIdToken();
 
-            const res = await fetch('http://localhost:8000/query', {
+            const res = await fetch(`${apiUrl}/query`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
                 body: JSON.stringify({ query: query.trim() }),
             });
 
-            if (!res.ok) throw new Error(`Failed to submit job (${res.status})`);
+            if (!res.ok) throw new Error(`Failed to submit job(${res.status})`);
 
             setShowSuccess(true);
             setQuery("");
@@ -227,7 +229,7 @@ export default function RedditIntelligencePage() {
                     <button onClick={() => fetchJobs()}
                         className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider px-3 py-2 rounded-lg border transition-colors"
                         style={{ backgroundColor: "var(--surface)", borderColor: "var(--border-solid)", color: "var(--text-main)" }}>
-                        <RefreshCcw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} /> Sync Now
+                        <RefreshCcw className={`w - 3 h - 3 ${loading ? 'animate-spin' : ''}`} /> Sync Now
                     </button>
                 </div>
 
@@ -285,13 +287,13 @@ function JobRow({ job }) {
             </td>
             <td className="px-6 py-4">
                 {job.status === "USER_PENDING" ? (
-                    <Link href={`/dashboard/posts?jobId=${job.id}`}
+                    <Link href={`/ dashboard / posts ? jobId = ${job.id}`}
                         className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-white hover:opacity-90 transition-all shadow-sm"
                         style={{ backgroundColor: "var(--text-main)" }}>
                         Select Post <Zap className="w-3 h-3 fill-current" />
                     </Link>
                 ) : job.status === "COMPLETED" ? (
-                    <Link href={`/dashboard/posts/summary?jobId=${job.id}`}
+                    <Link href={`/ dashboard / posts / summary ? jobId = ${job.id}`}
                         className="text-xs font-bold flex items-center gap-1 hover:underline"
                         style={{ color: "var(--primary)" }}>
                         View Summary <ChevronRight className="w-3 h-3" />

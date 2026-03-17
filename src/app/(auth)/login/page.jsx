@@ -128,6 +128,9 @@ export default function LoginPage() {
     const handleGoogleLogin = async () => {
         setError("");
         setLoading(true);
+
+        console.log('apiurl: ', apiUrl);
+
         try {
             const result = await signInWithPopup(auth, googleProvider);
             const user = result.user;
@@ -173,7 +176,7 @@ export default function LoginPage() {
                 router.replace("/dashboard");
             }
         } catch (err) {
-            console.error("Error:", err);
+            console.error("Error: ", err);
             setError("Google Authentication Failed.");
         } finally {
             setLoading(false);

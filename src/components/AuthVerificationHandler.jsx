@@ -8,6 +8,8 @@ import { useRouter } from 'next/navigation';
 export default function AuthVerificationHandler() {
     const router = useRouter();
 
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (!user) return;
@@ -30,7 +32,7 @@ export default function AuthVerificationHandler() {
 
                     console.log("Sending to backend:", userData);
 
-                    const response = await fetch("http://localhost:8000/auth/email-signup", {
+                    const response = await fetch(`${apiUrl}/auth/email-signup`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",

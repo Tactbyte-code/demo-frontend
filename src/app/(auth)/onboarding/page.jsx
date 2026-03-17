@@ -284,6 +284,8 @@ export default function OnboardingPage() {
     const [error, setError] = useState("");
     const router = useRouter();
 
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
             if (!firebaseUser) { router.replace("/login"); return; }
@@ -320,7 +322,7 @@ export default function OnboardingPage() {
             if (!firebaseUser) { router.replace("/login"); return; }
             const token = await firebaseUser.getIdToken();
 
-            const response = await fetch("http://localhost:8000/onboarding", {
+            const response = await fetch(`${apiUrl}/onboarding`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
                 body: JSON.stringify({
@@ -408,7 +410,7 @@ export default function OnboardingPage() {
                         <div className="relative h-1 w-full" style={{ backgroundColor: 'var(--surface-raised)' }}>
                             <motion.div className="h-full rounded-full"
                                 style={{ background: 'linear-gradient(90deg, var(--primary), var(--accent))' }}
-                                animate={{ width: done ? '100%' : `${((step + 1) / questions.length) * 100}%` }}
+                                animate={{ width: done ? '100%' : `${((step + 1) / questions.length) * 100}% ` }}
                                 transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }} />
                         </div>
 
@@ -463,7 +465,7 @@ export default function OnboardingPage() {
                                                     style={{
                                                         backgroundColor: isSelected ? 'var(--primary)' : 'var(--surface-card)',
                                                         color: isSelected ? '#fff' : 'var(--text-muted)',
-                                                        border: `1px solid ${isSelected ? 'var(--primary)' : 'var(--border-solid)'}`,
+                                                        border: `1px solid ${isSelected ? 'var(--primary)' : 'var(--border-solid)'} `,
                                                         boxShadow: isSelected ? '0 2px 10px color-mix(in srgb, var(--primary) 30%, transparent)' : 'none',
                                                         transform: isSelected ? 'scale(1.03)' : 'scale(1)',
                                                     }}
@@ -501,14 +503,14 @@ export default function OnboardingPage() {
                                     <div className="flex items-center justify-between">
                                         <button onClick={back} disabled={step === 0}
                                             className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-150"
-                                            style={{ color: step === 0 ? 'var(--text-subtle)' : 'var(--text-muted)', cursor: step === 0 ? 'not-allowed' : 'pointer', backgroundColor: 'transparent', border: `1px solid ${step === 0 ? 'var(--surface-raised)' : 'var(--border-solid)'}`, opacity: step === 0 ? 0.4 : 1 }}
+                                            style={{ color: step === 0 ? 'var(--text-subtle)' : 'var(--text-muted)', cursor: step === 0 ? 'not-allowed' : 'pointer', backgroundColor: 'transparent', border: `1px solid ${step === 0 ? 'var(--surface-raised)' : 'var(--border-solid)'} `, opacity: step === 0 ? 0.4 : 1 }}
                                             onMouseEnter={e => { if (step > 0) { e.currentTarget.style.backgroundColor = 'var(--surface-card)'; e.currentTarget.style.color = 'var(--text-main)'; } }}
                                             onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = step === 0 ? 'var(--text-subtle)' : 'var(--text-muted)'; }}>
                                             <ArrowLeft className="w-3.5 h-3.5" /> Back
                                         </button>
                                         <button onClick={next} disabled={!hasAnswer || submitting}
                                             className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-150"
-                                            style={{ background: hasAnswer ? 'linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 70%, var(--accent)))' : 'var(--surface-card)', color: hasAnswer ? '#fff' : 'var(--text-subtle)', cursor: hasAnswer && !submitting ? 'pointer' : 'not-allowed', border: `1px solid ${hasAnswer ? 'transparent' : 'var(--border-solid)'}`, boxShadow: hasAnswer ? '0 2px 16px color-mix(in srgb, var(--primary) 30%, transparent)' : 'none', opacity: !hasAnswer ? 0.6 : 1 }}>
+                                            style={{ background: hasAnswer ? 'linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 70%, var(--accent)))' : 'var(--surface-card)', color: hasAnswer ? '#fff' : 'var(--text-subtle)', cursor: hasAnswer && !submitting ? 'pointer' : 'not-allowed', border: `1px solid ${hasAnswer ? 'transparent' : 'var(--border-solid)'} `, boxShadow: hasAnswer ? '0 2px 16px color-mix(in srgb, var(--primary) 30%, transparent)' : 'none', opacity: !hasAnswer ? 0.6 : 1 }}>
                                             {submitting ? (
                                                 <><div className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" /> Processing…</>
                                             ) : (

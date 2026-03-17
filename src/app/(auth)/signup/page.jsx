@@ -158,6 +158,8 @@ export default function SignupPage() {
         setError("");
         setLoading(true);
 
+        console.log('apiurl: ', apiUrl);
+
         try {
             const result = await signInWithPopup(auth, googleProvider);
             const user = result.user;
