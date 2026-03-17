@@ -516,9 +516,10 @@ function QueryScreen({ onSubmit, submitLoading, error }) {
     const canSubmit = query.trim() && !submitLoading;
 
     function handleSubmit(e) {
-        e?.preventDefault();
-        if (!canSubmit) return;
-        onSubmit({ query: query.trim() });
+        console.log('dixit')
+        // e?.preventDefault();
+        // if (!canSubmit) return;
+        // onSubmit({ query: query.trim() });
     }
 
     function handleKeyDown(e) {
@@ -610,7 +611,7 @@ function QueryScreen({ onSubmit, submitLoading, error }) {
                                 <span className="text-[10px] font-mono" style={{ color: "var(--text-subtle)" }}>
                                     {query.length > 0 ? `${query.length} chars` : "⌘↵ to run"}
                                 </span>
-                                <button type="submit" disabled={!canSubmit}
+                                <button onSubmit={handleAnalyze} type="submit" disabled={!canSubmit}
                                     className="flex items-center gap-2 px-4 h-8 rounded-xl text-[11px] font-bold uppercase tracking-widest font-mono transition-all"
                                     style={{
                                         background: canSubmit ? "linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 60%, var(--accent)))" : "var(--surface-raised)",
@@ -921,7 +922,7 @@ export default function RedditIntelligencePage() {
         } finally {
             setSubmitLoading(false);
         }
-    }
+    };
 
     function reset() { setPhase(PHASES.QUERY); setData(null); setError(null); setStatus(""); }
 

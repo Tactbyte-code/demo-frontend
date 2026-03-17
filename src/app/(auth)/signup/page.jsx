@@ -11,6 +11,7 @@ import { auth, googleProvider } from "@/config/firebase";
 import { createUserWithEmailAndPassword, signInWithPopup, updateProfile, sendEmailVerification } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Link from 'next/link';
+import { BASE_URL } from '@/config/api';
 
 export default function SignupPage() {
     const [name, setName] = useState('');
@@ -50,7 +51,7 @@ export default function SignupPage() {
 
                     const freshToken = await user.getIdToken(true);
 
-                    const response = await fetch("http://localhost:8000/auth/email-signup", {
+                    const response = await fetch(`${BASE_URL}/auth/email-signup`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -110,7 +111,7 @@ export default function SignupPage() {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             await updateProfile(userCredential.user, { displayName: name });
             await sendEmailVerification(userCredential.user, {
-                url: "http://localhost:3000/dashboard"
+                url: `${BASE_URL}/dashboard`
             });
 
             setWaitingForVerification(true);
@@ -139,7 +140,7 @@ export default function SignupPage() {
         setResendSuccess(false);
         try {
             await sendEmailVerification(auth.currentUser, {
-                url: "http://localhost:3000/dashboard"
+                url: `${BASE_URL}/dashboard`
             });
             setResendSuccess(true);
             setTimeout(() => setResendSuccess(false), 4000);
@@ -161,7 +162,7 @@ export default function SignupPage() {
             const user = result.user;
             const token = await user.getIdToken();
 
-            const response = await fetch("http://localhost:8000/auth/google", {
+            const response = await fetch(`${BASE_URL}/auth/google`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
