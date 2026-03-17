@@ -16,7 +16,7 @@ const EXAMPLES = [
     "startup funding climate 2024",
 ];
 
-const REFRESH_INTERVAL_MS = 120000; // 2 minutes
+const REFRESH_INTERVAL_MS = 5000; // 2 minutes
 
 // ── PRIMITIVES ────────────────────────────────────────
 const formatDate = (iso) =>
