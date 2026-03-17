@@ -9,7 +9,6 @@ import {
     RotateCcw, ChevronRight, Send
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { API_URL } from '@/config/api';
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -395,6 +394,8 @@ export default function AppAnalysisPage() {
 
     const bottomRef = useRef(null);
 
+    const gplay_api_url = process.env.NEXT_PUBLIC_GPLAY_API_URL
+
     // Sticky search bar visible once results exist OR while analyzing (after first submit)
     const [hasEverSearched, setHasEverSearched] = useState(false);
     const showStickyBar = hasEverSearched && !isAnalyzing;
@@ -433,7 +434,7 @@ export default function AppAnalysisPage() {
         setStreamStep(-1);
 
         try {
-            const submitRes = await fetch(API_URL, {
+            const submitRes = await fetch(gplay_api_url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${API_KEY}` },
                 body: JSON.stringify({ input: { prompt: category, test: false } }),

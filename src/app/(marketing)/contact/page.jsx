@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { apiData } from '@/utils/data';
 
 export default function ContactPage() {
     const [user, setUser] = useState(null);
@@ -24,6 +25,8 @@ export default function ContactPage() {
     const router = useRouter();
     const [phoneError, setPhoneError] = useState("");
     const [messageError, setMessageError] = useState("");
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -51,18 +54,19 @@ export default function ContactPage() {
         }
 
         setIsSubmitting(true);
+
         try {
             const firebaseUser = auth.currentUser;
             if (!firebaseUser) { router.replace("/login"); return; }
             const freshToken = await firebaseUser.getIdToken();
-            const response = await fetch("http://localhost:8000/feedback", {
+            const response = await fetch(`${apiUrl}/feedback`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${freshToken}`
                 },
                 body: JSON.stringify({
-                    phone: formData.phone ? `+91${formData.phone}` : null,
+                    phone: formData.phone ? `+ 91${formData.phone}` : null,
                     message: formData.message
                 })
             });
@@ -179,7 +183,7 @@ export default function ContactPage() {
                                                 type="tel"
                                                 placeholder="00000 00000"
                                                 value={formData.phone}
-                                                className={`w-full bg-background border rounded-2xl pl-20 pr-6 py-4 text-sm font-semibold text-foreground placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${phoneError ? 'border-destructive/50 focus:border-destructive/50' : 'border-border-solid focus:border-primary/40'}`}
+                                                className={`w - full bg - background border rounded - 2xl pl - 20 pr - 6 py - 4 text - sm font - semibold text - foreground placeholder: text - subtle focus: outline - none focus: ring - 2 focus: ring - primary / 20 transition - all ${phoneError ? 'border-destructive/50 focus:border-destructive/50' : 'border-border-solid focus:border-primary/40'}`}
                                                 onChange={(e) => {
                                                     const val = e.target.value.replace(/\D/g, '').slice(0, 10); // only numbers, max 10
                                                     setFormData({ ...formData, phone: val });
@@ -217,7 +221,7 @@ export default function ContactPage() {
                                                         setMessageError("");
                                                     }
                                                 }}
-                                                className={`w-full bg-background border rounded-2xl pl-12 pr-6 py-4 text-sm font-semibold text-foreground placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-y ${messageError ? 'border-destructive/50 focus:border-destructive/50' : 'border-border-solid focus:border-primary/40'
+                                                className={`w - full bg - background border rounded - 2xl pl - 12 pr - 6 py - 4 text - sm font - semibold text - foreground placeholder: text - subtle focus: outline - none focus: ring - 2 focus: ring - primary / 20 transition - all resize - y ${messageError ? 'border-destructive/50 focus:border-destructive/50' : 'border-border-solid focus:border-primary/40'
                                                     }`}
                                             />
                                         </div>
@@ -226,9 +230,9 @@ export default function ContactPage() {
                                                 ? <p className="text-[11px] font-semibold text-destructive">{messageError}</p>
                                                 : <span />
                                             }
-                                            <p className={`text-[11px] font-semibold ml-auto ${formData.message.length < 20 && formData.message.length > 0
-                                                ? 'text-destructive'
-                                                : 'text-subtle'
+                                            <p className={`text - [11px] font - semibold ml - auto ${formData.message.length < 20 && formData.message.length > 0
+                                                    ? 'text-destructive'
+                                                    : 'text-subtle'
                                                 }`}>
                                                 {formData.message.length}/20 min
                                             </p>

@@ -22,6 +22,8 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
+    console.log('user: ', localStorage.getItem('user'));
+
     // Forgot password states
     const [showForgot, setShowForgot] = useState(false);
     const [forgotStep, setForgotStep] = useState(STEPS.EMAIL);
@@ -36,6 +38,8 @@ export default function LoginPage() {
 
     const router = useRouter();
 
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
     // ── Login ─────────────────────────────────────────────────
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -45,7 +49,7 @@ export default function LoginPage() {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
             const token = await user.getIdToken();
-            const response = await fetch("http://localhost:8000/auth/email-login", {
+            const response = await fetch(`${apiUrl}/auth/email-login`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -91,7 +95,7 @@ export default function LoginPage() {
             if (code === "auth/invalid-credential" || code === "auth/wrong-password") {
                 // Could be wrong password OR a Google account trying email login
                 // Check backend to distinguish
-                const check = await fetch("http://localhost:8000/auth/check-provider", {
+                const check = await fetch(`${apiUrl}/auth/check-provider`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ email })
@@ -129,7 +133,7 @@ export default function LoginPage() {
             const user = result.user;
             const token = await user.getIdToken();
 
-            const response = await fetch("http://localhost:8000/auth/google", {
+            const response = await fetch(`${apiUrl}/auth/google`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -182,7 +186,7 @@ export default function LoginPage() {
         setForgotError("");
         setForgotLoading(true);
         try {
-            const response = await fetch("http://localhost:8000/auth/forgot-password", {
+            const response = await fetch(`${apiUrl}/auth/forgot-password`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: forgotEmail })
@@ -206,7 +210,7 @@ export default function LoginPage() {
         setForgotError("");
         setForgotLoading(true);
         try {
-            const response = await fetch("http://localhost:8000/auth/verify-otp", {
+            const response = await fetch(`${apiUrl}/auth/verify-otp`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: forgotEmail, otp })
@@ -232,7 +236,7 @@ export default function LoginPage() {
         }
         setForgotLoading(true);
         try {
-            const response = await fetch("http://localhost:8000/auth/reset-password", {
+            const response = await fetch(`${apiUrl}/auth/reset-password`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ reset_token: resetToken, new_password: newPassword })

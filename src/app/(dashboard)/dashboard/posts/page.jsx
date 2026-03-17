@@ -15,6 +15,8 @@ const PostsPage = () => {
     const [summarizeSuccess, setSummarizeSuccess] = useState(false)
     const [expanded, setExpanded] = useState(new Set())
 
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
     async function fetchPosts() {
         if (!jobId) {
             setError('No job ID provided.')
@@ -24,7 +26,7 @@ const PostsPage = () => {
         setLoading(true)
         setError(null)
         try {
-            const res = await fetch(`http://localhost:8000/jobs/${jobId}/posts`)
+            const res = await fetch(`${apiUrl}/jobs/${jobId}/posts`)
             if (!res.ok) throw new Error(`Failed to fetch posts (${res.status})`)
             const data = await res.json()
             console.log('posts data:', data)
@@ -46,7 +48,7 @@ const PostsPage = () => {
         setToggling(prev => new Set(prev).add(post.id))
 
         try {
-            const res = await fetch(`http://localhost:8000/jobs/${post?.job_id}/posts/${post?.id}`, {
+            const res = await fetch(`${apiUrl}/jobs/${post?.job_id}/posts/${post?.id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ user_approved: newValue }),
@@ -77,7 +79,7 @@ const PostsPage = () => {
         setSummarizeError(null)
         setSummarizeSuccess(false)
         try {
-            const res = await fetch(`http://localhost:8000/jobs/${jobId}/generate-summary`, {
+            const res = await fetch(`${apiUrl}/jobs/${jobId}/generate-summary`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ job_id: jobId, post_ids: approvedIds }),
