@@ -213,8 +213,8 @@ export default function RedditIntelligencePage() {
             {/* ─── SECTION DIVIDER ─── */}
             <div className="w-full max-w-5xl mt-20 mb-10 flex items-center gap-4">
                 <div className="h-px flex-1" style={{ backgroundColor: "var(--border-solid)" }} />
-                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.3em]" style={{ color: "var(--text-subtle)" }}>
-                    <Clock className="w-3 h-3" /> Syncing in {countdown}s
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-subtle)" }}>
+                    <Clock className="w-4 h-4" /> Syncing in {countdown}s
                 </div>
                 <div className="h-px flex-1" style={{ backgroundColor: "var(--border-solid)" }} />
             </div>
@@ -287,10 +287,8 @@ function JobRow({ job }) {
             </td>
             <td className="px-6 py-4">
                 {job.status === "USER_PENDING" ? (
-                    <Link href={`/dashboard/posts?jobId=${job.id}`}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-white hover:opacity-90 transition-all shadow-sm"
-                        style={{ backgroundColor: "var(--text-main)" }}>
-                        Select Post <Zap className="w-3 h-3 fill-current" />
+                    <Link href={`/dashboard/posts?jobId=${job.id}`} className="bg-primary inline-flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-bold uppercase tracking-widest text-white hover:opacity-90 transition-all shadow-sm">
+                        Select Post
                     </Link>
                 ) : job.status === "COMPLETED" ? (
                     <Link href={`/dashboard/posts/summary?jobId=${job.id}`}

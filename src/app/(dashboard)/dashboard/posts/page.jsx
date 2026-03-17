@@ -18,6 +18,9 @@ const PostsPage = () => {
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
+    // Selection Constraint
+    const MAX_SELECTION = 10;
+
     async function fetchPosts() {
         if (!jobId) {
             setError('No job ID provided.')
@@ -31,7 +34,6 @@ const PostsPage = () => {
             const res = await fetch(`${apiUrl}/jobs/${jobId}/posts`)
             if (!res.ok) throw new Error(`Failed to fetch posts (${res.status})`)
             const data = await res.json()
-            console.log('posts data:', data)
             setPosts(data)
         } catch (err) {
             setError(err.message)
@@ -43,7 +45,17 @@ const PostsPage = () => {
     useEffect(() => { fetchPosts() }, [jobId])
 
     const toggleApproved = async (post) => {
-        const newValue = !post.user_approved
+        const isCurrentlyApproved = !!post.user_approved
+        const newValue = !isCurrentlyApproved
+
+        // Check selection limit: Only block if the user is trying to approve (true)
+        if (newValue === true) {
+            const currentlyApprovedCount = posts.filter(p => p.user_approved).length
+            if (currentlyApprovedCount >= MAX_SELECTION) {
+                alert(`Selection limit reached. You can only select up to ${MAX_SELECTION} posts for summarization.`)
+                return
+            }
+        }
 
         // Optimistic update
         setPosts(prev => prev.map(p => p.id === post.id ? { ...p, user_approved: newValue } : p))
@@ -56,12 +68,10 @@ const PostsPage = () => {
                 body: JSON.stringify({ user_approved: newValue }),
             })
 
-            console.log('data: ', res);
-
             if (!res.ok) throw new Error(`PATCH failed (${res.status})`)
         } catch {
             // Revert on failure
-            setPosts(prev => prev.map(p => p.id === post.id ? { ...p, user_approved: !newValue } : p))
+            setPosts(prev => prev.map(p => p.id === post.id ? { ...p, user_approved: isCurrentlyApproved } : p))
         } finally {
             setToggling(prev => { const next = new Set(prev); next.delete(post.id); return next })
         }
@@ -69,9 +79,22 @@ const PostsPage = () => {
 
     const toggleSelectAll = () => {
         const allApproved = posts.every(p => p.user_approved)
-        posts.forEach(post => {
-            if (allApproved || !post.user_approved) toggleApproved({ ...post, user_approved: allApproved })
-        })
+
+        if (allApproved) {
+            // Unselect all is always allowed
+            posts.forEach(post => {
+                if (post.user_approved) toggleApproved({ ...post, user_approved: true })
+            })
+        } else {
+            // Guard: If trying to select all, check if the list exceeds the limit
+            if (posts.length > MAX_SELECTION) {
+                alert(`Cannot select all. There are ${posts.length} posts, but the limit is ${MAX_SELECTION}.`)
+                return
+            }
+            posts.forEach(post => {
+                if (!post.user_approved) toggleApproved({ ...post, user_approved: false })
+            })
+        }
     }
 
     const handleSummarize = async () => {
@@ -124,7 +147,6 @@ const PostsPage = () => {
                     )}
                 </div>
 
-                {/* Summarize CTA — appears once at least one post is approved */}
                 {approvedCount > 0 && (
                     <button
                         onClick={handleSummarize}
@@ -144,14 +166,14 @@ const PostsPage = () => {
                                     <line x1="16" y1="13" x2="8" y2="13" />
                                     <line x1="16" y1="17" x2="8" y2="17" />
                                 </svg>
-                                Summarize {approvedCount} post{approvedCount > 1 ? 's' : ''}
+                                Summarize {approvedCount}/{MAX_SELECTION}
                             </>
                         )}
                     </button>
                 )}
             </div>
 
-            {/* Success banner */}
+            {/* Success/Error Banners */}
             {summarizeSuccess && (
                 <div className="mb-6 flex items-center gap-2.5 rounded-xl border border-[var(--success-bg)] bg-[var(--success-bg)] px-4 py-3 text-sm text-[var(--success)]">
                     <svg className="h-4 w-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -161,14 +183,13 @@ const PostsPage = () => {
                 </div>
             )}
 
-            {/* Summarize error */}
             {summarizeError && (
                 <div className="mb-6 rounded-xl border border-[var(--destructive-bg)] bg-[var(--destructive-bg)] px-4 py-3 text-sm text-[var(--destructive)]">
                     {summarizeError}
                 </div>
             )}
 
-            {/* Loading */}
+            {/* States */}
             {loading && (
                 <div className="flex flex-col items-center justify-center py-24">
                     <div className="mb-3 h-5 w-5 animate-spin rounded-full border-2 border-[var(--border-solid)] border-t-[var(--primary)]" />
@@ -176,29 +197,25 @@ const PostsPage = () => {
                 </div>
             )}
 
-            {/* Fetch error */}
             {!loading && error && (
                 <div className="rounded-xl border border-[var(--destructive-bg)] bg-[var(--destructive-bg)] px-5 py-4 text-sm text-[var(--destructive)]">
                     {error}
                 </div>
             )}
 
-            {/* Empty */}
             {!loading && !error && posts.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-24 text-sm text-[var(--text-muted)]">
                     No posts found for this job.
                 </div>
             )}
 
-            {/* Posts list */}
+            {/* List */}
             {!loading && !error && posts.length > 0 && (
                 <div className="overflow-hidden rounded-xl border border-[var(--border-solid)] bg-[var(--surface)] shadow-[var(--shadow)]">
 
-                    {/* Select-all toolbar */}
                     <div className="flex items-center gap-3 border-b border-[var(--border-solid)] bg-[var(--surface-card)] px-5 py-3">
                         <button
                             onClick={toggleSelectAll}
-                            aria-label="Select all"
                             className={`flex h-4 w-4 flex-shrink-0 cursor-pointer items-center justify-center rounded border transition-colors duration-150
                                 ${allApproved || someApproved
                                     ? 'border-[var(--primary)] bg-[var(--primary)]'
@@ -214,14 +231,11 @@ const PostsPage = () => {
                                 <span className="h-0.5 w-2 rounded-full bg-white" />
                             )}
                         </button>
-                        <span className="text-xs text-[var(--text-muted)]">
-                            {approvedCount === 0
-                                ? `${posts.length} post${posts.length !== 1 ? 's' : ''}`
-                                : `${approvedCount} of ${posts.length} approved`}
+                        <span className="text-xs text-[var(--text-muted)] font-medium">
+                            {approvedCount} of {posts.length} selected (Limit {MAX_SELECTION})
                         </span>
                     </div>
 
-                    {/* Rows */}
                     {posts.map((post, i) => {
                         const isApproved = !!post.user_approved
                         const isExpanded = expanded.has(post.id)
@@ -231,17 +245,14 @@ const PostsPage = () => {
                         return (
                             <div
                                 key={post.id}
-                                style={{ animationDelay: `${i * 30}ms` }}
                                 className={`border-b border-[var(--border-solid)] last:border-b-0 transition-colors duration-150
                                     ${isApproved ? 'bg-[var(--info-bg)]' : 'bg-[var(--surface)]'}`}
                             >
-                                {/* Main row */}
                                 <div
                                     onClick={() => toggleApproved(post)}
                                     className={`flex cursor-pointer items-start gap-4 px-5 py-4 transition-colors duration-150
                                         ${!isApproved ? 'hover:bg-[var(--surface-card)]' : ''}`}
                                 >
-                                    {/* Checkbox */}
                                     <div className={`mt-0.5 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border transition-colors duration-150
                                         ${isApproved
                                             ? 'border-[var(--primary)] bg-[var(--primary)]'
@@ -257,17 +268,14 @@ const PostsPage = () => {
                                         ) : null}
                                     </div>
 
-                                    {/* Title */}
                                     <p className={`flex-1 text-sm leading-relaxed ${isApproved ? 'font-medium text-[var(--text-main)]' : 'text-[var(--text-main)]'}`}>
                                         {post.reddit_title}
                                     </p>
 
-                                    {/* Expand caret */}
                                     {hasDesc && (
                                         <button
                                             onClick={(e) => toggleExpand(post.id, e)}
                                             className="ml-2 flex-shrink-0 cursor-pointer rounded p-0.5 text-[var(--text-muted)] transition-all duration-200 hover:text-[var(--primary)]"
-                                            aria-label={isExpanded ? 'Collapse' : 'Expand'}
                                         >
                                             <svg
                                                 className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : 'rotate-0'}`}
@@ -280,9 +288,8 @@ const PostsPage = () => {
                                     )}
                                 </div>
 
-                                {/* Collapsible description */}
                                 {hasDesc && isExpanded && (
-                                    <div className="px-5 pb-4 pt-1">
+                                    <div className="px-5 pb-4 pt-1 border-t border-[var(--border-solid)]/30">
                                         <p className="ml-8 text-xs leading-relaxed text-[var(--text-muted)] whitespace-pre-wrap">
                                             {post.reddit_selftext}
                                         </p>

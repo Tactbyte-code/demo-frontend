@@ -8,14 +8,6 @@ import {
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-// ── PRIMITIVES ────────────────────────────────────────
-const Label = ({ children }) => (
-    <p className="text-[9px] font-black uppercase tracking-[0.18em] font-mono mb-1.5"
-        style={{ color: 'var(--text-subtle)' }}>
-        {children}
-    </p>
-);
-
 const formatDate = (iso) =>
     new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
@@ -38,6 +30,7 @@ export default function DashboardPage() {
 
     async function fetchJobs(isSilent = false) {
         if (!isSilent) setLoading(true);
+
         try {
             const token = localStorage.getItem('token');
             const res = await fetch(`${apiUrl}/jobs`, {
@@ -162,12 +155,8 @@ function JobRow({ job }) {
 
             <td className="px-5 py-4">
                 {isUserPending ? (
-                    <Link
-                        href={`/dashboard/posts?jobId=${job.id}`}
-                        className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all bg-primary text-white hover:opacity-90"
-                        style={{ boxShadow: '0 2px 8px -2px var(--primary)' }}
-                    >
-                        Select Post <Zap className="w-3 h-3 fill-current" />
+                    <Link href={`/dashboard/posts?jobId=${job.id}`} className="bg-primary inline-flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-bold uppercase tracking-widest text-white hover:opacity-90 transition-all shadow-sm">
+                        Select Post
                     </Link>
                 ) : isCompleted ? (
                     <Link
