@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 const PostsPage = () => {
+
     const searchParams = useSearchParams()
     const jobId = searchParams.get('jobId')
 

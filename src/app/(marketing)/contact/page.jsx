@@ -13,7 +13,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { apiData } from '@/utils/data';
 
 export default function ContactPage() {
     const [user, setUser] = useState(null);
@@ -221,7 +220,7 @@ export default function ContactPage() {
                                                         setMessageError("");
                                                     }
                                                 }}
-                                                className={`w - full bg - background border rounded - 2xl pl - 12 pr - 6 py - 4 text - sm font - semibold text - foreground placeholder: text - subtle focus: outline - none focus: ring - 2 focus: ring - primary / 20 transition - all resize - y ${messageError ? 'border-destructive/50 focus:border-destructive/50' : 'border-border-solid focus:border-primary/40'
+                                                className={`w-full bg-background border rounded-2xl pl-12 pr-6 py-4 text-sm font-semibold text-foreground placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-y ${messageError ? 'border-destructive/50 focus:border-destructive/50' : 'border-border-solid focus:border-primary/40'
                                                     }`}
                                             />
                                         </div>
@@ -230,9 +229,9 @@ export default function ContactPage() {
                                                 ? <p className="text-[11px] font-semibold text-destructive">{messageError}</p>
                                                 : <span />
                                             }
-                                            <p className={`text - [11px] font - semibold ml - auto ${formData.message.length < 20 && formData.message.length > 0
-                                                    ? 'text-destructive'
-                                                    : 'text-subtle'
+                                            <p className={`text-[11px] font-semibold ml-auto ${formData.message.length < 20 && formData.message.length > 0
+                                                ? 'text-destructive'
+                                                : 'text-subtle'
                                                 }`}>
                                                 {formData.message.length}/20 min
                                             </p>
