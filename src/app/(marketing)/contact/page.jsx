@@ -182,7 +182,7 @@ export default function ContactPage() {
                                                 type="tel"
                                                 placeholder="00000 00000"
                                                 value={formData.phone}
-                                                className={`w - full bg - background border rounded - 2xl pl - 20 pr - 6 py - 4 text - sm font - semibold text - foreground placeholder: text - subtle focus: outline - none focus: ring - 2 focus: ring - primary / 20 transition - all ${phoneError ? 'border-destructive/50 focus:border-destructive/50' : 'border-border-solid focus:border-primary/40'}`}
+                                                className={`w-full bg-background border rounded-2xl pl-20 pr-6 py-4 text-sm font-semibold text-foreground placeholder:text-subtle focus:outline-none focus:ring-2 primary/20 transition-all ${phoneError ? 'border-destructive/50 focus:border-destructive/50' : 'border-border-solid focus:border-primary/40'}`}
                                                 onChange={(e) => {
                                                     const val = e.target.value.replace(/\D/g, '').slice(0, 10); // only numbers, max 10
                                                     setFormData({ ...formData, phone: val });
