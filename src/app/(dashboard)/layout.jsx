@@ -10,44 +10,33 @@ import {
     PanelLeftClose,
     PanelLeftOpen,
     Zap,
-    RefreshCw,
-    Plus
+    Clock,
+    CreditCard,
+    TrendingUp,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import UserProfileButton from '@/components/ui/UserProfileButton';
-import { plans } from '@/utils/data';
 import { auth } from '@/config/firebase';
 
 export default function DashboardLayout({ children }) {
     const pathname = usePathname();
     const [sidebarOpen, setSidebarOpen] = useState(true);
-    const [credits, setCredits] = useState(0);
-    const [planCredits, setPlanCredits] = useState(0);
-
+    const [userPlan, setUserPlan] = useState(null); // full plan object from API
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
     const loadCredits = async () => {
         try {
             const firebaseUser = auth.currentUser;
             if (!firebaseUser) return;
-
             const token = await firebaseUser.getIdToken();
-
             const res = await fetch(`${apiUrl}/users/me`, {
                 headers: { "Authorization": `Bearer ${token}` }
             });
-
             if (!res.ok) return;
-
             const data = await res.json();
-            setCredits(data.credits ?? 0);
-
-            // Get total credits for plan
-            const userPlan = plans.find(p => p.id === data.plan);
-            setPlanCredits(userPlan?.credits?.monthly ?? 0);
-
+            setUserPlan(data.plan ?? null); // ← nested plan object
         } catch (err) {
             console.error("Failed to fetch credits:", err);
         }
@@ -59,11 +48,6 @@ export default function DashboardLayout({ children }) {
         return () => window.removeEventListener("userUpdated", loadCredits);
     }, []);
 
-    // Status logic to add later
-    // const percentage = (creditsUsed / creditsTotal) * 100;
-    // const status = percentage >= 80 ? "Low" : percentage >= 50 ? "Good" : "Healthy";
-    // const statusColor = percentage >= 80 ? "text-destructive bg-destructive-bg" : percentage >= 50 ? "text-warning bg-warning-bg" : "text-success bg-success-bg";
-
     const mainItems = [
         { name: 'Overview', icon: LayoutDashboard, href: '/dashboard' },
     ];
@@ -72,6 +56,16 @@ export default function DashboardLayout({ children }) {
         { name: 'App Store Analysis', icon: Globe, href: '/dashboard/app-analysis' },
         { name: 'Reddit Analysis', icon: Database, href: '/dashboard/reddit-analysis' },
     ];
+
+    // ── Derived credit values ─────────────────────────────────
+    const creditsRemaining = userPlan?.credits_remaining ?? 0;
+    const creditsTotal = userPlan?.credits_total ?? 0;
+    const expiresInDays = userPlan?.expires_in_days ?? 0;
+    const planName = userPlan?.plan ?? null;
+    const percentage = creditsTotal > 0 ? (creditsRemaining / creditsTotal) * 100 : 0;
+    const isLow = creditsTotal > 0 && percentage <= 20 && creditsRemaining > 0;
+    const isEmpty = creditsRemaining === 0;
+    const hasNoPlan = !planName;
 
     return (
         <div
@@ -94,7 +88,6 @@ export default function DashboardLayout({ children }) {
                         }}
                     >
                         <div className="w-65 flex flex-col h-full">
-
                             {/* Brand */}
                             <div className="px-6 pt-7 pb-5">
                                 <Link href="/" className="flex items-center gap-3 mb-8 no-underline group">
@@ -108,48 +101,29 @@ export default function DashboardLayout({ children }) {
                                         <Zap className="w-4 h-4 fill-white text-white" />
                                     </div>
                                     <div>
-                                        <p
-                                            className="text-base font-black tracking-tighter leading-none"
-                                            style={{ color: 'var(--text-main)' }}
-                                        >
+                                        <p className="text-base font-black tracking-tighter leading-none" style={{ color: 'var(--text-main)' }}>
                                             DEMO
                                         </p>
-                                        <p
-                                            className="text-[9px] font-bold tracking-[0.2em] uppercase mt-0.5"
-                                            style={{ color: 'var(--primary)' }}
-                                        >
+                                        <p className="text-[9px] font-bold tracking-[0.2em] uppercase mt-0.5" style={{ color: 'var(--primary)' }}>
                                             Intelligence
                                         </p>
                                     </div>
                                 </Link>
 
                                 <NavGroup label="General" items={mainItems} pathname={pathname} />
-
                                 <div className="mt-7">
                                     <NavGroup label="Intelligence Engines" items={engineItems} pathname={pathname} />
                                 </div>
                             </div>
 
                             {/* Bottom */}
-                            <div
-                                className="mt-auto px-6 py-5 space-y-4"
-                                style={{ borderTop: '1px solid var(--sidebar-border)' }}
-                            >
+                            <div className="mt-auto px-6 py-5 space-y-4" style={{ borderTop: '1px solid var(--sidebar-border)' }}>
                                 <div className="flex items-center gap-2 px-1">
                                     <span className="relative flex h-2 w-2">
-                                        <span
-                                            className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60"
-                                            style={{ backgroundColor: 'var(--success)' }}
-                                        />
-                                        <span
-                                            className="relative inline-flex h-2 w-2 rounded-full"
-                                            style={{ backgroundColor: 'var(--success)' }}
-                                        />
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60" style={{ backgroundColor: 'var(--success)' }} />
+                                        <span className="relative inline-flex h-2 w-2 rounded-full" style={{ backgroundColor: 'var(--success)' }} />
                                     </span>
-                                    <span
-                                        className="text-[9px] font-bold uppercase tracking-[0.18em] font-mono"
-                                        style={{ color: 'var(--sidebar-muted)' }}
-                                    >
+                                    <span className="text-[9px] font-bold uppercase tracking-[0.18em] font-mono" style={{ color: 'var(--sidebar-muted)' }}>
                                         Made in India with ❤️
                                     </span>
                                 </div>
@@ -164,21 +138,16 @@ export default function DashboardLayout({ children }) {
                 {/* Topbar */}
                 <div className="flex items-center justify-between h-17.5 px-5 shrink-0 bg-sidebar border-b border-sidebar-border">
 
-                    {/* Left: toggle + page name */}
+                    {/* Left */}
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => setSidebarOpen(o => !o)}
                             title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
                             className="flex items-center justify-center w-8 h-8 rounded-lg transition-colors cursor-pointer border border-border-solid text-subtle hover:bg-sidebar-hover hover:text-foreground hover:border-primary"
                         >
-                            {sidebarOpen
-                                ? <PanelLeftClose className="w-4 h-4" />
-                                : <PanelLeftOpen className="w-4 h-4" />
-                            }
+                            {sidebarOpen ? <PanelLeftClose className="w-4 h-4" /> : <PanelLeftOpen className="w-4 h-4" />}
                         </button>
-
                         <div className="w-px h-4 bg-border-solid" />
-
                         <span className="text-[16px] font-bold text-muted">
                             {[...engineItems, ...mainItems].find(i => i.href === pathname)?.name || "Dashboard"}
                         </span>
@@ -187,64 +156,127 @@ export default function DashboardLayout({ children }) {
                     {/* Right */}
                     <div className="flex items-center gap-3">
 
-                        {/* Credits widget */}
-                        <div className="flex items-center gap-3 px-4 py-2 rounded-2xl border border-border-solid bg-surface">
+                        {/* ── No Plan → Animated Buy Plan button ── */}
+                        {hasNoPlan && (
+                            <motion.div
+                                animate={{ scale: [1, 1.03, 1] }}
+                                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                            >
+                                <Link
+                                    href="/pricing"
+                                    className="relative flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest text-white overflow-hidden"
+                                    style={{
+                                        background: 'linear-gradient(135deg, var(--primary), var(--accent))',
+                                        boxShadow: '0 0 20px color-mix(in srgb, var(--primary) 40%, transparent)',
+                                    }}
+                                >
+                                    {/* Shimmer effect */}
+                                    <motion.div
+                                        className="absolute inset-0 opacity-30"
+                                        style={{ background: 'linear-gradient(90deg, transparent, white, transparent)' }}
+                                        animate={{ x: ['-100%', '200%'] }}
+                                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", repeatDelay: 1 }}
+                                    />
+                                    <CreditCard className="w-3.5 h-3.5 relative z-10" />
+                                    <span className="relative z-10">Buy a Plan</span>
+                                </Link>
+                            </motion.div>
+                        )}
 
-                            {/* Icon + label */}
-                            <div className="flex items-center gap-2">
-                                <div className="w-7 h-7 rounded-full bg-info-bg flex items-center justify-center">
-                                    <Zap className="w-3.5 h-3.5 text-primary" />
+                        {/* ── Has Plan → Credits widget ── */}
+                        {!hasNoPlan && (
+                            <div
+                                className="flex items-center gap-3 px-4 py-2 rounded-2xl border transition-all"
+                                style={{
+                                    backgroundColor: 'var(--surface)',
+                                    borderColor: isEmpty ? 'var(--destructive)' : isLow ? 'var(--warning)' : 'var(--border-solid)',
+                                }}
+                            >
+                                {/* Plan badge */}
+                                <div
+                                    className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest"
+                                    style={{
+                                        backgroundColor: 'var(--info-bg)',
+                                        color: 'var(--primary)',
+                                    }}
+                                >
+                                    {planName}
                                 </div>
-                                <span className="text-xs font-bold text-muted uppercase tracking-widest">Credits</span>
-                            </div>
 
-                            <div className="w-px h-4 bg-border-solid" />
+                                <div className="w-px h-4 bg-border-solid" />
 
-                            {/* Credit count */}
-                            <div className="flex items-center gap-1.5">
-                                <span className="text-sm font-black text-foreground">{credits.toLocaleString()}</span>
-                                {planCredits > 0 && (
-                                    <span className="text-xs font-medium text-subtle">/ {planCredits.toLocaleString()}</span>
-                                )}
-                            </div>
+                                {/* Icon + count */}
+                                <div className="flex items-center gap-1.5">
+                                    <Zap className={`w-3.5 h-3.5 ${isEmpty ? 'text-destructive' : isLow ? 'text-warning' : 'text-primary'}`} />
+                                    <span className="text-sm font-black text-foreground">{creditsRemaining.toLocaleString()}</span>
+                                    <span className="text-xs font-medium text-subtle">/ {creditsTotal.toLocaleString()}</span>
+                                </div>
 
-                            {/* Progress bar */}
-                            {planCredits > 0 && (
-                                <div className="w-20 h-1.5 rounded-full bg-surface-raised overflow-hidden">
-                                    <div
-                                        className="h-full rounded-full bg-primary transition-all duration-500"
-                                        style={{ width: `${Math.min((credits / planCredits) * 100, 100)}%` }}
+                                {/* Progress bar */}
+                                <div className="w-16 h-1.5 rounded-full bg-surface-raised overflow-hidden">
+                                    <motion.div
+                                        className="h-full rounded-full"
+                                        style={{
+                                            backgroundColor: isEmpty ? 'var(--destructive)' : isLow ? 'var(--warning)' : 'var(--primary)',
+                                        }}
+                                        animate={{ width: `${Math.min(percentage, 100)}%` }}
+                                        transition={{ duration: 0.5 }}
                                     />
                                 </div>
-                            )}
 
-                            {/* Low credits warning */}
-                            {planCredits > 0 && credits / planCredits <= 0.2 && credits > 0 && (
-                                <div className="px-2 py-0.5 rounded-full bg-destructive-bg">
-                                    <span className="text-[10px] font-black text-destructive uppercase tracking-widest">Low</span>
+                                {/* Status badge */}
+                                {isEmpty && (
+                                    <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-destructive-bg text-destructive">
+                                        Empty
+                                    </span>
+                                )}
+                                {isLow && (
+                                    <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-warning-bg text-warning">
+                                        Low
+                                    </span>
+                                )}
+
+                                <div className="w-px h-4 bg-border-solid" />
+
+                                {/* Expires in */}
+                                <div className="flex items-center gap-1.5">
+                                    <Clock className="w-3 h-3 text-subtle" />
+                                    <span className="text-[11px] font-semibold text-subtle">
+                                        {expiresInDays}d left
+                                    </span>
                                 </div>
-                            )}
+                            </div>
+                        )}
 
-                            {/* No credits */}
-                            {credits === 0 && (
-                                <div className="px-2 py-0.5 rounded-full bg-destructive-bg">
-                                    <span className="text-[10px] font-black text-destructive uppercase tracking-widest">Empty</span>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Resets info */}
-                        <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border-solid bg-surface">
-                            <RefreshCw className="w-3 h-3 text-subtle" />
-                            <span className="text-[11px] font-semibold text-subtle">Expires in</span>
-                            <span className="text-[11px] font-black text-foreground">18d</span>
-                        </div>
-
-                        {/* Buy credits button */}
-                        {/* <Link href="/pricing" className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary text-white text-[11px] font-bold hover:bg-primary-hover transition-all active:scale-95 cursor-pointer">
-                            <Plus className="w-3.5 h-3.5" />
-                            Buy Credits
-                        </Link> */}
+                        {/* ── Empty/Low credits → Upgrade button ── */}
+                        {!hasNoPlan && (isEmpty || isLow) && (
+                            <motion.div
+                                animate={{ scale: [1, 1.03, 1] }}
+                                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                            >
+                                <Link
+                                    href="/pricing"
+                                    className="relative flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest text-white overflow-hidden"
+                                    style={{
+                                        background: isEmpty
+                                            ? 'linear-gradient(135deg, var(--destructive), var(--warning))'
+                                            : 'linear-gradient(135deg, var(--warning), var(--primary))',
+                                        boxShadow: isEmpty
+                                            ? '0 0 16px color-mix(in srgb, var(--destructive) 30%, transparent)'
+                                            : '0 0 16px color-mix(in srgb, var(--warning) 30%, transparent)',
+                                    }}
+                                >
+                                    <motion.div
+                                        className="absolute inset-0 opacity-30"
+                                        style={{ background: 'linear-gradient(90deg, transparent, white, transparent)' }}
+                                        animate={{ x: ['-100%', '200%'] }}
+                                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", repeatDelay: 1 }}
+                                    />
+                                    <TrendingUp className="w-3.5 h-3.5 relative z-10" />
+                                    <span className="relative z-10">{isEmpty ? 'Buy Credits' : 'Top Up'}</span>
+                                </Link>
+                            </motion.div>
+                        )}
 
                         {/* User profile */}
                         <div className="rounded-full bg-foreground/85">
@@ -264,10 +296,7 @@ export default function DashboardLayout({ children }) {
 function NavGroup({ label, items, pathname }) {
     return (
         <div>
-            <p
-                className="px-1 text-[9px] font-black uppercase tracking-[0.2em] mb-1.5 font-mono"
-                style={{ color: 'var(--sidebar-muted)' }}
-            >
+            <p className="px-1 text-[9px] font-black uppercase tracking-[0.2em] mb-1.5 font-mono" style={{ color: 'var(--sidebar-muted)' }}>
                 {label}
             </p>
             <nav className="flex flex-col gap-2">
@@ -299,18 +328,12 @@ function NavGroup({ label, items, pathname }) {
                             }}
                         >
                             <div className="flex items-center gap-2.5">
-                                <item.icon
-                                    className="w-4 h-4"
-                                    style={{ color: isActive ? 'var(--sidebar-item-active-text)' : 'var(--sidebar-main)' }}
-                                />
+                                <item.icon className="w-4 h-4" style={{ color: isActive ? 'var(--sidebar-item-active-text)' : 'var(--sidebar-main)' }} />
                                 <span className="tracking-tight text-muted">{item.name}</span>
                             </div>
                             {isActive
                                 ? <CircleDot className="w-3 h-3" style={{ color: 'var(--accent)' }} />
-                                : <ChevronRight
-                                    className="w-3 h-3 -translate-x-1 group-hover:translate-x-0 transition-transform"
-                                    style={{ color: 'var(--border-solid)' }}
-                                />
+                                : <ChevronRight className="w-3 h-3 -translate-x-1 group-hover:translate-x-0 transition-transform" style={{ color: 'var(--border-solid)' }} />
                             }
                         </Link>
                     );

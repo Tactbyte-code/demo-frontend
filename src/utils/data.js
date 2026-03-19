@@ -262,7 +262,7 @@ export const plans = [
         accentBg: "var(--surface-raised)",
         cta: "Start Free",
         credits: {
-            monthly: 100,
+            monthly: 500,
             yearly: 1200,
             unit: "credits",
             note: "Resets every month",
@@ -337,7 +337,7 @@ export const plans = [
         cta: "Upgrade to Plus",
         popular: true,
         credits: {
-            monthly: 10000,
+            monthly: 5000,
             yearly: 132000,  // 11000/month — ~10% bonus for annual
             unit: "credits",
             note: "Resets every month",
@@ -374,8 +374,8 @@ export const plans = [
         accentBg: "var(--warning-bg)",
         cta: "Contact Sales",
         credits: {
-            monthly: null,
-            yearly: null,
+            monthly: 10000,
+            yearly: 15000,
             unit: "credits",
             note: "Unlimited — no cap",
         },

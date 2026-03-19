@@ -43,7 +43,10 @@ export default function PricingPage() {
 
             // Get credits for this plan from the plans data
             const selectedPlan = plans.find(p => p.id === planId);
+            console.log('selectedplan: ', selectedPlan);
             const credits = selectedPlan?.credits?.monthly ?? 0;  // ← use credits.monthly
+
+            console.log('plan credits: ', credits);
 
             const response = await fetch(`${apiUrl}/users/purchase-plan`, {
                 method: "POST",
@@ -57,10 +60,11 @@ export default function PricingPage() {
                 })
             });
 
-            console.log('response: ', response);
+            console.log('purchase response: ', response);
 
             if (!response.ok) {
                 const err = await response.json();
+                console.log('error: ', err);
                 throw new Error(err.detail || "Purchase failed");
             }
 
@@ -79,6 +83,7 @@ export default function PricingPage() {
             }
 
             router.replace("/dashboard");
+
         } catch (err) {
             console.error('Purchase error:', err);
             setError(err.message);
