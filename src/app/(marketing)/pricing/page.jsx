@@ -18,6 +18,8 @@ const cardVariants = {
     show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
 };
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
 export default function PricingPage() {
     const [yearly, setYearly] = useState(false);
     const [hoveredPlan, setHoveredPlan] = useState(null);
@@ -43,7 +45,7 @@ export default function PricingPage() {
             const selectedPlan = plans.find(p => p.id === planId);
             const credits = selectedPlan?.credits?.monthly ?? 0;  // ← use credits.monthly
 
-            const response = await fetch("http://localhost:8000/users/purchase-plan", {
+            const response = await fetch(`${apiUrl}/users/purchase-plan`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

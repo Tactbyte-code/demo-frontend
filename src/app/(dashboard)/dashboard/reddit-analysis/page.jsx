@@ -118,7 +118,7 @@ export default function RedditIntelligencePage() {
             if (!res.ok) throw new Error(`Failed to submit job(${res.status})`);
 
             // ── Deduct 1 credit after successful query ────────────
-            const creditRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/deduct-credit`, {
+            const creditRes = await fetch(`${apiUrl}/users/deduct-credit`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

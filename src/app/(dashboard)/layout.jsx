@@ -26,6 +26,8 @@ export default function DashboardLayout({ children }) {
     const [credits, setCredits] = useState(0);
     const [planCredits, setPlanCredits] = useState(0);
 
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
     const loadCredits = async () => {
         try {
             const firebaseUser = auth.currentUser;
@@ -33,7 +35,7 @@ export default function DashboardLayout({ children }) {
 
             const token = await firebaseUser.getIdToken();
 
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
+            const res = await fetch(`${apiUrl}/users/me`, {
                 headers: { "Authorization": `Bearer ${token}` }
             });
 
