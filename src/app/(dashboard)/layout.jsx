@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     LayoutDashboard,
     Database,
@@ -17,10 +17,45 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import UserProfileButton from '@/components/ui/UserProfileButton';
+import { plans } from '@/utils/data';
+import { auth } from '@/config/firebase';
 
 export default function DashboardLayout({ children }) {
     const pathname = usePathname();
     const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [credits, setCredits] = useState(0);
+    const [planCredits, setPlanCredits] = useState(0);
+
+    const loadCredits = async () => {
+        try {
+            const firebaseUser = auth.currentUser;
+            if (!firebaseUser) return;
+
+            const token = await firebaseUser.getIdToken();
+
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/me`, {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+
+            if (!res.ok) return;
+
+            const data = await res.json();
+            setCredits(data.credits ?? 0);
+
+            // Get total credits for plan
+            const userPlan = plans.find(p => p.id === data.plan);
+            setPlanCredits(userPlan?.credits?.monthly ?? 0);
+
+        } catch (err) {
+            console.error("Failed to fetch credits:", err);
+        }
+    };
+
+    useEffect(() => {
+        loadCredits();
+        window.addEventListener("userUpdated", loadCredits);
+        return () => window.removeEventListener("userUpdated", loadCredits);
+    }, []);
 
     // Status logic to add later
     // const percentage = (creditsUsed / creditsTotal) * 100;
@@ -32,8 +67,8 @@ export default function DashboardLayout({ children }) {
     ];
 
     const engineItems = [
-        { name: 'App Store Analysis', icon: Globe, href: '/dashboard/appanalysis' },
-        { name: 'Reddit Analysis', icon: Database, href: '/dashboard/redditanalysis' },
+        { name: 'App Store Analysis', icon: Globe, href: '/dashboard/app-analysis' },
+        { name: 'Reddit Analysis', icon: Database, href: '/dashboard/reddit-analysis' },
     ];
 
     return (
@@ -165,23 +200,35 @@ export default function DashboardLayout({ children }) {
 
                             {/* Credit count */}
                             <div className="flex items-center gap-1.5">
-                                <span className="text-sm font-black text-foreground">247</span>
-                                <span className="text-xs font-medium text-subtle">/ 500</span>
+                                <span className="text-sm font-black text-foreground">{credits.toLocaleString()}</span>
+                                {planCredits > 0 && (
+                                    <span className="text-xs font-medium text-subtle">/ {planCredits.toLocaleString()}</span>
+                                )}
                             </div>
 
                             {/* Progress bar */}
-                            <div className="w-20 h-1.5 rounded-full bg-surface-raised overflow-hidden">
-                                <div
-                                    className="h-full rounded-full bg-primary transition-all duration-500"
-                                    style={{ width: `${(247 / 500) * 100}%` }}
-                                />
-                            </div>
+                            {planCredits > 0 && (
+                                <div className="w-20 h-1.5 rounded-full bg-surface-raised overflow-hidden">
+                                    <div
+                                        className="h-full rounded-full bg-primary transition-all duration-500"
+                                        style={{ width: `${Math.min((credits / planCredits) * 100, 100)}%` }}
+                                    />
+                                </div>
+                            )}
 
-                            {/* Status badge */}
-                            {/* <div className="px-2 py-0.5 rounded-full bg-success-bg">
-                                <span className="text-[10px] font-black text-success uppercase tracking-widest">Healthy</span>
-                            </div> */}
+                            {/* Low credits warning */}
+                            {planCredits > 0 && credits / planCredits <= 0.2 && credits > 0 && (
+                                <div className="px-2 py-0.5 rounded-full bg-destructive-bg">
+                                    <span className="text-[10px] font-black text-destructive uppercase tracking-widest">Low</span>
+                                </div>
+                            )}
 
+                            {/* No credits */}
+                            {credits === 0 && (
+                                <div className="px-2 py-0.5 rounded-full bg-destructive-bg">
+                                    <span className="text-[10px] font-black text-destructive uppercase tracking-widest">Empty</span>
+                                </div>
+                            )}
                         </div>
 
                         {/* Resets info */}
@@ -192,10 +239,10 @@ export default function DashboardLayout({ children }) {
                         </div>
 
                         {/* Buy credits button */}
-                        <Link href="/pricing" className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary text-white text-[11px] font-bold hover:bg-primary-hover transition-all active:scale-95 cursor-pointer">
+                        {/* <Link href="/pricing" className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary text-white text-[11px] font-bold hover:bg-primary-hover transition-all active:scale-95 cursor-pointer">
                             <Plus className="w-3.5 h-3.5" />
                             Buy Credits
-                        </Link>
+                        </Link> */}
 
                         {/* User profile */}
                         <div className="rounded-full bg-foreground/85">

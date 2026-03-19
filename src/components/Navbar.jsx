@@ -113,7 +113,7 @@ export default function Navbar() {
                         ) : (
                             <Link
                                 href="/login"
-                                className="bg-white/10 hover:bg-white/60 text-white hover:text-black px-4 py-2 rounded-full text-[13px] font-medium flex items-center gap-2 border border-white/10 transition-all active:scale-95"
+                                className="bg-white/15 hover:bg-white/60 text-white hover:text-black px-4 py-2 rounded-full text-[13px] font-medium flex items-center gap-2 border border-white/10 transition-all active:scale-95"
                             >
                                 <LogIn className="w-3.5 h-3.5" />
                                 Login

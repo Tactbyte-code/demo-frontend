@@ -4,6 +4,9 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, X, Zap, ArrowRight, Sparkles } from "lucide-react";
 import { plans } from "@/utils/data";
+import { useRouter } from "next/navigation";
+import { auth } from '@/config/firebase';           // ← was missing
+import { Loader2 } from 'lucide-react';             // ← was missing
 
 const containerVariants = {
     hidden: {},
@@ -18,6 +21,69 @@ const cardVariants = {
 export default function PricingPage() {
     const [yearly, setYearly] = useState(false);
     const [hoveredPlan, setHoveredPlan] = useState(null);
+
+    // Inside the component:
+    const router = useRouter();
+    const [purchasingPlan, setPurchasingPlan] = useState(null);
+    const [error, setError] = useState("");
+
+    const handlePurchase = async (planId) => {
+        console.log('entered the function', planId);
+        setError("");
+        setPurchasingPlan(planId);
+
+        try {
+            const firebaseUser = auth.currentUser;
+            if (!firebaseUser) { router.replace("/login"); return; }
+
+            const token = await firebaseUser.getIdToken();
+            console.log('token:', token);
+
+            // Get credits for this plan from the plans data
+            const selectedPlan = plans.find(p => p.id === planId);
+            const credits = selectedPlan?.credits?.monthly ?? 0;  // ← use credits.monthly
+
+            const response = await fetch("http://localhost:8000/users/purchase-plan", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    plan: planId,
+                    credits: credits       // ← send credits too
+                })
+            });
+
+            console.log('response: ', response);
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.detail || "Purchase failed");
+            }
+
+            const data = await response.json();
+            console.log('purchase data: ', data);
+
+            const storedUser = localStorage.getItem("user");
+            if (storedUser) {
+                const user = JSON.parse(storedUser);
+                localStorage.setItem("user", JSON.stringify({
+                    ...user,
+                    credits: data.credits,
+                    plan: data.plan
+                }));
+                window.dispatchEvent(new Event("userUpdated"));
+            }
+
+            router.replace("/dashboard");
+        } catch (err) {
+            console.error('Purchase error:', err);
+            setError(err.message);
+        } finally {
+            setPurchasingPlan(null);
+        }
+    };
 
     return (
         <div
@@ -183,15 +249,19 @@ export default function PricingPage() {
 
                             {/* CTA Button */}
                             <button
-                                className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] mb-6"
+                                onClick={() => handlePurchase(plan.id)}
+                                disabled={purchasingPlan === plan.id}
+                                className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] mb-6 disabled:opacity-70"
                                 style={{
                                     backgroundColor: plan.popular ? "var(--accent)" : plan.monthlyPrice === 0 ? "var(--surface-raised)" : "var(--primary)",
                                     color: plan.popular ? "#000" : plan.monthlyPrice === 0 ? "var(--text-main)" : "#fff",
                                     border: plan.monthlyPrice === 0 ? "1px solid var(--border-solid)" : "none",
                                 }}
                             >
-                                {plan.cta}
-                                <ArrowRight className="w-4 h-4" />
+                                {purchasingPlan === plan.id
+                                    ? <Loader2 className="w-4 h-4 animate-spin" />
+                                    : <>{plan.cta} <ArrowRight className="w-4 h-4" /></>
+                                }
                             </button>
 
                             {/* Divider */}
@@ -220,6 +290,13 @@ export default function PricingPage() {
                         </motion.div>
                     ))}
                 </motion.div>
+
+                {error && (
+                    <p className="text-center text-sm font-semibold mt-4"
+                        style={{ color: "var(--destructive)" }}>
+                        {error}
+                    </p>
+                )}
 
                 {/* Bottom note */}
                 <motion.div

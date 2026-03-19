@@ -267,15 +267,18 @@ export default function LoginPage() {
 
     // ── Shared input style helpers ────────────────────────────
     const inputClass = "w-full rounded-2xl px-6 py-4 text-base font-medium transition-all outline-none";
+
     const inputStyle = {
         backgroundColor: 'var(--surface-card)',
         border: '1px solid var(--border-solid)',
         color: 'var(--text-main)',
     };
+
     const onFocus = e => {
         e.currentTarget.style.borderColor = 'var(--primary)';
         e.currentTarget.style.boxShadow = '0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent)';
     };
+
     const onBlur = e => {
         e.currentTarget.style.borderColor = 'var(--border-solid)';
         e.currentTarget.style.boxShadow = 'none';
@@ -321,13 +324,9 @@ export default function LoginPage() {
                     Intelligence at your fingertips
                 </p>
 
-                <div className="backdrop-blur-xl rounded-[2.5rem] p-10 relative overflow-hidden"
-                    style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-lg)' }}>
-                    <div className="absolute top-0 left-8 right-8 h-px rounded-full"
-                        style={{ background: 'linear-gradient(90deg, transparent, var(--accent), transparent)', opacity: 0.3 }} />
-
+                <div className="backdrop-blur-xl rounded-[2.5rem] p-10 relative overflow-hidden bg-background" style={{ border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-lg)' }}>
+                    <div className="absolute top-0 left-8 right-8 h-px rounded-full" style={{ background: 'linear-gradient(90deg, transparent, var(--accent), transparent)', opacity: 0.3 }} />
                     <AnimatePresence mode="wait">
-
                         {/* ── Forgot Password Flow ────────── */}
                         {showForgot ? (
                             <motion.div key="forgot"
@@ -512,9 +511,7 @@ export default function LoginPage() {
 
                                 </AnimatePresence>
                             </motion.div>
-
                         ) : (
-
                             /* ── Login View ─────────────────── */
                             <motion.div key="login"
                                 initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }}
@@ -540,7 +537,7 @@ export default function LoginPage() {
                                 <div className="space-y-6">
                                     {/* Google */}
                                     <button onClick={handleGoogleLogin} disabled={loading}
-                                        className="w-full flex items-center justify-center gap-3 py-3.5 rounded-2xl font-semibold text-[15px] transition-all disabled:opacity-50"
+                                        className="w-full flex items-center justify-center cursor-pointer gap-3 py-3.5 rounded-2xl font-semibold text-[15px] transition-all disabled:opacity-50"
                                         style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border-solid)', color: 'var(--text-main)', boxShadow: 'var(--shadow-sm)' }}
                                         onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--surface-card)'; e.currentTarget.style.borderColor = 'var(--primary)'; }}
                                         onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'var(--surface)'; e.currentTarget.style.borderColor = 'var(--border-solid)'; }}>
@@ -616,8 +613,7 @@ export default function LoginPage() {
                 </div>
 
                 <div className="mt-10 flex items-center justify-center">
-                    <div className="flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm"
-                        style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--glass-border)' }}>
+                    <div className="flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm" style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--glass-border)' }}>
                         <ShieldCheck className="w-4 h-4" style={{ color: 'var(--success)' }} />
                         <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Enterprise Secure</span>
                     </div>

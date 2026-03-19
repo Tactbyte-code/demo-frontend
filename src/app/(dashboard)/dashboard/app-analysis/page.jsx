@@ -291,6 +291,7 @@ function AISearchBar({ category, setCategory, onSubmit, isAnalyzing, hasResult, 
 // HERO SEARCH (idle state only)
 // ─────────────────────────────────────────────────────────
 function HeroSearch({ category, setCategory, onSubmit, isAnalyzing }) {
+
     const [focused, setFocused] = useState(false);
     const inputRef = useRef(null);
 
@@ -313,10 +314,10 @@ function HeroSearch({ category, setCategory, onSubmit, isAnalyzing }) {
                     transition={{ duration: 0.3 }}
                 />
 
-                <div className="pl-5 pr-3 flex items-center gap-3 flex-shrink-0">
+                <div className="pl-5 pr-3 flex items-center gap-3 shrink-0">
                     <Sparkles className="w-4 h-4 transition-colors duration-200"
                         style={{ color: focused || category ? 'var(--primary)' : 'var(--text-subtle)' }} />
-                    <div className="w-px h-5 flex-shrink-0" style={{ backgroundColor: 'var(--border-solid)' }} />
+                    <div className="w-px h-5 shrink-0" style={{ backgroundColor: 'var(--border-solid)' }} />
                 </div>
 
                 <input

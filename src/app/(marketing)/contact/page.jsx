@@ -220,8 +220,7 @@ export default function ContactPage() {
                                                         setMessageError("");
                                                     }
                                                 }}
-                                                className={`w-full bg-background border rounded-2xl pl-12 pr-6 py-4 text-sm font-semibold text-foreground placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-y ${messageError ? 'border-destructive/50 focus:border-destructive/50' : 'border-border-solid focus:border-primary/40'
-                                                    }`}
+                                                className={`w-full bg-background border rounded-2xl pl-12 pr-6 py-4 text-sm font-semibold text-foreground placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-primary transition-all resize-y ${messageError ? 'border-destructive/50 focus:border-destructive/50' : 'border-border-solid focus:border-primary'}`}
                                             />
                                         </div>
                                         <div className="flex justify-between items-center ml-1">

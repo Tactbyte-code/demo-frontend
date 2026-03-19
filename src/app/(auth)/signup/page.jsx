@@ -31,6 +31,7 @@ export default function SignupPage() {
     const router = useRouter();
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const front_end_url = process.env.NEXT_PUBLIC_FRONTEND_URL;
 
     useEffect(() => {
         return () => {
@@ -112,7 +113,7 @@ export default function SignupPage() {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             await updateProfile(userCredential.user, { displayName: name });
             await sendEmailVerification(userCredential.user, {
-                url: `https://demo-frontend-ecru.vercel.app/onboarding`
+                url: `${front_end_url}/onboarding`
             });
 
             setWaitingForVerification(true);

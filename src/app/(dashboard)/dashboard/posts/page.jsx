@@ -31,12 +31,25 @@ const PostsPage = () => {
 
         setLoading(true)
         setError(null)
+
         try {
             const res = await fetch(`${apiUrl}/jobs/${jobId}/posts`)
             if (!res.ok) throw new Error(`Failed to fetch posts (${res.status})`)
+
             const data = await res.json()
-            setPosts(data)
+
+            // ✅ FILTER EMPTY POSTS HERE
+            const filtered = data?.filter(post => {
+                const titleValid = post?.reddit_title?.trim()
+                // const descValid = post?.reddit_selftext?.trim()
+
+                return titleValid
+            })
+
+            setPosts(filtered)
+
         } catch (err) {
+            console.log('fetching posts error: ', err);
             setError(err.message)
         } finally {
             setLoading(false)

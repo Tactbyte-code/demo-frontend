@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ChevronRight, RefreshCcw, Sparkles, Zap, CheckCircle2, Clock } from "lucide-react";
+import { ArrowRight, ChevronRight, RefreshCcw, Sparkles, CheckCircle2, Clock } from "lucide-react";
 import { auth } from '@/config/firebase';
 import Link from "next/link";
 
@@ -16,7 +16,7 @@ const EXAMPLES = [
     "startup funding climate 2024",
 ];
 
-const REFRESH_INTERVAL_MS = 5000; // 2 minutes
+const REFRESH_INTERVAL_MS = 5000;
 
 // ── PRIMITIVES ────────────────────────────────────────
 const formatDate = (iso) =>
@@ -65,7 +65,7 @@ export default function RedditIntelligencePage() {
         } finally {
             setLoading(false);
         }
-    }
+    };
 
     useEffect(() => {
         if (!userId) return;
@@ -91,6 +91,17 @@ export default function RedditIntelligencePage() {
         e?.preventDefault();
         if (!canSubmit) return;
         setError(null);
+
+        // ── Check credits before submitting ──────────────────────
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+            const user = JSON.parse(storedUser);
+            if (user.credits <= 0) {
+                setError("You have no credits left. Please purchase a plan to continue.");
+                return;
+            }
+        }
+
         setSubmitLoading(true);
         setShowSuccess(false);
 
@@ -106,6 +117,19 @@ export default function RedditIntelligencePage() {
 
             if (!res.ok) throw new Error(`Failed to submit job(${res.status})`);
 
+            // ── Deduct 1 credit after successful query ────────────
+            const creditRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/deduct-credit`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+            });
+
+            if (creditRes.ok) {
+                window.dispatchEvent(new Event("userUpdated"));
+            }
+
             setShowSuccess(true);
             setQuery("");
             fetchJobs(true);
@@ -114,11 +138,11 @@ export default function RedditIntelligencePage() {
         } finally {
             setSubmitLoading(false);
         }
-    }
+    };
 
     function handleKeyDown(e) {
         if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && canSubmit) handleSubmit();
-    }
+    };
 
     return (
         <div className="min-h-screen flex flex-col items-center px-6 py-16 relative overflow-hidden"
@@ -194,6 +218,23 @@ export default function RedditIntelligencePage() {
                                 <p className="text-sm font-bold" style={{ color: "var(--success)" }}>Query successfully queued!</p>
                                 <p className="text-xs" style={{ color: "var(--text-muted)" }}>We are gathering Reddit data. You'll be notified when the summary is ready.</p>
                             </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {/* Error */}
+                <AnimatePresence>
+                    {error && (
+                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                            className="mt-4 p-4 rounded-xl border flex items-start justify-between gap-3"
+                            style={{ backgroundColor: "var(--destructive-bg)", borderColor: "var(--destructive)" }}>
+                            <p className="text-sm font-semibold" style={{ color: "var(--destructive)" }}>{error}</p>
+                            {error.includes("credits") && (
+                                <Link href="/pricing"
+                                    className="shrink-0 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-widest text-white bg-primary hover:bg-primary-hover transition-all">
+                                    Buy Credits
+                                </Link>
+                            )}
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -304,4 +345,4 @@ function JobRow({ job }) {
             </td>
         </tr>
     );
-}
+};

@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 
 export default function UserProfileButton() {
+
     const [user, setUser] = useState(null);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const profileRef = useRef(null);
@@ -18,6 +19,7 @@ export default function UserProfileButton() {
     const loadUser = () => {
         const stored = localStorage.getItem("user");
         if (stored) {
+            console.log('user: ', user);
             setUser(JSON.parse(stored));
         } else {
             setUser(null);
@@ -60,7 +62,7 @@ export default function UserProfileButton() {
             {/* Trigger */}
             <button
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="flex items-center gap-2 bg-black/20 hover:bg-white/15 border border-white/10 hover:border-white/20 rounded-full px-2 py-1.5 transition-all duration-200 active:scale-95"
+                className="flex items-center gap-2 px-2 py-1.5 transition-all duration-200 bg-background/80 hover:bg-background/60 cursor-pointer rounded-full border border-glass-border"
             >
                 {user.photo_url ? (
                     <div className="relative w-7 h-7 rounded-full overflow-hidden ring-1 ring-white/20">
@@ -74,11 +76,11 @@ export default function UserProfileButton() {
                         {user.full_name?.charAt(0).toUpperCase() || "U"}
                     </div>
                 )}
-                <span className="text-white/90 text-[13px] font-medium pr-1">
+                <span className="text-main text-[13px] font-medium pr-1">
                     {user.full_name?.split(" ")[0] || "Account"}
                 </span>
                 <ChevronDown
-                    className={`w-3 h-3 text-white/50 transition-transform duration-300 ${isProfileOpen ? 'rotate-180' : ''}`}
+                    className={`w-3 h-3 text-sidebar-item-active-tex transition-transform duration-300 ${isProfileOpen ? 'rotate-180' : ''}`}
                 />
             </button>
 
@@ -100,7 +102,7 @@ export default function UserProfileButton() {
                         {/* User Info Card */}
                         <div
                             className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl mb-1"
-                            style={{ backgroundColor: 'var(--surface-card)' }}
+                            style={{ backgroundColor: 'var(--surface-raised)' }}
                         >
                             {user.photo_url ? (
                                 <div className="relative w-8 h-8 rounded-full overflow-hidden shrink-0">
@@ -126,12 +128,12 @@ export default function UserProfileButton() {
 
                         {/* Divider */}
                         <div
-                            className="mx-3 my-1.5 h-px rounded-full"
+                            className="mx-3 mt-1.5 h-px rounded-full"
                             style={{ background: 'linear-gradient(90deg, var(--accent), transparent)', opacity: 0.25 }}
                         />
 
                         {/* Theme toggle row */}
-                        <div className="flex items-center justify-between px-3 py-2">
+                        <div className="flex items-center justify-between px-3 py-1">
                             <span className="text-xs font-bold text-main">
                                 Appearance
                             </span>
@@ -147,7 +149,7 @@ export default function UserProfileButton() {
                         {/* Go to Dashboard */}
                         <button
                             onClick={() => { setIsProfileOpen(false); router.push('/dashboard'); }}
-                            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all duration-150 hover:bg-[var(--surface-card)]"
+                            className="w-full flex items-center gap-2 cursor-pointer px-3 py-4 rounded-lg text-xs font-semibold transition-all duration-150 hover:bg-surface-raised/50"
                             style={{ color: 'var(--text-main)' }}
                         >
                             <LayoutDashboard className="w-3.5 h-3.5" style={{ color: 'var(--primary)' }} />
@@ -157,7 +159,7 @@ export default function UserProfileButton() {
                         {/* Sign Out */}
                         <button
                             onClick={handleLogout}
-                            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all duration-150 hover:bg-[var(--destructive-bg)]"
+                            className="w-full flex items-center cursor-pointer gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all duration-150 hover:bg-destructive-bg"
                             style={{ color: 'var(--destructive)' }}
                         >
                             <LogOut className="w-3.5 h-3.5" />
