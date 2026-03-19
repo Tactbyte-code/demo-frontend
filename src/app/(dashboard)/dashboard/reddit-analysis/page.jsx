@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ChevronRight, RefreshCcw, Sparkles, CheckCircle2, Clock } from "lucide-react";
+import { ArrowRight, ChevronRight, RefreshCcw, Sparkles, CheckCircle2, Clock, AlertCircle, Timer } from "lucide-react";
 import { auth } from '@/config/firebase';
 import Link from "next/link";
 
@@ -28,86 +28,127 @@ export default function RedditIntelligencePage() {
     const [focused, setFocused] = useState(false);
     const [submitLoading, setSubmitLoading] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
-    const textareaRef = useRef(null);
-
-    const [jobs, setJobs] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [jobs, setJobs,] = useState([]);
+    const [jobsLoading, setJobsLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [userId, setUserId] = useState(null);
-
     const [countdown, setCountdown] = useState(REFRESH_INTERVAL_MS / 1000);
+
+    // ── Rate limit state ──────────────────────────────────────
+    const [cooldownMinutes, setCooldownMinutes] = useState(0);
+    const [cooldownSeconds, setCooldownSeconds] = useState(0);
+    const [isOnCooldown, setIsOnCooldown] = useState(false);
+
+    const textareaRef = useRef(null);
+    const jobsIntervalRef = useRef(null);
+    const cooldownIntervalRef = useRef(null);
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-    useEffect(() => {
-        const stored = localStorage.getItem('user');
-        if (stored) {
-            const parsed = JSON.parse(stored);
-            setUserId(parsed.id);
-        }
+    // ── Get fresh token (cached for performance) ──────────────
+    const getToken = useCallback(async () => {
+        const firebaseUser = auth.currentUser;
+        if (!firebaseUser) throw new Error("Not authenticated");
+        return await firebaseUser.getIdToken();
     }, []);
 
-    async function fetchJobs(isSilent = false) {
-        if (!isSilent) setLoading(true);
+    // ── Fetch jobs ────────────────────────────────────────────
+    const fetchJobs = useCallback(async (isSilent = false) => {
+        if (!isSilent) setJobsLoading(true);
         try {
-            const token = localStorage.getItem('token');
+            const token = await getToken();
             const res = await fetch(`${apiUrl}/jobs`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-
             if (!res.ok) throw new Error(`Fetch failed: ${res?.status}`);
-
             const data = await res.json();
             setJobs(data);
             setCountdown(REFRESH_INTERVAL_MS / 1000);
         } catch (err) {
             setError(err.message);
         } finally {
-            setLoading(false);
+            setJobsLoading(false);
         }
-    };
+    }, [apiUrl, getToken]);
 
+    // ── Check cooldown status from backend ────────────────────
+    const checkCooldown = useCallback(async () => {
+        try {
+            const token = await getToken();
+            const res = await fetch(`${apiUrl}/users/me`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+            const plan = data.plan;
+            if (!plan) return;
+
+            if (!plan.can_query) {
+                setIsOnCooldown(true);
+                setCooldownMinutes(plan.cooldown_minutes_left);
+                setCooldownSeconds(0);
+                startCooldownTimer(plan.cooldown_minutes_left * 60);
+            } else {
+                setIsOnCooldown(false);
+                setCooldownMinutes(0);
+                setCooldownSeconds(0);
+            }
+        } catch (err) {
+            console.error("Failed to check cooldown:", err);
+        }
+    }, [apiUrl, getToken]);
+
+    // ── Cooldown countdown timer ──────────────────────────────
+    const startCooldownTimer = useCallback((totalSeconds) => {
+        if (cooldownIntervalRef.current) clearInterval(cooldownIntervalRef.current);
+        let remaining = totalSeconds;
+
+        cooldownIntervalRef.current = setInterval(() => {
+            remaining -= 1;
+            if (remaining <= 0) {
+                clearInterval(cooldownIntervalRef.current);
+                setIsOnCooldown(false);
+                setCooldownMinutes(0);
+                setCooldownSeconds(0);
+                return;
+            }
+            setCooldownMinutes(Math.floor(remaining / 60));
+            setCooldownSeconds(remaining % 60);
+        }, 1000);
+    }, []);
+
+    // ── Init ──────────────────────────────────────────────────
     useEffect(() => {
-        if (!userId) return;
         fetchJobs();
+        checkCooldown();
 
-        const interval = setInterval(() => {
-            fetchJobs(true);
-        }, REFRESH_INTERVAL_MS);
+        jobsIntervalRef.current = setInterval(() => fetchJobs(true), REFRESH_INTERVAL_MS);
 
-        return () => clearInterval(interval);
-    }, [userId]);
+        return () => {
+            clearInterval(jobsIntervalRef.current);
+            clearInterval(cooldownIntervalRef.current);
+        };
+    }, [fetchJobs, checkCooldown]);
 
+    // ── Countdown ticker ──────────────────────────────────────
     useEffect(() => {
         const ticker = setInterval(() => {
-            setCountdown((prev) => (prev > 0 ? prev - 1 : REFRESH_INTERVAL_MS / 1000));
+            setCountdown(prev => (prev > 0 ? prev - 1 : REFRESH_INTERVAL_MS / 1000));
         }, 1000);
         return () => clearInterval(ticker);
     }, []);
 
-    const canSubmit = query.trim() && !submitLoading;
+    const canSubmit = query.trim() && !submitLoading && !isOnCooldown;
 
+    // ── Submit query ──────────────────────────────────────────
     async function handleSubmit(e) {
         e?.preventDefault();
         if (!canSubmit) return;
         setError(null);
-
-        // ── Check credits before submitting ──────────────────────
-        const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-            const user = JSON.parse(storedUser);
-            if (user.credits <= 0) {
-                setError("You have no credits left. Please purchase a plan to continue.");
-                return;
-            }
-        }
-
         setSubmitLoading(true);
         setShowSuccess(false);
 
         try {
-            const firebaseUser = auth.currentUser;
-            const token = await firebaseUser.getIdToken();
+            const token = await getToken();
 
             const res = await fetch(`${apiUrl}/query`, {
                 method: "POST",
@@ -115,34 +156,53 @@ export default function RedditIntelligencePage() {
                 body: JSON.stringify({ query: query.trim() }),
             });
 
-            if (!res.ok) throw new Error(`Failed to submit job(${res.status})`);
+            console.log('response: ', res);
 
-            // ── Deduct 1 credit after successful query ────────────
+            if (!res.ok) {
+                const errData = await res.json();
+                // ← 429 rate limit error from backend
+                if (res.status === 429) {
+                    const match = errData.detail?.match(/(\d+) more minute/);
+                    const mins = match ? parseInt(match[1]) : 30;
+                    setIsOnCooldown(true);
+                    setCooldownMinutes(mins);
+                    setCooldownSeconds(0);
+                    startCooldownTimer(mins * 60);
+                    throw new Error(errData.detail || "Rate limit exceeded");
+                }
+                throw new Error(errData.detail || `Failed to submit job (${res.status})`);
+            }
+
+            // Deduct credit
             const creditRes = await fetch(`${apiUrl}/users/deduct-credit`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
             });
 
             if (creditRes.ok) {
                 window.dispatchEvent(new Event("userUpdated"));
             }
 
+            // Start cooldown after successful submission
+            setIsOnCooldown(true);
+            setCooldownMinutes(29);
+            setCooldownSeconds(59);
+            startCooldownTimer(30 * 60);
+
             setShowSuccess(true);
             setQuery("");
             fetchJobs(true);
         } catch (err) {
+            console.log('error: ', err);
             setError(err.message);
         } finally {
             setSubmitLoading(false);
         }
-    };
+    }
 
     function handleKeyDown(e) {
         if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && canSubmit) handleSubmit();
-    };
+    }
 
     return (
         <div className="min-h-screen flex flex-col items-center px-6 py-16 relative overflow-hidden"
@@ -165,14 +225,35 @@ export default function RedditIntelligencePage() {
                     </p>
                 </motion.div>
 
+                {/* Success */}
+                <AnimatePresence>
+                    {showSuccess && (
+                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                            className="mb-4 p-4 rounded-xl border flex items-start gap-3"
+                            style={{ backgroundColor: "var(--success-bg)", borderColor: "var(--success)" }}>
+                            <CheckCircle2 className="w-5 h-5 shrink-0" style={{ color: "var(--success)" }} />
+                            <div>
+                                <p className="text-[15px] font-bold mb-1" style={{ color: "var(--success)" }}>Query successfully queued!</p>
+                                <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                                    We are gathering Reddit data. You'll be notified when the summary is ready.
+                                </p>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
                 {/* Search card */}
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
                     <form onSubmit={handleSubmit}>
                         <motion.div
                             animate={{ boxShadow: focused ? "var(--shadow-lg)" : "var(--shadow-md)" }}
                             className="rounded-2xl overflow-hidden border"
-                            style={{ backgroundColor: "var(--surface)", borderColor: "var(--border-solid)" }}>
-
+                            style={{
+                                backgroundColor: "var(--surface)",
+                                borderColor: isOnCooldown ? "var(--warning)" : "var(--border-solid)",
+                                opacity: isOnCooldown ? 0.7 : 1,
+                            }}
+                        >
                             <div className="p-5 pb-4">
                                 <textarea
                                     ref={textareaRef}
@@ -182,8 +263,9 @@ export default function RedditIntelligencePage() {
                                     onBlur={() => setFocused(false)}
                                     onKeyDown={handleKeyDown}
                                     rows={3}
-                                    placeholder="Describe the topic you want to analyze..."
-                                    className="flex-1 w-full bg-transparent outline-none resize-none text-sm leading-relaxed"
+                                    disabled={isOnCooldown}
+                                    placeholder={isOnCooldown ? "Please wait for the cooldown to finish..." : "Describe the topic you want to analyze..."}
+                                    className="flex-1 w-full bg-transparent outline-none resize-none text-sm leading-relaxed disabled:cursor-not-allowed"
                                     style={{ color: "var(--text-main)" }}
                                 />
                             </div>
@@ -191,32 +273,57 @@ export default function RedditIntelligencePage() {
                             <div className="flex items-center justify-between px-5 py-3 border-t"
                                 style={{ borderColor: "var(--border-solid)", backgroundColor: "var(--surface-card)" }}>
                                 <span className="text-[10px] font-mono" style={{ color: "var(--text-subtle)" }}>
-                                    {query.length > 0 ? `${query.length} chars` : "⌘↵ to run"}
+                                    {isOnCooldown
+                                        ? `⏳ ${String(cooldownMinutes).padStart(2, '0')}:${String(cooldownSeconds).padStart(2, '0')} remaining`
+                                        : query.length > 0 ? `${query.length} chars` : "⌘↵ to run"
+                                    }
                                 </span>
-                                <button type="submit" disabled={!canSubmit}
+                                <button
+                                    type="submit"
+                                    disabled={!canSubmit}
                                     className="flex items-center gap-2 px-5 h-9 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all"
                                     style={{
                                         background: canSubmit ? "var(--primary)" : "var(--surface-raised)",
                                         color: canSubmit ? "#fff" : "var(--text-subtle)",
                                         cursor: canSubmit ? "pointer" : "not-allowed",
-                                    }}>
-                                    {submitLoading ? "Analyzing..." : <>Analyze <ArrowRight className="w-3 h-3" /></>}
+                                    }}
+                                >
+                                    {submitLoading
+                                        ? "Analyzing..."
+                                        : isOnCooldown
+                                            ? "On Cooldown"
+                                            : <> Analyze <ArrowRight className="w-3 h-3" /> </>
+                                    }
                                 </button>
                             </div>
                         </motion.div>
                     </form>
                 </motion.div>
 
-                {/* Success Message */}
+                {/* ── Cooldown banner ── */}
                 <AnimatePresence>
-                    {showSuccess && (
-                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                            className="mt-4 p-4 rounded-xl border flex items-start gap-3"
-                            style={{ backgroundColor: "var(--success-bg)", borderColor: "var(--success)" }}>
-                            <CheckCircle2 className="w-5 h-5 shrink-0" style={{ color: "var(--success)" }} />
-                            <div>
-                                <p className="text-sm font-bold" style={{ color: "var(--success)" }}>Query successfully queued!</p>
-                                <p className="text-xs" style={{ color: "var(--text-muted)" }}>We are gathering Reddit data. You'll be notified when the summary is ready.</p>
+                    {isOnCooldown && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -8 }}
+                            className="mt-4 px-5 py-3 rounded-xl border flex items-center justify-between gap-4"
+                            style={{ backgroundColor: "var(--warning-bg)", borderColor: "var(--warning)" }}
+                        >
+                            <div className="flex items-center gap-3">
+                                <Timer className="w-4 h-4 shrink-0" style={{ color: "var(--warning)" }} />
+                                <div>
+                                    <p className="text-sm font-semibold" style={{ color: "var(--warning)" }}>
+                                        Rate limit active — next query available in
+                                    </p>
+                                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                                        You can submit one query every 30 minutes.
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="shrink-0 font-mono text-lg font-black tabular-nums"
+                                style={{ color: "var(--warning)" }}>
+                                {String(cooldownMinutes).padStart(2, '0')}:{String(cooldownSeconds).padStart(2, '0')}
                             </div>
                         </motion.div>
                     )}
@@ -224,11 +331,14 @@ export default function RedditIntelligencePage() {
 
                 {/* Error */}
                 <AnimatePresence>
-                    {error && (
+                    {error && !isOnCooldown && (
                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                             className="mt-4 p-4 rounded-xl border flex items-start justify-between gap-3"
                             style={{ backgroundColor: "var(--destructive-bg)", borderColor: "var(--destructive)" }}>
-                            <p className="text-sm font-semibold" style={{ color: "var(--destructive)" }}>{error}</p>
+                            <div className="flex items-start gap-3">
+                                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "var(--destructive)" }} />
+                                <p className="text-sm font-semibold" style={{ color: "var(--destructive)" }}>{error}</p>
+                            </div>
                             {error.includes("credits") && (
                                 <Link href="/pricing"
                                     className="shrink-0 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-widest text-white bg-primary hover:bg-primary-hover transition-all">
@@ -240,18 +350,46 @@ export default function RedditIntelligencePage() {
                 </AnimatePresence>
 
                 {/* Examples */}
-                <div className="mt-6 flex flex-wrap gap-2 justify-center">
-                    {EXAMPLES.map((ex) => (
-                        <button key={ex} onClick={() => setQuery(ex)}
-                            className="px-3 py-1 rounded-full text-[10px] border transition-all"
-                            style={{ backgroundColor: "var(--surface)", borderColor: "var(--border-solid)", color: "var(--text-muted)" }}>
-                            {ex}
-                        </button>
-                    ))}
-                </div>
+                <AnimatePresence>
+                    <motion.div
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="my-5 flex items-center justify-center gap-2 flex-wrap"
+                    >
+                        <span className="text-[10px] font-mono uppercase shrink-0 font-extrabold" style={{ color: 'var(--text-subtle)' }}>
+                            Try:
+                        </span>
+                        {EXAMPLES.map((s, i) => (
+                            <motion.button
+                                key={s}
+                                initial={{ opacity: 0, y: 4 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: i * 0.04 }}
+                                type="button"
+                                onClick={() => !isOnCooldown && setQuery(s)}
+                                disabled={isOnCooldown}
+                                className="px-3 py-1 rounded-full text-[11px] font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                                style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border-solid)', color: 'var(--text-muted)' }}
+                                onMouseEnter={e => {
+                                    if (!isOnCooldown) {
+                                        e.currentTarget.style.borderColor = 'var(--primary)';
+                                        e.currentTarget.style.color = 'var(--primary)';
+                                        e.currentTarget.style.backgroundColor = 'var(--info-bg)';
+                                    }
+                                }}
+                                onMouseLeave={e => {
+                                    e.currentTarget.style.borderColor = 'var(--border-solid)';
+                                    e.currentTarget.style.color = 'var(--text-muted)';
+                                    e.currentTarget.style.backgroundColor = 'var(--surface)';
+                                }}
+                            >
+                                {s}
+                            </motion.button>
+                        ))}
+                    </motion.div>
+                </AnimatePresence>
             </div>
 
-            {/* ─── SECTION DIVIDER ─── */}
+            {/* ─── DIVIDER ─── */}
             <div className="w-full max-w-5xl mt-20 mb-10 flex items-center gap-4">
                 <div className="h-px flex-1" style={{ backgroundColor: "var(--border-solid)" }} />
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-subtle)" }}>
@@ -260,17 +398,19 @@ export default function RedditIntelligencePage() {
                 <div className="h-px flex-1" style={{ backgroundColor: "var(--border-solid)" }} />
             </div>
 
-            {/* ─── JOB HISTORY SECTION ─── */}
+            {/* ─── JOB HISTORY ─── */}
             <div className="w-full max-w-5xl px-4">
                 <div className="flex justify-between items-end mb-6">
                     <div>
                         <h2 className="text-xl font-black tracking-tight" style={{ color: "var(--text-main)" }}>Recent Analysis</h2>
                         <p className="text-xs" style={{ color: "var(--text-muted)" }}>Your analysis history and status</p>
                     </div>
-                    <button onClick={() => fetchJobs()}
+                    <button
+                        onClick={() => fetchJobs()}
                         className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider px-3 py-2 rounded-lg border transition-colors"
-                        style={{ backgroundColor: "var(--surface)", borderColor: "var(--border-solid)", color: "var(--text-main)" }}>
-                        <RefreshCcw className={`w - 3 h - 3 ${loading ? 'animate-spin' : ''}`} /> Sync Now
+                        style={{ backgroundColor: "var(--surface)", borderColor: "var(--border-solid)", color: "var(--text-main)" }}
+                    >
+                        <RefreshCcw className={`w-3 h-3 ${jobsLoading ? 'animate-spin' : ''}`} /> Sync Now
                     </button>
                 </div>
 
@@ -280,16 +420,24 @@ export default function RedditIntelligencePage() {
                         <thead style={{ backgroundColor: 'var(--surface-card)' }}>
                             <tr className="border-b" style={{ borderColor: 'var(--border-solid)' }}>
                                 {['Topic', 'Created', 'Status', 'Action'].map(h => (
-                                    <th key={h} className="px-6 py-4 text-[10px] font-black uppercase tracking-widest" style={{ color: "var(--text-subtle)" }}>{h}</th>
+                                    <th key={h} className="px-6 py-4 text-[10px] font-black uppercase tracking-widest"
+                                        style={{ color: "var(--text-subtle)" }}>{h}</th>
                                 ))}
                             </tr>
                         </thead>
                         <tbody className="divide-y" style={{ borderColor: 'var(--border-solid)' }}>
-                            {!loading && jobs.map((job) => <JobRow key={job.id} job={job} />)}
-                            {loading && jobs.length === 0 && (
+                            {!jobsLoading && jobs.map(job => <JobRow key={job.id} job={job} />)}
+                            {jobsLoading && jobs.length === 0 && (
                                 <tr>
                                     <td colSpan={4} className="px-6 py-10 text-center text-xs" style={{ color: "var(--text-subtle)" }}>
-                                        Loading historical data...
+                                        Syncing your personalized data...
+                                    </td>
+                                </tr>
+                            )}
+                            {!jobsLoading && jobs.length === 0 && (
+                                <tr>
+                                    <td colSpan={4} className="px-6 py-10 text-center text-xs" style={{ color: "var(--text-subtle)" }}>
+                                        No analysis yet. Submit your first query above.
                                     </td>
                                 </tr>
                             )}
@@ -317,7 +465,7 @@ function JobRow({ job }) {
 
     return (
         <tr className="transition-colors" style={{ backgroundColor: "var(--surface)" }}>
-            <td className="px-6 py-4 text-sm font-medium" style={{ color: "var(--text-main)" }}>{job.query}</td>
+            <td className="px-6 py-4 text-sm font-medium max-w-xs truncate" style={{ color: "var(--text-main)" }}>{job.query}</td>
             <td className="px-6 py-4 text-[11px] font-mono" style={{ color: "var(--text-muted)" }}>{formatDate(job.created_at)}</td>
             <td className="px-6 py-4">
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold"
@@ -328,7 +476,8 @@ function JobRow({ job }) {
             </td>
             <td className="px-6 py-4">
                 {job.status === "USER_PENDING" ? (
-                    <Link href={`/dashboard/posts?jobId=${job.id}`} className="bg-primary inline-flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-bold uppercase tracking-widest text-white hover:opacity-90 transition-all shadow-sm">
+                    <Link href={`/dashboard/posts?jobId=${job.id}`}
+                        className="bg-primary inline-flex items-center gap-2 px-3 py-2 rounded-lg text-[11px] font-bold uppercase tracking-widest text-white hover:opacity-90 transition-all shadow-sm">
                         Select Post
                     </Link>
                 ) : job.status === "COMPLETED" ? (
@@ -345,4 +494,4 @@ function JobRow({ job }) {
             </td>
         </tr>
     );
-};
+}

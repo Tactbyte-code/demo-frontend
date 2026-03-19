@@ -104,7 +104,7 @@
   --destructive: #f06080;
   --destructive-bg: rgba(240, 96, 128, 0.07);
   --info: #29a8cc;
-  --info-bg: rgba(41, 168, 204, 0.07);
+  --info-bg: #112e36;
 
   /* Glassmorphism */
   --overlay-light: rgba(3, 8, 11, 0.88);

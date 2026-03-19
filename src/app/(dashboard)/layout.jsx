@@ -206,12 +206,12 @@ export default function DashboardLayout({ children }) {
                                 className="flex items-center gap-3 px-4 py-2 rounded-xl border transition-all"
                                 style={{
                                     backgroundColor: 'var(--surface)',
-                                    borderColor: isEmpty ? 'var(--destructive)' : isLow ? 'var(--warning)' : 'var(--border-solid)',
+                                    borderColor: isEmpty ? 'var(--destructive)' : isLow ? 'var(--warning)' : 'var(--glass-border)',
                                 }}
                             >
                                 {/* Plan badge */}
                                 <div
-                                    className="px-2 py-2 rounded-full text-xs font-bold uppercase bg-info-bg"
+                                    className="px-2 py-2 rounded-full text-[10px] font-bold uppercase bg-info-bg"
                                     style={{
                                         // backgroundColor: 'var(--info-bg)',
                                         color: 'var(--primary)',
@@ -223,9 +223,9 @@ export default function DashboardLayout({ children }) {
                                 <div className="w-px h-4 bg-border-solid" />
 
                                 {/* Icon + count */}
-                                <div className="flex items-center gap-1.5">
+                                <div className="flex flex-row items-center gap-1.5">
                                     <Zap className={`w-3.5 h-3.5 ${isEmpty ? 'text-destructive' : isLow ? 'text-warning' : 'text-primary'}`} />
-                                    <span className="text-[17px] font-bold text-foreground">{creditsRemaining.toLocaleString()}</span>
+                                    <span className="text-xs font-bold text-foreground">{creditsRemaining.toLocaleString()}</span>
                                     <span className="text-xs font-medium text-muted">/ {creditsTotal.toLocaleString()}</span>
                                 </div>
 
