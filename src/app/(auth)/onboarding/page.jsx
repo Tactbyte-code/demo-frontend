@@ -6,6 +6,7 @@ import { ArrowRight, ArrowLeft, Check, Zap, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { getToken } from '@/utils/getToken';
 
 const questions = [
     {
@@ -75,7 +76,7 @@ function BackgroundOrbs() {
                 style={{ backgroundImage: 'radial-gradient(circle, var(--text-main) 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
         </div>
     );
-}
+};
 
 // ── Left panel ────────────────────────────────────────────────────────────────
 function LeftPanel({ step, done }) {
@@ -144,7 +145,7 @@ function LeftPanel({ step, done }) {
             </div>
         </div>
     );
-}
+};
 
 // ── Done screen ───────────────────────────────────────────────────────────────
 function DoneScreen({ answers, router }) {
@@ -271,7 +272,7 @@ function DoneScreen({ answers, router }) {
             </div>
         </motion.div>
     );
-}
+};
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function OnboardingPage() {
@@ -317,10 +318,10 @@ export default function OnboardingPage() {
     const handleSubmit = async () => {
         setSubmitting(true);
         setError("");
+
         try {
-            const firebaseUser = auth.currentUser;
-            if (!firebaseUser) { router.replace("/login"); return; }
-            const token = await firebaseUser.getIdToken();
+            const token = await getToken();
+            if (!token) { router.replace("/login"); return; }
 
             const response = await fetch(`${apiUrl}/onboarding`, {
                 method: "POST",
@@ -332,19 +333,21 @@ export default function OnboardingPage() {
                 })
             });
 
-            const data = response.json();
-            console.log('data: ', data);
+            // ← read body only once
+            const data = await response.json();
+            console.log('onboarding data: ', data);
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.detail || "Submission failed");
+                throw new Error(data.detail || "Submission failed");
             }
+
             const storedUser = localStorage.getItem("user");
             if (storedUser) {
                 const user = JSON.parse(storedUser);
                 localStorage.setItem("user", JSON.stringify({ ...user, is_onboarded: true }));
                 window.dispatchEvent(new Event("userUpdated"));
             }
+
             setDone(true);
         } catch (err) {
             console.error("Onboarding error:", err);

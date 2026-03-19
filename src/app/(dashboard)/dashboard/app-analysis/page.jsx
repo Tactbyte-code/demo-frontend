@@ -9,6 +9,7 @@ import {
     RotateCcw, ChevronRight, Send
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getToken } from '@/utils/getToken';
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 

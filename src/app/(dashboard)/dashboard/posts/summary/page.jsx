@@ -59,7 +59,7 @@ const Pill = ({ label, muted = false }) => (
 )
 
 const SectionLabel = ({ children }) => (
-    <p className="mb-3 text-[10px] font-medium uppercase tracking-widest text-[var(--text-muted)]">{children}</p>
+    <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted">{children}</p>
 )
 
 const Card = ({ children, className = '' }) => (
@@ -196,6 +196,7 @@ const PainPointCard = ({ pp }) => {
 const SummaryPage = () => {
     const searchParams = useSearchParams()
     const jobId = searchParams.get('jobId')
+    console.log('jobid: ', jobId)
 
     const [data, setData] = useState(null)
     const [loading, setLoading] = useState(true)
@@ -207,7 +208,7 @@ const SummaryPage = () => {
     // Set first theme once data loads
     useEffect(() => {
         if (data?.themes?.length) {
-            setActiveTheme(data.themes[0].id)
+            setActiveTheme(data?.themes[0].id)
         }
     }, [data])
 
@@ -227,10 +228,10 @@ const SummaryPage = () => {
                 })
                 if (!res.ok) throw new Error(`Summarization failed (${res.status})`)
                 const json = await res.json()
-                console.log('Summary data:', json)
+                console.log('Summary data: ', json)
                 setData(json)
             } catch (err) {
-                console.error('Error fetching summary:', err)
+                console.log('Error fetching summary: ', err)
                 setError(err.message)
             } finally {
                 setLoading(false)
@@ -295,8 +296,60 @@ const SummaryPage = () => {
             {/* ── Executive Summary ── */}
             <Card className="mb-6">
                 <SectionLabel>Executive Summary</SectionLabel>
-                <p className="leading-relaxed text-sm text-[var(--text-main)]">{data.executive_summary}</p>
+                <p className="leading-6 text-[13px] text-[var(--text-main)]">{data.executive_summary}</p>
             </Card>
+            {data.actionable_next_steps?.length > 0 && (
+                <Card className="mb-6">
+                    <SectionLabel>Actionable Next Steps</SectionLabel>
+                    <div className="space-y-3">
+                        {data.actionable_next_steps.sort((a, b) => a.priority - b.priority).map((item, i) => (
+                            <div key={i} className="rounded-lg border border-[var(--border-solid)] bg-[var(--surface-card)] p-4">
+                                <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-mono text-[10px] font-black px-2 py-0.5 rounded-full bg-[var(--info-bg)] text-[var(--primary)]">
+                                            #{item.priority}
+                                        </span>
+                                        <p className="text-sm font-semibold text-[var(--text-main)]">{item.step}</p>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                        {item.quick_win && (
+                                            <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-[var(--success-bg)] text-[var(--success)]">
+                                                Quick Win
+                                            </span>
+                                        )}
+                                        <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-[var(--surface-raised)] text-[var(--text-muted)]">
+                                            {item.effort}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <p className="text-xs leading-relaxed text-[var(--text-muted)] mb-3">{item.rationale}</p>
+
+                                <div className="border-t border-[var(--border-solid)] pt-3 space-y-2">
+                                    <div>
+                                        <p className="text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">How</p>
+                                        <p className="text-xs leading-relaxed text-[var(--text-main)]">{item.how}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Impact</p>
+                                        <p className="text-xs leading-relaxed text-[var(--text-main)]">{item.impact}</p>
+                                    </div>
+                                </div>
+
+                                {item.addresses_themes?.length > 0 && (
+                                    <div className="mt-3 flex flex-wrap gap-1.5">
+                                        {item.addresses_themes.map(theme => (
+                                            <span key={theme} className="text-[10px] font-medium px-2 py-0.5 rounded-full border border-[var(--border-solid)] text-[var(--text-muted)]">
+                                                {theme}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </Card>
+            )}
 
             {/* ── Themes ── */}
             <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start">
@@ -389,7 +442,7 @@ const SummaryPage = () => {
                             { label: 'Demographic Signals', items: data.market_signals.demographic_signals },
                         ].map(({ label, items }) => (
                             <div key={label}>
-                                <p className="mb-2 text-[10px] font-medium uppercase tracking-widest text-[var(--text-muted)]">{label}</p>
+                                <p className="mb-2 text-[10px] font-medium uppercase tracking-widest text-muted]">{label}</p>
                                 <div className="flex flex-wrap gap-1.5">
                                     {items?.map(item => <Pill key={item} label={item} muted />)}
                                 </div>

@@ -82,7 +82,7 @@ export default function Footer() {
                                     href={social.href}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300"
+                                    className="w-9 h-9 rounded-full flex items-center cursor-pointer justify-center transition-all duration-300"
                                     style={{
                                         backgroundColor: 'var(--surface)',
                                         border: '1px solid var(--glass-border)',
@@ -192,7 +192,7 @@ export default function Footer() {
                             {Object.entries(footerLinks).map(([category, links]) => (
                                 <div key={category} className="space-y-5">
                                     <h4
-                                        className="font-black text-[16px] uppercase tracking-widest opacity-80"
+                                        className="font-bold text-[16px] uppercase tracking-widest opacity-80"
                                         style={{ color: 'var(--text-main)' }}
                                     >
                                         {category}
@@ -202,7 +202,7 @@ export default function Footer() {
                                             <li key={link.name}>
                                                 <Link
                                                     href={'#'}
-                                                    className="text-sm inline-block transition-colors duration-200"
+                                                    className="text-sm inline-block transition-colors duration-200 cursor-pointer"
                                                     style={{ color: 'var(--text-muted)' }}
                                                     onMouseEnter={e => {
                                                         e.currentTarget.style.color = 'var(--primary)';

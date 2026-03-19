@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ChevronRight, RefreshCcw, Sparkles, CheckCircle2, Clock, AlertCircle, Timer } from "lucide-react";
-import { auth } from '@/config/firebase';
+import { getToken } from '@/utils/getToken';
 import Link from "next/link";
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
@@ -18,17 +18,17 @@ const EXAMPLES = [
 
 const REFRESH_INTERVAL_MS = 5000;
 
-// ── PRIMITIVES ────────────────────────────────────────
+// ── PRIMITIVES ────────────────────────────────────────────────────────────────
 const formatDate = (iso) =>
     new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
-// ─── MAIN PAGE ─────────────────────────────────────────────────────────────
+// ─── MAIN PAGE ────────────────────────────────────────────────────────────────
 export default function RedditIntelligencePage() {
     const [query, setQuery] = useState("");
     const [focused, setFocused] = useState(false);
     const [submitLoading, setSubmitLoading] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
-    const [jobs, setJobs,] = useState([]);
+    const [jobs, setJobs] = useState([]);
     const [jobsLoading, setJobsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [countdown, setCountdown] = useState(REFRESH_INTERVAL_MS / 1000);
@@ -37,6 +37,7 @@ export default function RedditIntelligencePage() {
     const [cooldownMinutes, setCooldownMinutes] = useState(0);
     const [cooldownSeconds, setCooldownSeconds] = useState(0);
     const [isOnCooldown, setIsOnCooldown] = useState(false);
+    const [cooldownLoading, setCooldownLoading] = useState(true);
 
     const textareaRef = useRef(null);
     const jobsIntervalRef = useRef(null);
@@ -44,58 +45,12 @@ export default function RedditIntelligencePage() {
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-    // ── Get fresh token (cached for performance) ──────────────
-    const getToken = useCallback(async () => {
-        const firebaseUser = auth.currentUser;
-        if (!firebaseUser) throw new Error("Not authenticated");
-        return await firebaseUser.getIdToken();
-    }, []);
-
-    // ── Fetch jobs ────────────────────────────────────────────
-    const fetchJobs = useCallback(async (isSilent = false) => {
-        if (!isSilent) setJobsLoading(true);
-        try {
-            const token = await getToken();
-            const res = await fetch(`${apiUrl}/jobs`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (!res.ok) throw new Error(`Fetch failed: ${res?.status}`);
-            const data = await res.json();
-            setJobs(data);
-            setCountdown(REFRESH_INTERVAL_MS / 1000);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setJobsLoading(false);
-        }
-    }, [apiUrl, getToken]);
-
-    // ── Check cooldown status from backend ────────────────────
-    const checkCooldown = useCallback(async () => {
-        try {
-            const token = await getToken();
-            const res = await fetch(`${apiUrl}/users/me`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (!res.ok) return;
-            const data = await res.json();
-            const plan = data.plan;
-            if (!plan) return;
-
-            if (!plan.can_query) {
-                setIsOnCooldown(true);
-                setCooldownMinutes(plan.cooldown_minutes_left);
-                setCooldownSeconds(0);
-                startCooldownTimer(plan.cooldown_minutes_left * 60);
-            } else {
-                setIsOnCooldown(false);
-                setCooldownMinutes(0);
-                setCooldownSeconds(0);
-            }
-        } catch (err) {
-            console.error("Failed to check cooldown:", err);
-        }
-    }, [apiUrl, getToken]);
+    // ── Get fresh token ───────────────────────────────────────
+    // const getToken = useCallback(async () => {
+    //     const firebaseUser = auth.currentUser;
+    //     if (!firebaseUser) throw new Error("Not authenticated");
+    //     return await firebaseUser.getIdToken();
+    // }, []);
 
     // ── Cooldown countdown timer ──────────────────────────────
     const startCooldownTimer = useCallback((totalSeconds) => {
@@ -116,11 +71,75 @@ export default function RedditIntelligencePage() {
         }, 1000);
     }, []);
 
+    // ── Check cooldown from backend ───────────────────────────
+    const checkCooldown = useCallback(async () => {
+        try {
+            const token = await getToken();
+
+            const res = await fetch(`${apiUrl}/users/me`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (!res.ok) return;
+
+            const data = await res.json();
+            console.log('users data: ', data);
+
+            const plan = data.plan;
+            if (!plan) return;
+
+            if (!plan.can_query && plan.next_query_at) {
+                // ← Calculate exact seconds from next_query_at
+                const now = new Date();
+                const nextQueryAt = new Date(plan.next_query_at);
+                const secondsLeft = Math.max(Math.floor((nextQueryAt - now) / 1000), 0);
+
+                if (secondsLeft > 0) {
+                    setIsOnCooldown(true);
+                    setCooldownMinutes(Math.floor(secondsLeft / 60));
+                    setCooldownSeconds(secondsLeft % 60);
+                    startCooldownTimer(secondsLeft);
+                } else {
+                    setIsOnCooldown(false);
+                    setCooldownMinutes(0);
+                    setCooldownSeconds(0);
+                }
+            } else {
+                setIsOnCooldown(false);
+                setCooldownMinutes(0);
+                setCooldownSeconds(0);
+            }
+        } catch (err) {
+            console.error("Failed to check cooldown:", err);
+        } finally {
+            setCooldownLoading(false);
+        }
+    }, [apiUrl, getToken, startCooldownTimer]);
+
+    // ── Fetch jobs ────────────────────────────────────────────
+    const fetchJobs = useCallback(async (isSilent = false) => {
+        if (!isSilent) setJobsLoading(true);
+        try {
+            const token = await getToken();
+
+            const res = await fetch(`${apiUrl}/jobs`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!res.ok) throw new Error(`Fetch failed: ${res?.status}`);
+            const data = await res.json();
+            setJobs(data);
+            setCountdown(REFRESH_INTERVAL_MS / 1000);
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setJobsLoading(false);
+        }
+    }, [apiUrl, getToken]);
+
     // ── Init ──────────────────────────────────────────────────
     useEffect(() => {
         fetchJobs();
         checkCooldown();
-
         jobsIntervalRef.current = setInterval(() => fetchJobs(true), REFRESH_INTERVAL_MS);
 
         return () => {
@@ -156,44 +175,32 @@ export default function RedditIntelligencePage() {
                 body: JSON.stringify({ query: query.trim() }),
             });
 
-            console.log('response: ', res);
-
             if (!res.ok) {
                 const errData = await res.json();
-                // ← 429 rate limit error from backend
                 if (res.status === 429) {
-                    const match = errData.detail?.match(/(\d+) more minute/);
-                    const mins = match ? parseInt(match[1]) : 30;
-                    setIsOnCooldown(true);
-                    setCooldownMinutes(mins);
-                    setCooldownSeconds(0);
-                    startCooldownTimer(mins * 60);
+                    await checkCooldown(); // ← use backend for accurate time
                     throw new Error(errData.detail || "Rate limit exceeded");
                 }
                 throw new Error(errData.detail || `Failed to submit job (${res.status})`);
             }
 
-            // Deduct credit
+            // ── Deduct credit ─────────────────────────────────
             const creditRes = await fetch(`${apiUrl}/users/deduct-credit`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
             });
-
             if (creditRes.ok) {
                 window.dispatchEvent(new Event("userUpdated"));
             }
 
-            // Start cooldown after successful submission
-            setIsOnCooldown(true);
-            setCooldownMinutes(29);
-            setCooldownSeconds(59);
-            startCooldownTimer(30 * 60);
-
             setShowSuccess(true);
             setQuery("");
             fetchJobs(true);
+
+            // ← Use actual next_query_at from backend instead of hardcoding
+            await checkCooldown();
+
         } catch (err) {
-            console.log('error: ', err);
             setError(err.message);
         } finally {
             setSubmitLoading(false);
@@ -209,6 +216,7 @@ export default function RedditIntelligencePage() {
             style={{ backgroundColor: "var(--background)" }}>
 
             <div className="relative z-10 w-full max-w-3xl">
+
                 {/* Header */}
                 <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-10">
                     <div className="flex justify-center mb-5">
@@ -233,7 +241,9 @@ export default function RedditIntelligencePage() {
                             style={{ backgroundColor: "var(--success-bg)", borderColor: "var(--success)" }}>
                             <CheckCircle2 className="w-5 h-5 shrink-0" style={{ color: "var(--success)" }} />
                             <div>
-                                <p className="text-[15px] font-bold mb-1" style={{ color: "var(--success)" }}>Query successfully queued!</p>
+                                <p className="text-[15px] font-bold mb-1" style={{ color: "var(--success)" }}>
+                                    Query successfully queued!
+                                </p>
                                 <p className="text-xs" style={{ color: "var(--text-muted)" }}>
                                     We are gathering Reddit data. You'll be notified when the summary is ready.
                                 </p>
@@ -242,67 +252,86 @@ export default function RedditIntelligencePage() {
                     )}
                 </AnimatePresence>
 
-                {/* Search card */}
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-                    <form onSubmit={handleSubmit}>
-                        <motion.div
-                            animate={{ boxShadow: focused ? "var(--shadow-lg)" : "var(--shadow-md)" }}
-                            className="rounded-2xl overflow-hidden border"
-                            style={{
-                                backgroundColor: "var(--surface)",
-                                borderColor: isOnCooldown ? "var(--warning)" : "var(--border-solid)",
-                                opacity: isOnCooldown ? 0.7 : 1,
-                            }}
-                        >
-                            <div className="p-5 pb-4">
-                                <textarea
-                                    ref={textareaRef}
-                                    value={query}
-                                    onChange={e => setQuery(e.target.value)}
-                                    onFocus={() => setFocused(true)}
-                                    onBlur={() => setFocused(false)}
-                                    onKeyDown={handleKeyDown}
-                                    rows={3}
-                                    disabled={isOnCooldown}
-                                    placeholder={isOnCooldown ? "Please wait for the cooldown to finish..." : "Describe the topic you want to analyze..."}
-                                    className="flex-1 w-full bg-transparent outline-none resize-none text-sm leading-relaxed disabled:cursor-not-allowed"
-                                    style={{ color: "var(--text-main)" }}
-                                />
-                            </div>
+                {/* ── Search card OR Skeleton ── */}
+                {cooldownLoading ? (
+                    <div className="rounded-2xl overflow-hidden border animate-pulse"
+                        style={{ backgroundColor: "var(--surface)", borderColor: "var(--border-solid)" }}>
+                        <div className="p-5 pb-4 space-y-3">
+                            <div className="h-4 rounded-lg w-3/4 bg-surface-raised" />
+                            <div className="h-4 rounded-lg w-1/2 bg-surface-raised" />
+                            <div className="h-4 rounded-lg w-2/3 bg-surface-raised" />
+                        </div>
+                        <div className="flex items-center justify-between px-5 py-3 border-t"
+                            style={{ borderColor: "var(--border-solid)", backgroundColor: "var(--surface-card)" }}>
+                            <div className="h-3 w-16 rounded bg-surface-raised" />
+                            <div className="h-9 w-28 rounded-xl bg-surface-raised" />
+                        </div>
+                    </div>
+                ) : (
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                        <form onSubmit={handleSubmit}>
+                            <motion.div
+                                animate={{ boxShadow: focused ? "var(--shadow-lg)" : "var(--shadow-md)" }}
+                                className="rounded-2xl overflow-hidden border"
+                                style={{
+                                    backgroundColor: "var(--surface)",
+                                    borderColor: isOnCooldown ? "var(--warning)" : "var(--border-solid)",
+                                    opacity: isOnCooldown ? 0.7 : 1,
+                                }}
+                            >
+                                <div className="p-5 pb-4">
+                                    <textarea
+                                        ref={textareaRef}
+                                        value={query}
+                                        onChange={e => setQuery(e.target.value)}
+                                        onFocus={() => setFocused(true)}
+                                        onBlur={() => setFocused(false)}
+                                        onKeyDown={handleKeyDown}
+                                        rows={3}
+                                        disabled={isOnCooldown}
+                                        placeholder={isOnCooldown
+                                            ? "Please wait for the cooldown to finish..."
+                                            : "Describe the topic you want to analyze..."
+                                        }
+                                        className="flex-1 w-full bg-transparent outline-none resize-none text-sm leading-relaxed disabled:cursor-not-allowed"
+                                        style={{ color: "var(--text-main)" }}
+                                    />
+                                </div>
 
-                            <div className="flex items-center justify-between px-5 py-3 border-t"
-                                style={{ borderColor: "var(--border-solid)", backgroundColor: "var(--surface-card)" }}>
-                                <span className="text-[10px] font-mono" style={{ color: "var(--text-subtle)" }}>
-                                    {isOnCooldown
-                                        ? `⏳ ${String(cooldownMinutes).padStart(2, '0')}:${String(cooldownSeconds).padStart(2, '0')} remaining`
-                                        : query.length > 0 ? `${query.length} chars` : "⌘↵ to run"
-                                    }
-                                </span>
-                                <button
-                                    type="submit"
-                                    disabled={!canSubmit}
-                                    className="flex items-center gap-2 px-5 h-9 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all"
-                                    style={{
-                                        background: canSubmit ? "var(--primary)" : "var(--surface-raised)",
-                                        color: canSubmit ? "#fff" : "var(--text-subtle)",
-                                        cursor: canSubmit ? "pointer" : "not-allowed",
-                                    }}
-                                >
-                                    {submitLoading
-                                        ? "Analyzing..."
-                                        : isOnCooldown
-                                            ? "On Cooldown"
-                                            : <> Analyze <ArrowRight className="w-3 h-3" /> </>
-                                    }
-                                </button>
-                            </div>
-                        </motion.div>
-                    </form>
-                </motion.div>
+                                <div className="flex items-center justify-between px-5 py-3 border-t"
+                                    style={{ borderColor: "var(--border-solid)", backgroundColor: "var(--surface-card)" }}>
+                                    <span className="text-[10px] font-mono" style={{ color: "var(--text-subtle)" }}>
+                                        {isOnCooldown
+                                            ? `⏳ ${String(cooldownMinutes).padStart(2, '0')}:${String(cooldownSeconds).padStart(2, '0')} remaining`
+                                            : query.length > 0 ? `${query.length} chars` : "⌘↵ to run"
+                                        }
+                                    </span>
+                                    <button
+                                        type="submit"
+                                        disabled={!canSubmit}
+                                        className="flex items-center gap-2 px-5 h-9 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all"
+                                        style={{
+                                            background: canSubmit ? "var(--primary)" : "var(--surface-raised)",
+                                            color: canSubmit ? "#fff" : "var(--text-subtle)",
+                                            cursor: canSubmit ? "pointer" : "not-allowed",
+                                        }}
+                                    >
+                                        {submitLoading
+                                            ? "Analyzing..."
+                                            : isOnCooldown
+                                                ? "On Cooldown"
+                                                : <> Analyze <ArrowRight className="w-3 h-3" /> </>
+                                        }
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </form>
+                    </motion.div>
+                )}
 
                 {/* ── Cooldown banner ── */}
                 <AnimatePresence>
-                    {isOnCooldown && (
+                    {!cooldownLoading && isOnCooldown && (
                         <motion.div
                             initial={{ opacity: 0, y: -8 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -350,49 +379,49 @@ export default function RedditIntelligencePage() {
                 </AnimatePresence>
 
                 {/* Examples */}
-                <AnimatePresence>
-                    <motion.div
-                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="my-5 flex items-center justify-center gap-2 flex-wrap"
-                    >
-                        <span className="text-[10px] font-mono uppercase shrink-0 font-extrabold" style={{ color: 'var(--text-subtle)' }}>
-                            Try:
-                        </span>
-                        {EXAMPLES.map((s, i) => (
-                            <motion.button
-                                key={s}
-                                initial={{ opacity: 0, y: 4 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: i * 0.04 }}
-                                type="button"
-                                onClick={() => !isOnCooldown && setQuery(s)}
-                                disabled={isOnCooldown}
-                                className="px-3 py-1 rounded-full text-[11px] font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                                style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border-solid)', color: 'var(--text-muted)' }}
-                                onMouseEnter={e => {
-                                    if (!isOnCooldown) {
-                                        e.currentTarget.style.borderColor = 'var(--primary)';
-                                        e.currentTarget.style.color = 'var(--primary)';
-                                        e.currentTarget.style.backgroundColor = 'var(--info-bg)';
-                                    }
-                                }}
-                                onMouseLeave={e => {
-                                    e.currentTarget.style.borderColor = 'var(--border-solid)';
-                                    e.currentTarget.style.color = 'var(--text-muted)';
-                                    e.currentTarget.style.backgroundColor = 'var(--surface)';
-                                }}
-                            >
-                                {s}
-                            </motion.button>
-                        ))}
-                    </motion.div>
-                </AnimatePresence>
+                <motion.div
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                    className="my-5 flex items-center justify-center gap-2 flex-wrap"
+                >
+                    <span className="text-[10px] font-mono uppercase shrink-0 font-extrabold"
+                        style={{ color: 'var(--text-subtle)' }}>
+                        Try:
+                    </span>
+                    {EXAMPLES.map((s, i) => (
+                        <motion.button
+                            key={s}
+                            initial={{ opacity: 0, y: 4 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.04 }}
+                            type="button"
+                            onClick={() => !isOnCooldown && setQuery(s)}
+                            disabled={isOnCooldown}
+                            className="px-3 py-1 cursor-pointer rounded-full text-[11px] font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                            style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border-solid)', color: 'var(--text-muted)' }}
+                            onMouseEnter={e => {
+                                if (!isOnCooldown) {
+                                    e.currentTarget.style.borderColor = 'var(--primary)';
+                                    e.currentTarget.style.color = 'var(--primary)';
+                                    e.currentTarget.style.backgroundColor = 'var(--info-bg)';
+                                }
+                            }}
+                            onMouseLeave={e => {
+                                e.currentTarget.style.borderColor = 'var(--border-solid)';
+                                e.currentTarget.style.color = 'var(--text-muted)';
+                                e.currentTarget.style.backgroundColor = 'var(--surface)';
+                            }}
+                        >
+                            {s}
+                        </motion.button>
+                    ))}
+                </motion.div>
             </div>
 
             {/* ─── DIVIDER ─── */}
             <div className="w-full max-w-5xl mt-20 mb-10 flex items-center gap-4">
                 <div className="h-px flex-1" style={{ backgroundColor: "var(--border-solid)" }} />
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-subtle)" }}>
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest"
+                    style={{ color: "var(--text-subtle)" }}>
                     <Clock className="w-4 h-4" /> Syncing in {countdown}s
                 </div>
                 <div className="h-px flex-1" style={{ backgroundColor: "var(--border-solid)" }} />
@@ -402,8 +431,12 @@ export default function RedditIntelligencePage() {
             <div className="w-full max-w-5xl px-4">
                 <div className="flex justify-between items-end mb-6">
                     <div>
-                        <h2 className="text-xl font-black tracking-tight" style={{ color: "var(--text-main)" }}>Recent Analysis</h2>
-                        <p className="text-xs" style={{ color: "var(--text-muted)" }}>Your analysis history and status</p>
+                        <h2 className="text-xl font-black tracking-tight" style={{ color: "var(--text-main)" }}>
+                            Recent Analysis
+                        </h2>
+                        <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                            Your analysis history and status
+                        </p>
                     </div>
                     <button
                         onClick={() => fetchJobs()}
@@ -429,14 +462,16 @@ export default function RedditIntelligencePage() {
                             {!jobsLoading && jobs.map(job => <JobRow key={job.id} job={job} />)}
                             {jobsLoading && jobs.length === 0 && (
                                 <tr>
-                                    <td colSpan={4} className="px-6 py-10 text-center text-xs" style={{ color: "var(--text-subtle)" }}>
+                                    <td colSpan={4} className="px-6 py-10 text-center text-xs"
+                                        style={{ color: "var(--text-subtle)" }}>
                                         Syncing your personalized data...
                                     </td>
                                 </tr>
                             )}
                             {!jobsLoading && jobs.length === 0 && (
                                 <tr>
-                                    <td colSpan={4} className="px-6 py-10 text-center text-xs" style={{ color: "var(--text-subtle)" }}>
+                                    <td colSpan={4} className="px-6 py-10 text-center text-xs"
+                                        style={{ color: "var(--text-subtle)" }}>
                                         No analysis yet. Submit your first query above.
                                     </td>
                                 </tr>
@@ -465,8 +500,10 @@ function JobRow({ job }) {
 
     return (
         <tr className="transition-colors" style={{ backgroundColor: "var(--surface)" }}>
-            <td className="px-6 py-4 text-sm font-medium max-w-xs truncate" style={{ color: "var(--text-main)" }}>{job.query}</td>
-            <td className="px-6 py-4 text-[11px] font-mono" style={{ color: "var(--text-muted)" }}>{formatDate(job.created_at)}</td>
+            <td className="px-6 py-4 text-sm font-medium max-w-xs truncate"
+                style={{ color: "var(--text-main)" }}>{job.query}</td>
+            <td className="px-6 py-4 text-[11px] font-mono"
+                style={{ color: "var(--text-muted)" }}>{formatDate(job.created_at)}</td>
             <td className="px-6 py-4">
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold"
                     style={{ backgroundColor: style.bg, color: style.text }}>
@@ -487,7 +524,8 @@ function JobRow({ job }) {
                         View Summary <ChevronRight className="w-3 h-3" />
                     </Link>
                 ) : isProcessing ? (
-                    <span className="text-[10px] font-mono italic" style={{ color: "var(--text-subtle)", opacity: 0.5 }}>
+                    <span className="text-[10px] font-mono italic"
+                        style={{ color: "var(--text-subtle)", opacity: 0.5 }}>
                         Analyzing...
                     </span>
                 ) : null}
