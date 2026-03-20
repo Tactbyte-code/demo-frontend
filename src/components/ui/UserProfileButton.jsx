@@ -48,7 +48,7 @@ export default function UserProfileButton() {
 
     const handleLogout = async () => {
         await signOut(auth);
-        localStorage.removeItem("token");
+        // localStorage.removeItem("token");
         localStorage.removeItem("user");
         setUser(null);
         setIsProfileOpen(false);

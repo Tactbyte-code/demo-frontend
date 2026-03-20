@@ -45,7 +45,7 @@ export default function AuthVerificationHandler() {
                         const data = await response.json();
                         console.log("User saved to DB:", data);
 
-                        localStorage.setItem("token", token);
+                        // localStorage.setItem("token", token);
                         localStorage.setItem("user", JSON.stringify({
                             id: data.id,
                             email: data.email,
