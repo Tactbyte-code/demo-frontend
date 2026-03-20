@@ -49,6 +49,7 @@ export default function LoginPage() {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
             const token = await user.getIdToken();
+
             const response = await fetch(`${apiUrl}/auth/email-login`, {
                 method: "POST",
                 headers: {
@@ -66,23 +67,21 @@ export default function LoginPage() {
             const data = await response.json();
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.detail || "Google signup failed");
+                throw new Error(data.detail || "Login failed");
             }
 
-            localStorage.setItem("token", token);
+            // ← token removed, user object kept
             localStorage.setItem("user", JSON.stringify({
                 id: data.id,
                 email: data.email,
                 firebase_uid: data.firebase_uid,
                 full_name: data.full_name,
                 photo_url: data.photo_url,
-                is_onboarded: data.is_onboarded  // ← save this too
+                is_onboarded: data.is_onboarded
             }));
 
             window.dispatchEvent(new Event("userUpdated"));
 
-            // ← Route based on onboarding status
             if (!data.is_onboarded) {
                 router.replace("/onboarding");
             } else {
@@ -90,18 +89,12 @@ export default function LoginPage() {
             }
         } catch (err) {
             const code = err?.code || "";
-
-            // ← Handle Firebase specific errors
             if (code === "auth/invalid-credential" || code === "auth/wrong-password") {
-                // Could be wrong password OR a Google account trying email login
-                // Check backend to distinguish
                 const check = await fetch(`${apiUrl}/auth/check-provider`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ email })
                 });
-
-                console.log('check: ', check);
                 if (check.ok) {
                     const checkData = await check.json();
                     if (checkData.provider === "google") {
@@ -157,7 +150,7 @@ export default function LoginPage() {
                 throw new Error(errorData.detail || "Google signup failed");
             }
 
-            localStorage.setItem("token", token);
+            // localStorage.setItem("token", token);
             localStorage.setItem("user", JSON.stringify({
                 id: data.id,
                 email: data.email,

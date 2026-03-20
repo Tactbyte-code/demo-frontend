@@ -70,7 +70,7 @@ export default function SignupPage() {
                     const data = await response.json();
                     console.log('daata: ', data);
 
-                    localStorage.setItem("token", freshToken);
+                    // localStorage.setItem("token", freshToken);
                     localStorage.setItem("user", JSON.stringify({
                         id: data.id,
                         email: data.email,
@@ -190,7 +190,7 @@ export default function SignupPage() {
                 throw new Error(errorData.detail || "Google signup failed");
             }
 
-            localStorage.setItem("token", token);
+            // localStorage.setItem("token", token);
             localStorage.setItem("user", JSON.stringify({
                 id: data.id,
                 email: data.email,

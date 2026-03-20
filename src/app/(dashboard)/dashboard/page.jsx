@@ -9,6 +9,7 @@ import {
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import JobRow from '@/components/ui/JobRow';
+import { getToken } from '@/utils/getToken';
 
 const formatDate = (iso) =>
     new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -229,6 +230,7 @@ function QuickActions() {
 
 // ── MAIN DASHBOARD ─────────────────────────────────────
 export default function DashboardPage() {
+
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -251,7 +253,8 @@ export default function DashboardPage() {
         isFetchingRef.current = true;
         if (!isSilent) setLoading(true);
         try {
-            const token = localStorage.getItem('token');
+            const token = await getToken();
+
             const res = await fetch(`${apiUrl}/jobs`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
