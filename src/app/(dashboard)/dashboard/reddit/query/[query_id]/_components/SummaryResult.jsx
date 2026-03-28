@@ -1,6 +1,6 @@
+// _components/SummaryResult.jsx
 "use client"
 
-import { useSearchParams } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 
 // ── Config maps ───────────────────────────────────────────────────────────────
@@ -11,7 +11,6 @@ const sentimentConfig = {
     mixed: { bg: 'bg-[var(--warning-bg)]', text: 'text-[var(--warning)]', dot: 'bg-[var(--warning)]', label: 'Mixed' },
 }
 
-// pain_points.impact maps to severity style
 const impactConfig = {
     financial: { bg: 'bg-[var(--destructive-bg)]', text: 'text-[var(--destructive)]' },
     Financial: { bg: 'bg-[var(--destructive-bg)]', text: 'text-[var(--destructive)]' },
@@ -68,31 +67,6 @@ const Card = ({ children, className = '' }) => (
     </div>
 )
 
-// ── Skeletons ─────────────────────────────────────────────────────────────────
-const Skeleton = ({ className = '' }) => (
-    <div className={`animate-pulse rounded bg-[var(--surface-raised)] ${className}`} />
-)
-
-const LoadingSkeleton = () => (
-    <div className="min-h-screen bg-[var(--background)] px-6 py-10 lg:px-10 space-y-6">
-        <div className="space-y-2">
-            <Skeleton className="h-3 w-32" />
-            <Skeleton className="h-7 w-2/3" />
-            <Skeleton className="h-3 w-1/3" />
-        </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-20" />)}
-        </div>
-        <Skeleton className="h-32 w-full" />
-        <div className="flex gap-4">
-            <div className="flex flex-col gap-2 w-64">
-                {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-20" />)}
-            </div>
-            <Skeleton className="flex-1 h-64" />
-        </div>
-    </div>
-)
-
 // ── Pain Point Card ───────────────────────────────────────────────────────────
 const PainPointCard = ({ pp }) => {
     const [expanded, setExpanded] = useState(false)
@@ -100,7 +74,6 @@ const PainPointCard = ({ pp }) => {
 
     return (
         <div className="rounded-lg border border-[var(--border-solid)] bg-[var(--surface-card)] overflow-hidden">
-            {/* Header */}
             <button
                 onClick={() => setExpanded(e => !e)}
                 className="w-full text-left p-4 cursor-pointer hover:bg-[var(--surface-raised)] transition-colors"
@@ -108,11 +81,9 @@ const PainPointCard = ({ pp }) => {
                 <div className="flex flex-wrap items-start justify-between gap-2">
                     <p className="text-sm font-medium text-[var(--text-main)] flex-1">{pp.issue}</p>
                     <div className="flex shrink-0 flex-wrap gap-1.5 items-center">
-                        {/* Impact badge */}
                         <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium capitalize ${ic.bg} ${ic.text}`}>
                             {pp.impact}
                         </span>
-                        {/* Severity */}
                         {pp.severity && (
                             <span className={`text-[10px] font-medium ${severityColor[pp.severity] ?? ''}`}>
                                 {pp.severity}
@@ -123,8 +94,6 @@ const PainPointCard = ({ pp }) => {
                         </span>
                     </div>
                 </div>
-
-                {/* Sentiment */}
                 {pp.sentiment && (
                     <div className="mt-1.5">
                         <SentimentBadge sentiment={pp.sentiment} small />
@@ -132,11 +101,8 @@ const PainPointCard = ({ pp }) => {
                 )}
             </button>
 
-            {/* Expanded */}
             {expanded && (
                 <div className="px-4 pb-4 space-y-4 border-t border-[var(--border-solid)]">
-
-                    {/* Example quote — string in this schema */}
                     {pp.example_quote && (
                         <div className="pt-4">
                             <SectionLabel>Example Quote</SectionLabel>
@@ -145,8 +111,6 @@ const PainPointCard = ({ pp }) => {
                             </div>
                         </div>
                     )}
-
-                    {/* User suggested solutions — array of strings */}
                     {pp.user_suggested_solutions?.length > 0 && (
                         <div>
                             <SectionLabel>User-Suggested Solutions</SectionLabel>
@@ -160,8 +124,6 @@ const PainPointCard = ({ pp }) => {
                             </div>
                         </div>
                     )}
-
-                    {/* System actions — action / how / why */}
                     {pp.system_actions?.length > 0 && (
                         <div>
                             <SectionLabel>System Actions</SectionLabel>
@@ -192,81 +154,31 @@ const PainPointCard = ({ pp }) => {
     )
 }
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
-const SummaryPage = () => {
-    const searchParams = useSearchParams()
-    const jobId = searchParams.get('jobId')
-    console.log('jobid: ', jobId)
-
-    const [data, setData] = useState(null)
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
+// ── Main Component ────────────────────────────────────────────────────────────
+export const SummaryResult = ({ data }) => {
     const [activeTheme, setActiveTheme] = useState(null)
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
-    // Set first theme once data loads
     useEffect(() => {
         if (data?.themes?.length) {
-            setActiveTheme(data?.themes[0].id)
+            setActiveTheme(data.themes[0].id)
         }
     }, [data])
 
-    useEffect(() => {
-        if (!jobId) {
-            setError('No job ID provided')
-            setLoading(false)
-            return
-        }
-
-        const fetchSummary = async () => {
-            try {
-                console.log('Fetching summary for jobId:', jobId)
-                const res = await fetch(`${apiUrl}/job/${jobId}/summary`, {
-                    method: 'GET',
-                    headers: { 'Content-Type': 'application/json' },
-                })
-                if (!res.ok) throw new Error(`Summarization failed (${res.status})`)
-                const json = await res.json()
-                console.log('Summary data: ', json)
-                setData(json)
-            } catch (err) {
-                console.log('Error fetching summary: ', err)
-                setError(err.message)
-            } finally {
-                setLoading(false)
-            }
-        }
-
-        fetchSummary()
-    }, [jobId])
-
-    if (loading) return <LoadingSkeleton />
-
-    if (error) return (
-        <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
-            <div className="rounded-xl border border-[var(--destructive)] bg-[var(--destructive-bg)] p-6 max-w-md text-center">
-                <p className="text-sm font-medium text-[var(--destructive)]">Failed to load summary</p>
-                <p className="mt-1 text-xs text-[var(--text-muted)]">{error}</p>
-            </div>
-        </div>
-    )
-
-    if (!data) return null
+    if (!data) return null;
+    console.log('reddit data: ', data);
 
     const theme = data.themes?.find(t => t.id === activeTheme)
 
     return (
-        <div className="min-h-screen bg-[var(--background)] px-6 py-10 lg:px-10">
-
+        <div className="px-0 py-6 space-y-6">
             {/* ── Header ── */}
-            <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="max-w-2xl">
                     <p className="mb-1.5 font-mono text-[10px] uppercase tracking-widest text-[var(--text-muted)]">
                         Research Summary
                     </p>
                     <h1 className="text-2xl font-semibold leading-snug tracking-tight text-[var(--text-main)]">
-                        {data.query}
+                        {data.search_query}
                     </h1>
                     <p className="mt-1.5 text-xs text-[var(--text-muted)]">{data.subreddit}</p>
                 </div>
@@ -279,7 +191,7 @@ const SummaryPage = () => {
             </div>
 
             {/* ── Stats ── */}
-            <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {[
                     { label: 'Total Signals', value: data.total_signals },
                     { label: 'Themes', value: data.themes?.length ?? 0 },
@@ -294,67 +206,18 @@ const SummaryPage = () => {
             </div>
 
             {/* ── Executive Summary ── */}
-            <Card className="mb-6">
+            <Card>
+                <SectionLabel>Direct Answer</SectionLabel>
+                <p className="leading-6 text-[13px] text-[var(--text-main)]">{data.direct_answer}</p>
+            </Card>
+
+            <Card>
                 <SectionLabel>Executive Summary</SectionLabel>
                 <p className="leading-6 text-[13px] text-[var(--text-main)]">{data.executive_summary}</p>
             </Card>
-            {data.actionable_next_steps?.length > 0 && (
-                <Card className="mb-6">
-                    <SectionLabel>Actionable Next Steps</SectionLabel>
-                    <div className="space-y-3">
-                        {data.actionable_next_steps.sort((a, b) => a.priority - b.priority).map((item, i) => (
-                            <div key={i} className="rounded-lg border border-[var(--border-solid)] bg-[var(--surface-card)] p-4">
-                                <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
-                                    <div className="flex items-center gap-2">
-                                        <span className="font-mono text-[10px] font-black px-2 py-0.5 rounded-full bg-[var(--info-bg)] text-[var(--primary)]">
-                                            #{item.priority}
-                                        </span>
-                                        <p className="text-sm font-semibold text-[var(--text-main)]">{item.step}</p>
-                                    </div>
-                                    <div className="flex items-center gap-1.5 shrink-0">
-                                        {item.quick_win && (
-                                            <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-[var(--success-bg)] text-[var(--success)]">
-                                                Quick Win
-                                            </span>
-                                        )}
-                                        <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-[var(--surface-raised)] text-[var(--text-muted)]">
-                                            {item.effort}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <p className="text-xs leading-relaxed text-[var(--text-muted)] mb-3">{item.rationale}</p>
-
-                                <div className="border-t border-[var(--border-solid)] pt-3 space-y-2">
-                                    <div>
-                                        <p className="text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">How</p>
-                                        <p className="text-xs leading-relaxed text-[var(--text-main)]">{item.how}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Impact</p>
-                                        <p className="text-xs leading-relaxed text-[var(--text-main)]">{item.impact}</p>
-                                    </div>
-                                </div>
-
-                                {item.addresses_themes?.length > 0 && (
-                                    <div className="mt-3 flex flex-wrap gap-1.5">
-                                        {item.addresses_themes.map(theme => (
-                                            <span key={theme} className="text-[10px] font-medium px-2 py-0.5 rounded-full border border-[var(--border-solid)] text-[var(--text-muted)]">
-                                                {theme}
-                                            </span>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                </Card>
-            )}
 
             {/* ── Themes ── */}
-            <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start">
-
-                {/* Theme nav */}
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
                 <div className="flex shrink-0 flex-col gap-2 lg:w-64">
                     <p className="px-1 text-[10px] font-medium uppercase tracking-widest text-[var(--text-muted)]">Themes</p>
                     {data.themes?.map(t => (
@@ -380,11 +243,8 @@ const SummaryPage = () => {
                     ))}
                 </div>
 
-                {/* Theme detail */}
                 {theme && (
                     <div className="min-w-0 flex-1 space-y-4">
-
-                        {/* Overview */}
                         <Card>
                             <div className="mb-3 flex items-start justify-between gap-3">
                                 <div>
@@ -396,7 +256,6 @@ const SummaryPage = () => {
                                 <SentimentBadge sentiment={theme.sentiment} small />
                             </div>
                             <p className="text-sm leading-relaxed text-[var(--text-muted)]">{theme.summary}</p>
-
                             {theme.brands_mentioned?.length > 0 && (
                                 <div className="mt-4">
                                     <SectionLabel>Brands Mentioned</SectionLabel>
@@ -415,7 +274,6 @@ const SummaryPage = () => {
                             )}
                         </Card>
 
-                        {/* Pain Points */}
                         {theme.pain_points?.length > 0 && (
                             <Card>
                                 <SectionLabel>Pain Points ({theme.pain_points.length})</SectionLabel>
@@ -430,9 +288,60 @@ const SummaryPage = () => {
                 )}
             </div>
 
+            {/* ── Actionable Next Steps ── */}
+            {data?.actionable_next_steps?.length > 0 && (
+                <Card>
+                    <SectionLabel>Actionable Next Steps</SectionLabel>
+                    <div className="space-y-3">
+                        {data.actionable_next_steps.sort((a, b) => a.priority - b.priority).map((item, i) => (
+                            <div key={i} className="rounded-lg border border-[var(--border-solid)] bg-[var(--surface-card)] p-4">
+                                <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-mono text-[10px] font-black px-2 py-0.5 rounded-full bg-[var(--info-bg)] text-[var(--primary)]">
+                                            #{item.priority}
+                                        </span>
+                                        <p className="text-sm font-semibold text-[var(--text-main)]">{item.step}</p>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                        {item.quick_win && (
+                                            <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-[var(--success-bg)] text-[var(--success)]">
+                                                Quick Win
+                                            </span>
+                                        )}
+                                        <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-[var(--surface-raised)] text-[var(--text-muted)]">
+                                            {item.effort}
+                                        </span>
+                                    </div>
+                                </div>
+                                <p className="text-xs leading-relaxed text-[var(--text-muted)] mb-3">{item.rationale}</p>
+                                <div className="border-t border-[var(--border-solid)] pt-3 space-y-2">
+                                    <div>
+                                        <p className="text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">How</p>
+                                        <p className="text-xs leading-relaxed text-[var(--text-main)]">{item.how}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] uppercase tracking-widest text-[var(--text-muted)] mb-1">Impact</p>
+                                        <p className="text-xs leading-relaxed text-[var(--text-main)]">{item.impact}</p>
+                                    </div>
+                                </div>
+                                {item.addresses_themes?.length > 0 && (
+                                    <div className="mt-3 flex flex-wrap gap-1.5">
+                                        {item.addresses_themes.map(theme => (
+                                            <span key={theme} className="text-[10px] font-medium px-2 py-0.5 rounded-full border border-[var(--border-solid)] text-[var(--text-muted)]">
+                                                {theme}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </Card>
+            )}
+
             {/* ── Market Signals ── */}
             {data.market_signals && (
-                <Card className="mb-6">
+                <Card>
                     <SectionLabel>Market Signals</SectionLabel>
                     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
                         {[
@@ -442,7 +351,7 @@ const SummaryPage = () => {
                             { label: 'Demographic Signals', items: data.market_signals.demographic_signals },
                         ].map(({ label, items }) => (
                             <div key={label}>
-                                <p className="mb-2 text-[10px] font-medium uppercase tracking-widest text-muted]">{label}</p>
+                                <p className="mb-2 text-[10px] font-medium uppercase tracking-widest text-[var(--text-muted)]">{label}</p>
                                 <div className="flex flex-wrap gap-1.5">
                                     {items?.map(item => <Pill key={item} label={item} muted />)}
                                 </div>
@@ -488,8 +397,4 @@ const SummaryPage = () => {
             )}
         </div>
     )
-}
-
-export default function Page() {
-    return <SummaryPage />
 }

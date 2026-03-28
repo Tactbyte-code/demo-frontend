@@ -34,7 +34,7 @@ export default function DashboardLayout({ children }) {
             const firebaseUser = auth.currentUser;
             if (!firebaseUser) return;
             const token = await firebaseUser.getIdToken();
-            const res = await fetch(`${apiUrl}/users/me`, {
+            const res = await fetch(`${apiUrl}/auth/me`, {
                 headers: { "Authorization": `Bearer ${token}` }
             });
             if (!res.ok) return;
@@ -58,8 +58,8 @@ export default function DashboardLayout({ children }) {
     ];
 
     const engineItems = [
-        { name: 'App Store Analysis', icon: Globe, href: '/dashboard/app-analysis' },
-        { name: 'Reddit Analysis', icon: Database, href: '/dashboard/reddit-analysis' },
+        { name: 'Playstore Analysis', icon: Globe, href: '/dashboard/playstore' },
+        { name: 'Reddit Analysis', icon: Database, href: '/dashboard/reddit' },
     ];
 
     // ── Derived credit values ─────────────────────────────────
@@ -142,6 +142,7 @@ export default function DashboardLayout({ children }) {
             <div className="flex-1 flex flex-col overflow-hidden">
                 {/* Topbar */}
                 <div className="flex items-center justify-between h-17.5 px-5 shrink-0 bg-sidebar border-b border-sidebar-border">
+
                     {/* Left */}
                     <div className="flex items-center gap-4">
                         <button
