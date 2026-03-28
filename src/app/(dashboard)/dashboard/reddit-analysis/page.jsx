@@ -125,8 +125,12 @@ export default function RedditIntelligencePage() {
             const res = await fetch(`${apiUrl}/jobs`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
+
             if (!res.ok) throw new Error(`Fetch failed: ${res?.status}`);
+
             const data = await res.json();
+            console.log('jobs: ', data);
+
             setJobs(data);
             setCountdown(REFRESH_INTERVAL_MS / 1000);
         } catch (err) {
@@ -175,6 +179,8 @@ export default function RedditIntelligencePage() {
                 body: JSON.stringify({ query: query.trim() }),
             });
 
+            console.log('response: ', res.json());
+
             if (!res.ok) {
                 const errData = await res.json();
                 if (res.status === 429) {
@@ -205,11 +211,11 @@ export default function RedditIntelligencePage() {
         } finally {
             setSubmitLoading(false);
         }
-    }
+    };
 
     function handleKeyDown(e) {
         if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && canSubmit) handleSubmit();
-    }
+    };
 
     return (
         <div className="min-h-screen flex flex-col items-center px-6 py-16 relative overflow-hidden"

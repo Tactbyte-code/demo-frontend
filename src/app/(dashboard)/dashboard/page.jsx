@@ -258,8 +258,10 @@ export default function DashboardPage() {
             const res = await fetch(`${apiUrl}/jobs`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
+
             if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
             setJobs(await res.json());
+
         } catch (err) {
             setError(err.message);
         } finally {

@@ -142,7 +142,6 @@ export default function DashboardLayout({ children }) {
             <div className="flex-1 flex flex-col overflow-hidden">
                 {/* Topbar */}
                 <div className="flex items-center justify-between h-17.5 px-5 shrink-0 bg-sidebar border-b border-sidebar-border">
-
                     {/* Left */}
                     <div className="flex items-center gap-4">
                         <button
