@@ -18,7 +18,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import UserProfileButton from '@/components/ui/UserProfileButton';
-import { auth } from '@/config/firebase';
+import { auth } from '@/lib/firebase';
 
 export default function DashboardLayout({ children }) {
 

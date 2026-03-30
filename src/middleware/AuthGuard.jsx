@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { auth } from "@/config/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { auth } from "@/lib/firebase";
 
 const PUBLIC_ROUTES = ["/", "/login", "/signup", "/onboarding", "/pricing", "/how-it-works", "/use-cases", "/resources", "/features"];
 

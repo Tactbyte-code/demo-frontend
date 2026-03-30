@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from 'react';
-import { auth } from '@/config/firebase';
+import { auth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 

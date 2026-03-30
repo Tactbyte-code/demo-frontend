@@ -1,4 +1,4 @@
-import { auth } from '@/config/firebase';
+import { auth } from '@/lib/firebase';
 
 export async function getToken() {
     const firebaseUser = auth.currentUser;

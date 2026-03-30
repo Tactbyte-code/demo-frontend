@@ -1,4 +1,4 @@
-import { auth, googleProvider } from "@/config/firebase";
+import { auth, googleProvider } from "@/lib/firebase";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;

@@ -7,7 +7,7 @@ import {
     MailCheck, RefreshCw, Home, CheckCircle2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { auth, googleProvider } from "@/config/firebase";
+import { auth, googleProvider } from "@/lib/firebase";
 import { createUserWithEmailAndPassword, signInWithPopup, updateProfile, sendEmailVerification } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Link from 'next/link';

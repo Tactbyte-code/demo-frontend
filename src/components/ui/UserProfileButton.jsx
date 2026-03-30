@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { LogOut, ChevronDown, LayoutDashboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { auth } from "@/config/firebase";
+import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import { useRouter } from 'next/navigation';
 import ThemeToggle from '@/components/ui/ThemeToggle';

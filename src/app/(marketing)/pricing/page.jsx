@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Check, X, Zap, ArrowRight, Sparkles } from "lucide-react";
 import { plans } from "@/utils/data";
 import { useRouter } from "next/navigation";
-import { auth } from '@/config/firebase';           // ← was missing
+import { auth } from '@/lib/firebase';           // ← was missing
 import { Loader2 } from 'lucide-react';             // ← was missing
 
 const containerVariants = {

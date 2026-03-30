@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ArrowLeft, Check, Zap, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { auth } from '@/config/firebase';
+import { auth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { getToken } from '@/utils/getToken';
 

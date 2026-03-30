@@ -1,7 +1,10 @@
-import { Poppins } from "next/font/google";
+import { Poppins, Geist } from "next/font/google";
 import "./globals.css";
-import { Providers } from "@/components/Providers";
-import AuthGuard from "@/components/auth/AuthGuard";  // ← add this
+import { Providers } from "@/providers/Providers";
+import AuthGuard from "@/middleware/AuthGuard";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -10,13 +13,13 @@ const poppins = Poppins({
 });
 
 export const metadata = {
-  title: "Demo",
+  title: "Demo AI App",
   description: "Problem Discovery System",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
+    <html lang="en" className={cn("scroll-smooth", "font-sans", geist.variable)} suppressHydrationWarning>
       <body
         className={`
             ${poppins.variable}
@@ -29,7 +32,7 @@ export default function RootLayout({ children }) {
         `}
       >
         <Providers>
-          <AuthGuard>  {/* ← wrap children */}
+          <AuthGuard>
             {children}
           </AuthGuard>
         </Providers>
@@ -38,23 +41,15 @@ export default function RootLayout({ children }) {
   );
 }
 
-
-// ```
-
-// ---
-
-// ## What this does
-// ```
+// Auth flow logic ->
 // Every page load → AuthGuard runs
 //         ↓
 // Is this a public route ? → skip all checks
 //         ↓
-// No Firebase user → redirect to / login
+// No Firebase user → redirect to /login
 //         ↓
-// No localStorage user → redirect to / login
+// is_onboarded = false → redirect to /onboarding
 //         ↓
-// is_onboarded = false → redirect to / onboarding
-//         ↓
-// is_onboarded = true + on login / signup → redirect to / dashboard
+// is_onboarded = true + on login/signup → redirect to /dashboard
 //         ↓
 // All good → render page normally
