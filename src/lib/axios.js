@@ -8,7 +8,6 @@ const api = axios.create({
     },
 });
 
-// request interceptor — await Firebase token
 api.interceptors.request.use(
     async (config) => {
         try {
@@ -17,19 +16,20 @@ api.interceptors.request.use(
                 config.headers.Authorization = `Bearer ${token}`;
             }
         } catch (error) {
-            console.error("Failed to get token:", error);
+            console.log("Failed to get token:", error);
         }
         return config;
     },
     (error) => Promise.reject(error)
 );
 
-
 api.interceptors.response.use(
     (response) => response,
     (error) => {
         const status = error.response?.status;
         const message = error.response?.data?.detail || error.message;
+
+        console.log('axios lib: ', { status, message });
 
         if (status === 401) console.error("Unauthorized:", message);
         if (status === 404) console.error("Not found:", message);

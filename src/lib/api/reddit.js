@@ -9,7 +9,9 @@ import api from "@/lib/axios";
  */
 export const createQuery = async (query) => {
     const response = await api.post("/reddit/query", { query });
-    return response.data;
+    console.log('query creation: ', response);
+
+    return response?.data;
 };
 
 /**
@@ -18,7 +20,8 @@ export const createQuery = async (query) => {
  */
 export const getQueries = async () => {
     const response = await api.get("/reddit/queries");
-    return response.data;
+    console.log('fetched queries: ', response);
+    return response?.data;
 };
 
 /**
@@ -27,6 +30,8 @@ export const getQueries = async () => {
  */
 export const getQuery = async (queryId) => {
     const response = await api.get(`/reddit/query/${queryId}`);
+    console.log('fetched query: ', response);
+
     return response.data;
 };
 
@@ -39,6 +44,7 @@ export const getQuery = async (queryId) => {
  */
 export const submitClarification = async (queryId, answer) => {
     const response = await api.post(`/reddit/query/${queryId}/clarify`, { answer });
+    console.log('clarification submitted: ', response);
     return response.data;
 };
 

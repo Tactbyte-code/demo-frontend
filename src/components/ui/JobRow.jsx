@@ -5,6 +5,7 @@ const formatDate = (iso) =>
     new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 
 export default function JobRow({ job }) {
+
     const getStatusStyle = (status) => {
         switch (status) {
             case "COMPLETED": return { bg: 'var(--success-bg)', text: 'var(--success)', label: 'Ready' };

@@ -16,6 +16,7 @@ const REFRESH_INTERVAL_MS = 5000;
 
 // ─── MAIN PAGE ────────────────────────────────────────────────────────────────
 export default function RedditIntelligencePage() {
+
     const [query, setQuery] = useState("");
     const [focused, setFocused] = useState(false);
     const [submitLoading, setSubmitLoading] = useState(false);
@@ -61,25 +62,31 @@ export default function RedditIntelligencePage() {
 
         try {
             const response = await createQuery(query);
-            console.log(response);
-            if (response.status === "CLARIFYING") {
+
+            if (response?.status === "CLARIFYING") {
                 router.push(`/dashboard/reddit/query/${response.id}/clarify`);
-            }
+            };
 
-            if (response.status === "CLARIFIED") {
+            if (response?.status === "CLARIFIED") {
                 router.push(`/dashboard/reddit/query/${response.id}`);
-            }
+            };
 
-            if (response.status === "FAILED") {
-                setError(response.failure_reason || "Something went wrong");
-            }
+            if (response?.status === "FAILED") {
+                setError(response?.failure_reason || "Something went wrong");
+            };
         } catch (err) {
-            console.log(err);
-            setError(err.response?.data?.detail || "Something went wrong");
+            console.log('submit query error: ', err);
+            setError(err?.response?.data?.detail || "Something went wrong");
         } finally {
             setSubmitLoading(false);
         }
     };
+
+    const handleSubmitQuery = (e) => {
+        e.preventDefault();
+
+        router.replace(`/dashboard/reddit/processing?query=${encodeURIComponent(query)}`);
+    }
 
     return (
         <div className="min-h-screen flex flex-col items-center px-6 py-16 pb-14 relative overflow-hidden" style={{ backgroundColor: "var(--background)" }}>
@@ -137,7 +144,8 @@ export default function RedditIntelligencePage() {
                     </div>
                 ) : (
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-                        <form onSubmit={submitQuery}>
+                        {/* <form onSubmit={submitQuery}> */}
+                        <form onSubmit={handleSubmitQuery}>
                             <motion.div
                                 animate={{ boxShadow: focused ? "var(--shadow-lg)" : "var(--shadow-md)" }}
                                 className="rounded-2xl overflow-hidden border"
@@ -252,6 +260,7 @@ export default function RedditIntelligencePage() {
                     <span className="text-[10px] font-mono uppercase shrink-0 font-extrabold" style={{ color: "var(--text-subtle)" }}>
                         Try:
                     </span>
+
                     {EXAMPLES.map((s, i) => (
                         <motion.button
                             key={s}
@@ -290,29 +299,6 @@ export default function RedditIntelligencePage() {
                 </div>
                 <div className="h-px flex-1" style={{ backgroundColor: "var(--border-solid)" }} />
             </div>
-
-            {/* <div className="flex justify-between items-end mb-6 w-full max-w-5xl px-0">
-                <div>
-                    <h2 className="text-xl font-black tracking-tight" style={{ color: "var(--text-main)" }}>
-                        Recent Analysis
-                    </h2>
-                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                        Your analysis history and status
-                    </p>
-                </div>
-                <button
-                    onClick={fetchQueries}
-                    className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider px-3 py-2 rounded-lg border transition-colors"
-                    style={{
-                        backgroundColor: "var(--surface)",
-                        borderColor: "var(--border-solid)",
-                        color: "var(--text-main)",
-                    }}
-                >
-                    <RefreshCcw className={`w-3 h-3 ${loading ? "animate-spin" : ""}`} />
-                    Sync Now
-                </button>
-            </div> */}
 
             <RedditQueryHistoryTable />
 

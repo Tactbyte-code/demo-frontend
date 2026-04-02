@@ -2,14 +2,16 @@ import { FAILURE_MESSAGES } from "./constants";
 import { getToken } from "@/utils/getToken";
 
 export function useStreamLabel(sources) {
+    console.log('stream sources: ', sources);
+
     return (chunk) => {
-        const count = chunk._count ?? sources.length;
+        const count = sources?.length;
         switch (chunk.status) {
             case "CREATED": return "Query saved to database";
             case "CLARIFIED": return "Intent understood — ready to search Reddit";
             case "WEB_SEARCHING": return "Searching Reddit for relevant threads...";
             case "SEARCH_COMPLETE": return `Found ${count} Reddit posts`;
-            case "SUMMARIZING": return `Analysing ${count} posts — generating answer...`;
+            case "SUMMARIZING": return `Analysing 10 posts — generating answer...`;
             case "COMPLETED": return `Done — answer ready from ${count} Reddit posts`;
             case "FAILED": return `Failed — ${FAILURE_MESSAGES[chunk.failure_reason] ?? "Unknown error"}`;
             case "TIMEOUT": return "Request timed out";

@@ -59,8 +59,8 @@ const Pill = ({ label, muted = false }) => (
 const TABS = [
     { id: 'overview', label: 'Overview' },
     { id: 'themes', label: 'Themes' },
-    // { id: 'painpoints', label: 'Pain Points' },
     { id: 'actions', label: 'Next Steps' },
+    { id: 'sources', label: 'Sources' },  // ← ADD THIS
     { id: 'signals', label: 'Signals' },
     { id: 'meta', label: 'Meta' },
 ];
@@ -209,6 +209,7 @@ const PainPointRow = ({ pp }) => {
         </div>
     );
 };
+
 // ── Tab: Overview ─────────────────────────────────────────
 const OverviewTab = ({ data }) => (
     <div className="space-y-5">
@@ -243,7 +244,7 @@ const OverviewTab = ({ data }) => (
             </div>
         )}
     </div>
-)
+);
 
 // ── Tab: Themes ───────────────────────────────────────────
 const ThemesTab = ({ data }) => {
@@ -325,7 +326,7 @@ const ThemesTab = ({ data }) => {
             )}
         </div>
     )
-}
+};
 
 // ── Tab: All Pain Points ──────────────────────────────────
 const PainPointsTab = ({ data }) => {
@@ -350,7 +351,7 @@ const PainPointsTab = ({ data }) => {
             ))}
         </div>
     )
-}
+};
 
 // ── Tab: Actions ──────────────────────────────────────────
 const ActionsTab = ({ data }) => {
@@ -409,7 +410,7 @@ const ActionsTab = ({ data }) => {
             ))}
         </div>
     )
-}
+};
 
 // ── Tab: Signals ──────────────────────────────────────────
 const SignalsTab = ({ data }) => {
@@ -438,7 +439,7 @@ const SignalsTab = ({ data }) => {
             ))}
         </div>
     )
-}
+};
 
 // ── Tab: Meta ─────────────────────────────────────────────
 const MetaTab = ({ data }) => {
@@ -467,10 +468,89 @@ const MetaTab = ({ data }) => {
             ))}
         </div>
     )
-}
+};
+
+// ── Tab: Sources ──────────────────────────────────────────
+const SourcesTab = ({ sources = [], approvedCount = 0, maxApproved = 10, onToggle }) => {
+    if (!sources.length) return (
+        <p className="text-sm text-muted py-8 text-center">No sources found.</p>
+    )
+
+    console.log('sources: ', sources)
+
+    return (
+        <div className="space-y-3">
+            {/* Header meta */}
+            <div className="flex items-center justify-between">
+                <p className="text-[10px] uppercase tracking-widest text-subtle">
+                    {sources.length} posts
+                </p>
+                {approvedCount > 0 && (
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-info-bg text-primary">
+                        {approvedCount}/{maxApproved} selected
+                    </span>
+                )}
+            </div>
+
+            {/* Source cards */}
+            <div className="flex flex-col gap-3">
+                {sources.map((source, i) => {
+                    const selected = !!source.user_approved
+                    const atMax = approvedCount >= maxApproved && !selected
+
+                    return (
+                        <button
+                            key={source.id ?? i}
+                            onClick={() => !atMax && onToggle?.(source.id)}
+                            disabled={atMax}
+                            className={`w-full text-left rounded-xl border p-4 transition-all ${selected
+                                ? 'border-primary bg-info-bg'
+                                : atMax
+                                    ? 'border-border-solid bg-surface opacity-40 cursor-not-allowed'
+                                    : 'border-border-solid bg-surface hover:bg-surface-card cursor-pointer'
+                                }`}
+                        >
+                            <div className="flex items-start justify-between gap-3 mb-1.5">
+                                <p className={`text-sm font-medium leading-snug ${selected ? 'text-primary' : 'text-foreground'}`}>
+                                    {source.title}
+                                </p>
+                                {selected && (
+                                    <span className="shrink-0 text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-info-bg text-primary">
+                                        Selected
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-2 mt-1">
+                                {source.subreddit && (
+                                    <span className="text-[10px] font-mono text-subtle">r/{source.subreddit}</span>
+                                )}
+                                {source.score != null && (
+                                    <span className="text-[10px] font-mono text-subtle">↑ {source.score}</span>
+                                )}
+                                {source.num_comments != null && (
+                                    <span className="text-[10px] font-mono text-subtle">{source.num_comments} comments</span>
+                                )}
+                                {source.created_utc && (
+                                    <span className="text-[10px] font-mono text-subtle">{fmt(source.created_utc * 1000)}</span>
+                                )}
+                            </div>
+
+                            {source.selftext && (
+                                <p className="mt-2 text-xs text-muted leading-relaxed line-clamp-2">
+                                    {source.selftext}
+                                </p>
+                            )}
+                        </button>
+                    )
+                })}
+            </div>
+        </div>
+    )
+};
 
 // ── Main Component ────────────────────────────────────────
-export const SummaryResult = ({ data }) => {
+export const SummaryResult = ({ data, sources = [], approvedCount = 0, maxApproved = 10, onToggleSource }) => {
     const [activeTab, setActiveTab] = useState('overview')
 
     if (!data) return null
@@ -486,9 +566,9 @@ export const SummaryResult = ({ data }) => {
                     <p className="font-mono text-[10px] uppercase tracking-widest text-subtle mb-1">
                         {data.subreddit}
                     </p>
-                    <h1 className="text-lg font-semibold text-foreground leading-snug">
+                    {/* <h1 className="text-lg font-semibold text-foreground leading-snug">
                         {data.search_query}
-                    </h1>
+                    </h1> */}
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                     <SentimentBadge sentiment={data.overall_sentiment} />
@@ -499,9 +579,9 @@ export const SummaryResult = ({ data }) => {
             {/* ── Tab bar ── */}
             <div className="flex items-center gap-0.5 border-b border-border-solid">
                 {TABS.map(tab => {
-                    const count = tab.id === 'painpoints' ? painPointCount
-                        : tab.id === 'themes' ? (data.themes?.length ?? 0)
-                            : tab.id === 'actions' ? (data.actionable_next_steps?.length ?? 0)
+                    const count = tab.id === 'themes' ? (data.themes?.length ?? 0)
+                        : tab.id === 'actions' ? (data.actionable_next_steps?.length ?? 0)
+                            : tab.id === 'sources' ? (sources?.length ?? 0)  // ← ADD THIS
                                 : null
 
                     return (
@@ -537,6 +617,14 @@ export const SummaryResult = ({ data }) => {
                 {activeTab === 'actions' && <ActionsTab data={data} />}
                 {activeTab === 'signals' && <SignalsTab data={data} />}
                 {activeTab === 'meta' && <MetaTab data={data} />}
+                {activeTab === 'sources' && (
+                    <SourcesTab
+                        sources={sources}
+                        approvedCount={approvedCount}
+                        maxApproved={maxApproved}
+                        onToggle={onToggleSource}
+                    />
+                )}
             </div>
         </div>
     )

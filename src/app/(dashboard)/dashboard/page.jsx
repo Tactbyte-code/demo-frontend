@@ -36,7 +36,7 @@ function StatCard({ label, value, icon: Icon, colorClass, bgClass, delta, delay 
             </div>
         </motion.div>
     );
-}
+};
 
 // ── TABS ──────────────────────────────────────────────
 const TABS = [
@@ -213,6 +213,7 @@ function QuickActions() {
 
 // ── MAIN DASHBOARD ─────────────────────────────────────
 export default function DashboardPage() {
+
     const [jobs, setJobs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -238,19 +239,24 @@ export default function DashboardPage() {
         if (!isSilent) setLoading(true);
         try {
             const token = await getToken();
+            console.log('dash token: ', token);
 
             const res = await fetch(`${apiUrl}/reddit/queries`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
+
+            console.log('das respose: ', res);
+
             if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
             setJobs(await res.json());
         } catch (err) {
+            console.log('dash error: ', err);
             setError(err.message);
         } finally {
             isFetchingRef.current = false;
             setLoading(false);
         }
-    }
+    };
 
     useEffect(() => {
         if (!userId) return;

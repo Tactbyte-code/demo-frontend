@@ -1,8 +1,9 @@
+"use client";
+
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, CheckCircle2, AlertCircle, Clock } from "lucide-react";
+import { Loader2, CheckCircle2, AlertCircle, Clock, Search, Brain, Sparkles, FileText } from "lucide-react";
 import { PipelineSteps } from "./PipelineSteps";
 import { StreamLog } from "./StreamLog";
-import { PipelineActions } from "./PipelineActions";
 
 export function Pipeline({
     showPipeline,
@@ -37,48 +38,75 @@ export function Pipeline({
     onRetrySummarize,
 }) {
     const getStatusIcon = () => {
-        if (isProcessing) return <Loader2 className="w-4 h-4 animate-spin" style={{ color: "var(--primary)" }} />;
-        if (isCompleted || isCheckpoint) return <CheckCircle2 className="w-4 h-4" style={{ color: "var(--success)" }} />;
-        if (isFailed) return <AlertCircle className="w-4 h-4" style={{ color: "var(--destructive)" }} />;
-        if (isTimeout) return <Clock className="w-4 h-4" style={{ color: "var(--warning)" }} />;
-        if (isCancelled) return <AlertCircle className="w-4 h-4" style={{ color: "var(--text-subtle)" }} />;
+        if (isProcessing)
+            return <Loader2 className="w-4 h-4 animate-spin" />;
+        if (isCompleted || isCheckpoint)
+            return <CheckCircle2 className="w-4 h-4" />;
+        if (isFailed)
+            return <AlertCircle className="w-4 h-4" />;
+        if (isTimeout)
+            return <Clock className="w-4 h-4" />;
+        if (isCancelled)
+            return <AlertCircle className="w-4 h-4 opacity-50" />;
         return null;
     };
+
+    const borderColor = isTerminal
+        ? "var(--destructive)"
+        : isCompleted
+            ? "var(--success)"
+            : "var(--border-solid)";
 
     return (
         <AnimatePresence>
             {showPipeline && (
                 <motion.div
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="rounded-2xl border mb-8 overflow-hidden"
+                    initial={{ opacity: 0, y: 20, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.3 }}
+                    className="mb-8 border shadow-lg backdrop-blur-xl overflow-hidden"
                     style={{
-                        backgroundColor: "var(--surface)",
-                        borderColor: isTerminal
-                            ? "var(--destructive)"
-                            : isCheckpoint || isCompleted
-                                ? "var(--success)"
-                                : "var(--border-solid)",
+                        background: "linear-gradient(145deg, var(--surface), var(--surface-raised))",
+                        borderColor,
                     }}
                 >
-                    {/* header — status + progress bar */}
-                    <div className="px-6 pt-5 pb-4">
-                        <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                                {getStatusIcon()}
-                                <span className="text-sm font-semibold" style={{ color: getStatusColor() }}>
-                                    {getStatusLabel()}
-                                </span>
+                    {/* ── Header with progress bar ───────────────────────────── */}
+                    <div className="px-6 pt-6 pb-5">
+                        <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                                <div
+                                    className="p-2"
+                                    style={{ background: "var(--surface-raised)" }}
+                                >
+                                    {getStatusIcon()}
+                                </div>
+                                <div>
+                                    <p
+                                        className="text-sm font-semibold"
+                                        style={{ color: getStatusColor() }}
+                                    >
+                                        {getStatusLabel()}
+                                    </p>
+                                    <p className="text-xs opacity-60">Pipeline execution status</p>
+                                </div>
                             </div>
+
                             {!isTerminal && (
-                                <span className="text-[11px] font-mono tabular-nums" style={{ color: "var(--text-subtle)" }}>
-                                    {progressPercent}%
-                                </span>
+                                <div className="text-right">
+                                    <p className="text-xs opacity-60">Progress</p>
+                                    <p className="text-sm font-mono font-semibold">{progressPercent}%</p>
+                                </div>
                             )}
                         </div>
-                        <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--surface-raised)" }}>
+
+                        {/* Progress bar */}
+                        <div
+                            className="relative h-2 overflow-hidden"
+                            style={{ background: "var(--surface-raised)" }}
+                        >
                             <motion.div
-                                className="h-full rounded-full"
+                                className="absolute top-0 left-0 h-full"
                                 style={{ background: getProgressColor() }}
                                 initial={{ width: 0 }}
                                 animate={{ width: `${progressPercent}%` }}
@@ -87,36 +115,59 @@ export function Pipeline({
                         </div>
                     </div>
 
-                    <PipelineSteps
-                        currentStep={currentStep}
-                        isCompleted={isCompleted}
-                        isTerminal={isTerminal}
-                    />
+                    {/* ── Stage Cards ────────────────────────────────────────── */}
+                    <div className="px-6 pb-5">
+                        <PipelineSteps
+                            currentStep={currentStep}
+                            isCompleted={isCompleted}
+                            isTerminal={isTerminal}
+                            status={status}
+                        />
+                    </div>
 
-                    <StreamLog
-                        streamChunks={streamChunks}
-                        getStreamLabel={getStreamLabel}
-                    />
+                    {/* ── Stream Log ─────────────────────────────────────────── */}
+                    {streamChunks.length > 0 && (
+                        <>
+                            <div
+                                className="h-px mx-6 opacity-40"
+                                style={{ background: "var(--border-solid)" }}
+                            />
+                            <div className="px-6 py-4 max-h-48 overflow-y-auto">
+                                <StreamLog
+                                    sources={sources}
+                                    streamChunks={streamChunks}
+                                    getStreamLabel={getStreamLabel}
+                                />
+                            </div>
+                        </>
+                    )}
 
-                    <PipelineActions
-                        isClarifying={isClarifying}
-                        isClarified={isClarified}
-                        isSearchComplete={isSearchComplete}
-                        isTerminal={isTerminal}
-                        isFailed={isFailed}
-                        isTimeout={isTimeout}
-                        canRetrySearch={canRetrySearch}
-                        canRetrySummarize={canRetrySummarize}
-                        actionLoading={actionLoading}
-                        sources={sources}
-                        approvedCount={approvedCount}
-                        getTerminalMessage={getTerminalMessage}
-                        onClarify={onClarify}
-                        onSearch={onSearch}
-                        onSummarize={onSummarize}
-                        onRetrySearch={onRetrySearch}
-                        onRetrySummarize={onRetrySummarize}
+                    {/* ── Actions ────────────────────────────────────────────── */}
+                    <div
+                        className="h-px mx-6 opacity-40"
+                        style={{ background: "var(--border-solid)" }}
                     />
+                    {/* <div className="px-6 py-5">
+                        <PipelineActions
+                            isClarifying={isClarifying}
+                            isClarified={isClarified}
+                            isSearchComplete={isSearchComplete}
+                            isTerminal={isTerminal}
+                            isFailed={isFailed}
+                            isTimeout={isTimeout}
+                            canRetrySearch={canRetrySearch}
+                            canRetrySummarize={canRetrySummarize}
+                            actionLoading={actionLoading}
+                            sources={sources}
+                            approvedCount={approvedCount}
+                            getTerminalMessage={getTerminalMessage}
+                            onClarify={onClarify}
+                            onSearch={onSearch}
+                            onSummarize={onSummarize}
+                            onRetrySearch={onRetrySearch}
+                            onRetrySummarize={onRetrySummarize}
+                        />
+                    </div> */}
                 </motion.div>
             )}
         </AnimatePresence>

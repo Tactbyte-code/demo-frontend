@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function RedditQueryHistoryTable() {
+
     const [queries, setQueries] = useState([]);
     const [loading, setLoading] = useState(true);
 

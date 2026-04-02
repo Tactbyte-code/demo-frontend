@@ -229,9 +229,9 @@ export default function LoginPage() {
             </Link>
 
             {/* Ambient orbs */}
-            <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full blur-[130px] animate-pulse pointer-events-none"
+            <div className="absolute top-[-20%] left-[-10%] w-150 h-150 rounded-full blur-[130px] animate-pulse pointer-events-none"
                 style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 12%, transparent)' }} />
-            <div className="absolute bottom-[-10%] right-[-5%] w-[500px] h-[500px] rounded-full blur-[110px] pointer-events-none"
+            <div className="absolute bottom-[-10%] right-[-5%] w-125 h-125 rounded-full blur-[110px] pointer-events-none"
                 style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 8%, transparent)' }} />
 
             <motion.div

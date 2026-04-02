@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     LayoutDashboard,
     Database,
@@ -19,11 +19,12 @@ import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import UserProfileButton from '@/components/ui/UserProfileButton';
 import { auth } from '@/lib/firebase';
+import { useSidebarStore } from '@/context/useSidebarStore';
 
 export default function DashboardLayout({ children }) {
 
     const pathname = usePathname();
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const { sidebarOpen, setSidebarOpen, toggleSidebar } = useSidebarStore();
     const [userPlan, setUserPlan] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -43,7 +44,7 @@ export default function DashboardLayout({ children }) {
         } catch (err) {
             console.error("Failed to fetch credits:", err);
         } finally {
-            setLoading(false);  // ← always set false when done
+            setLoading(false);
         }
     };
 
@@ -62,7 +63,6 @@ export default function DashboardLayout({ children }) {
         { name: 'Reddit Analysis', icon: Database, href: '/dashboard/reddit' },
     ];
 
-    // ── Derived credit values ─────────────────────────────────
     const creditsRemaining = userPlan?.credits_remaining ?? 0;
     const creditsTotal = userPlan?.credits_total ?? 0;
     const expiresInDays = userPlan?.expires_in_days ?? 0;
@@ -146,7 +146,7 @@ export default function DashboardLayout({ children }) {
                     {/* Left */}
                     <div className="flex items-center gap-4">
                         <button
-                            onClick={() => setSidebarOpen(o => !o)}
+                            onClick={toggleSidebar}
                             title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
                             className="flex items-center justify-center w-8 h-8 rounded-lg transition-colors cursor-pointer border border-border-solid text-subtle hover:bg-sidebar-hover hover:text-foreground hover:border-primary"
                         >
@@ -161,7 +161,6 @@ export default function DashboardLayout({ children }) {
                     {/* Right */}
                     <div className="flex items-center gap-3">
 
-                        {/* ── Loading skeleton ── */}
                         {loading && (
                             <div className="flex items-center gap-2">
                                 <div className="h-8 w-48 rounded-2xl bg-surface-raised animate-pulse" />
@@ -169,7 +168,6 @@ export default function DashboardLayout({ children }) {
                             </div>
                         )}
 
-                        {/* ── No Plan → Animated Buy Plan button ── */}
                         {!loading && hasNoPlan && (
                             <motion.div
                                 animate={{ scale: [1, 1.03, 1] }}
@@ -185,12 +183,9 @@ export default function DashboardLayout({ children }) {
                                         boxShadow: '0 0 20px rgba(255, 215, 0, 0.4), 0 2px 8px rgba(184, 134, 11, 0.5)',
                                     }}
                                 >
-                                    {/* Golden shimmer */}
                                     <motion.div
                                         className="absolute inset-0"
-                                        style={{
-                                            background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent)',
-                                        }}
+                                        style={{ background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent)' }}
                                         animate={{ x: ['-100%', '200%'] }}
                                         transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", repeatDelay: 1.5 }}
                                     />
@@ -200,7 +195,6 @@ export default function DashboardLayout({ children }) {
                             </motion.div>
                         )}
 
-                        {/* ── Has Plan → Credits widget ── */}
                         {!loading && !hasNoPlan && (
                             <div
                                 className="flex items-center gap-3 px-4 py-2 rounded-xl border transition-all"
@@ -209,39 +203,26 @@ export default function DashboardLayout({ children }) {
                                     borderColor: isEmpty ? 'var(--destructive)' : isLow ? 'var(--warning)' : 'var(--glass-border)',
                                 }}
                             >
-                                {/* Plan badge */}
                                 <div
                                     className="px-2 py-2 rounded-full text-[10px] font-bold uppercase bg-info-bg"
-                                    style={{
-                                        // backgroundColor: 'var(--info-bg)',
-                                        color: 'var(--primary)',
-                                    }}
+                                    style={{ color: 'var(--primary)' }}
                                 >
                                     {planName}
                                 </div>
-
                                 <div className="w-px h-4 bg-border-solid" />
-
-                                {/* Icon + count */}
                                 <div className="flex flex-row items-center gap-1.5">
                                     <Zap className={`w-3.5 h-3.5 ${isEmpty ? 'text-destructive' : isLow ? 'text-warning' : 'text-primary'}`} />
                                     <span className="text-xs font-bold text-foreground">{creditsRemaining.toLocaleString()}</span>
                                     <span className="text-xs font-medium text-muted">/ {creditsTotal.toLocaleString()}</span>
                                 </div>
-
-                                {/* Progress bar */}
                                 <div className="w-16 h-1.5 rounded-full bg-surface-raised overflow-hidden">
                                     <motion.div
                                         className="h-full rounded-full"
-                                        style={{
-                                            backgroundColor: isEmpty ? 'var(--destructive)' : isLow ? 'var(--warning)' : 'var(--primary)',
-                                        }}
+                                        style={{ backgroundColor: isEmpty ? 'var(--destructive)' : isLow ? 'var(--warning)' : 'var(--primary)' }}
                                         animate={{ width: `${Math.min(percentage, 100)}%` }}
                                         transition={{ duration: 0.5 }}
                                     />
                                 </div>
-
-                                {/* Status badge */}
                                 {isEmpty && (
                                     <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-destructive-bg text-destructive">
                                         Empty
@@ -252,20 +233,14 @@ export default function DashboardLayout({ children }) {
                                         Low
                                     </span>
                                 )}
-
                                 <div className="w-px h-4 bg-border-solid" />
-
-                                {/* Expires in */}
                                 <div className="flex items-center gap-1.5">
                                     <Clock className="w-3 h-3 text-primary" />
-                                    <span className="text-[11px] font-semibold text-main">
-                                        {expiresInDays}d left
-                                    </span>
+                                    <span className="text-[11px] font-semibold text-main">{expiresInDays}d left</span>
                                 </div>
                             </div>
                         )}
 
-                        {/* ── Empty/Low credits → Upgrade button ── */}
                         {!loading && !hasNoPlan && (isEmpty || isLow) && (
                             <motion.div
                                 animate={{ scale: [1, 1.03, 1] }}
@@ -295,7 +270,6 @@ export default function DashboardLayout({ children }) {
                             </motion.div>
                         )}
 
-                        {/* User profile */}
                         <div className="rounded-full bg-foreground/85">
                             <UserProfileButton />
                         </div>

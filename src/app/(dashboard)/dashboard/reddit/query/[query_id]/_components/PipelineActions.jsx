@@ -122,19 +122,6 @@ export function PipelineActions({
                         </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                        {/* <button
-              onClick={onRetrySearch}
-              disabled={actionLoading}
-              className="flex items-center gap-2 px-4 h-9 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all"
-              style={{
-                background: "transparent",
-                color: actionLoading ? "var(--text-subtle)" : "var(--text-muted)",
-                border: `1.5px solid ${actionLoading ? "var(--border-solid)" : "var(--border-secondary)"}`,
-                cursor: actionLoading ? "not-allowed" : "pointer",
-              }}
-            >
-              <RotateCcw className="w-3.5 h-3.5" /> Try again
-            </button> */}
                         <PrimaryButton onClick={onSummarize} disabled={actionLoading}>
                             {actionLoading ? (
                                 <>

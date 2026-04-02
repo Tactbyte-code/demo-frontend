@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -22,6 +23,7 @@ import { SummaryResult } from "./_components/SummaryResult";
 const POSTS_STATUSES = ["SEARCH_COMPLETE", "SUMMARIZING", "COMPLETED"];
 
 export default function QueryResultPage() {
+
     const { query_id } = useParams();
     const router = useRouter();
 
@@ -37,12 +39,18 @@ export default function QueryResultPage() {
     const [postsLoaded, setPostsLoaded] = useState(false);
     const [isPolling, setIsPolling] = useState(false);
     const [summary, setSummary] = useState(null);
+    // Tracks whether the auto-search has already been fired for this mount
+    const [autoSearchFired, setAutoSearchFired] = useState(false);
+    // Tracks whether the auto-summarize has already been fired for this mount
+    const [autoSummarizeFired, setAutoSummarizeFired] = useState(false);
 
     // ── fetch helpers ──────────────────────────────────────────────────────────
     const fetchPosts = useCallback(async () => {
         try {
             const data = await getQueryPosts(query_id);
-            setSources(data.posts || []);
+            console.log('resource posts: ', data);
+
+            setSources(data?.posts || []);
             setPostsLoaded(true);
         } catch (e) {
             console.error(e);
@@ -53,7 +61,8 @@ export default function QueryResultPage() {
     const fetchResult = useCallback(async () => {
         try {
             const data = await getQueryResult(query_id);
-            // setAnswer(data.answer);
+            console.log('final summary: ', data);
+
             setSummary(data); // store full summary object
         } catch (e) {
             console.error(e);
@@ -94,10 +103,8 @@ export default function QueryResultPage() {
         queryId: query_id,
         active: isPolling,
         onStatusChange: (newStatus, data) => {
-            // reset posts state before status update so SourcesList
-            // stays hidden during the fetchPosts network gap
             if (POSTS_STATUSES.includes(newStatus)) {
-                setSources([]);
+                // setSources([]);
                 setPostsLoaded(false);
             }
             setStatus(newStatus);
@@ -144,7 +151,7 @@ export default function QueryResultPage() {
     );
 
     // ── actions ────────────────────────────────────────────────────────────────
-    const handleTriggerSearch = async () => {
+    const handleTriggerSearch = useCallback(async () => {
         setActionLoading(true);
         setStreamChunks([]);
         setSources([]);
@@ -163,10 +170,20 @@ export default function QueryResultPage() {
         } finally {
             setActionLoading(false);
         }
-    };
+    }, [query_id, setApprovalError]);
 
-    const handleContinueToSummarize = async () => {
-        if (approvedCount === 0) {
+    // ── Auto-trigger search on mount when status is CLARIFIED ──────────────────
+    // Runs once after the init fetch resolves and status is set to CLARIFIED.
+    // The `autoSearchFired` guard prevents double-firing in StrictMode or re-renders.
+    useEffect(() => {
+        if (!loading && status === "CLARIFIED" && !autoSearchFired) {
+            setAutoSearchFired(true);
+            handleTriggerSearch();
+        }
+    }, [loading, status, autoSearchFired, handleTriggerSearch]);
+
+    const handleContinueToSummarize = useCallback(async ({ skipApprovalCheck = false } = {}) => {
+        if (!skipApprovalCheck && approvedCount === 0) {
             setApprovalError("Please select at least 1 post before summarizing.");
             return;
         }
@@ -175,8 +192,6 @@ export default function QueryResultPage() {
         setFailedAtStep(null);
         try {
             await runStream("summarize");
-            // If the stream handed off to a background job, the status will
-            // be SUMMARIZING — activate polling to track it to completion.
             setStatus((prev) => {
                 if (prev === "SUMMARIZING") setIsPolling(true);
                 return prev;
@@ -188,7 +203,23 @@ export default function QueryResultPage() {
         } finally {
             setActionLoading(false);
         }
-    };
+    }, [approvedCount, runStream, setApprovalError]);
+
+    // ── Auto-trigger summarize when SEARCH_COMPLETE and posts are loaded ───────
+    // Fires once posts have been fetched (postsLoaded = true) and status has
+    // settled at SEARCH_COMPLETE. The skipApprovalCheck flag bypasses the
+    // manual-selection guard so it runs even with 0 approved posts.
+    useEffect(() => {
+        if (
+            status === "SEARCH_COMPLETE" &&
+            postsLoaded &&
+            !autoSummarizeFired &&
+            !actionLoading
+        ) {
+            setAutoSummarizeFired(true);
+            handleContinueToSummarize({ skipApprovalCheck: true });
+        }
+    }, [status, postsLoaded, autoSummarizeFired, actionLoading, handleContinueToSummarize]);
 
     const handleRetrySearch = async () => {
         setActionLoading(true);
@@ -235,12 +266,12 @@ export default function QueryResultPage() {
 
     return (
         <PageShell>
-            {/* back */}
+            {/* Back button */}
             <motion.button
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
                 onClick={() => router.push("/dashboard/reddit")}
-                className="flex items-center gap-2 mb-8 text-xs font-semibold uppercase tracking-widest transition-all"
+                className="flex items-center gap-2 mb-6 text-xs font-semibold uppercase tracking-widest transition-all"
                 style={{ color: "var(--text-subtle)" }}
                 onMouseEnter={(e) => (e.currentTarget.style.color = "var(--primary)")}
                 onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-subtle)")}
@@ -250,6 +281,7 @@ export default function QueryResultPage() {
 
             <QueryCard query={query} />
 
+            {/* Processing Stages */}
             <Pipeline
                 showPipeline={qs.showPipeline}
                 status={status}
@@ -285,22 +317,9 @@ export default function QueryResultPage() {
 
             {status === "COMPLETED" && summary && (
                 <>
-                    <SummaryResult data={summary} />
+                    <SummaryResult data={summary} sources={sources} approvedCount={approvedCount} onToggleSource={handleToggleApproval} />
                 </>
             )}
-
-            <SourcesList
-                postsLoaded={postsLoaded}
-                showSources={qs.showSources}
-                sources={sources}
-                approvedCount={approvedCount}
-                approvalError={approvalError}
-                isSearchComplete={qs.isSearchComplete}
-                onDismissError={() => setApprovalError(null)}
-                onToggle={handleToggleApproval}
-                pendingIds={pendingIds}
-                onSelectTop10={handleSelectTop10}
-            />
         </PageShell>
     );
 }
