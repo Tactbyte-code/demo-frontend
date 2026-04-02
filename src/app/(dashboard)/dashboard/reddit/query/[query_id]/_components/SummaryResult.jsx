@@ -58,8 +58,8 @@ const Pill = ({ label, muted = false }) => (
 // ── Tabs config ───────────────────────────────────────────
 const TABS = [
     { id: 'overview', label: 'Overview' },
-    { id: 'themes', label: 'Themes' },
-    { id: 'actions', label: 'Next Steps' },
+    { id: 'themes', label: 'Core Issues' },
+    { id: 'actions', label: 'Actions' },
     { id: 'sources', label: 'Sources' },  // ← ADD THIS
     { id: 'signals', label: 'Signals' },
     { id: 'meta', label: 'Meta' },

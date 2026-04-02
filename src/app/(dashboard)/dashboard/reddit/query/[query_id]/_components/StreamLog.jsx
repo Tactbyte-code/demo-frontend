@@ -18,12 +18,13 @@ function PostsTicker({ sources }) {
             i += 1;
             if (i < sources.length) {
                 setCurrentIndex(i);
-                const delay = sources.length > 10 ? 120 : 200;
+                // const delay = sources.length > 10 ? 120 : 200;
+                const delay = 7000;
                 setTimeout(tick, delay);
             }
         };
 
-        const t = setTimeout(tick, 8000);
+        const t = setTimeout(tick, 7000);
         return () => clearTimeout(t);
     }, [sources]);
 
