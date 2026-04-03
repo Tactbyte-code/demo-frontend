@@ -27,11 +27,13 @@ export async function streamRequest({
     onStatus,
     onAnswer,
     onFailureReason,
-    onFailedAtStep,   // ← new
+    onFailedAtStep,
     onResults,
     onFetchPosts,
     onChunk,
 }) {
+    console.log('onStatus: ', onStatus);
+
     const token = await getToken();
     const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/reddit/query/${queryId}/${endpoint}`,
@@ -41,7 +43,7 @@ export async function streamRequest({
     if (!response.ok) {
         const err = await response.json();
         throw new Error(err.detail || "Request failed");
-    }
+    };
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
@@ -51,6 +53,7 @@ export async function streamRequest({
         if (done) break;
 
         const lines = decoder.decode(value).split("\n").filter(Boolean);
+
         for (const line of lines) {
             try {
                 const data = JSON.parse(line);
@@ -58,7 +61,7 @@ export async function streamRequest({
                 if (data.status) onStatus(data.status);
                 if (data.answer) onAnswer(data.answer);
                 if (data.failure_reason) onFailureReason(data.failure_reason);
-                if (data.failed_at_step) onFailedAtStep?.(data.failed_at_step);  // ← new
+                if (data.failed_at_step) onFailedAtStep?.(data.failed_at_step);
 
                 if (data.results) {
                     onResults(data.results);

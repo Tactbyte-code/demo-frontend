@@ -10,8 +10,8 @@ import { CheckCircle2, Loader2 } from "lucide-react";
 const stages = [
     "Submitting query",
     "Query submitted",
-    "Analyzing query",
-    "Understanding intent",
+    "Refining your query",
+    "Getting a bit more context",
 ];
 
 export default function QueryProcessingLoader() {

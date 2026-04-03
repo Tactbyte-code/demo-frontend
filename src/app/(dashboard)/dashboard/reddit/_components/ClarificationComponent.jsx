@@ -105,10 +105,10 @@ export default function ClarifyPage({ query_id }) {
 
                 <div className="text-center space-y-2">
                     <p className="text-sm font-medium">
-                        Understanding your query...
+                        Intent clarification in progress
                     </p>
                     <p className="text-xs text-muted-foreground">
-                        Finding intent & generating questions
+                        Asking a few quick questions
                     </p>
                 </div>
 
@@ -130,33 +130,31 @@ export default function ClarifyPage({ query_id }) {
                         <ArrowLeft className="w-4 h-4 mr-2" /> Back
                     </Button>
 
-                    <span className="text-xs text-muted-foreground">
-                        Clarifying
+                    <span className="text-sm text-muted">
+                        Clarifying the intent
                     </span>
                 </div>
 
                 {/* Progress */}
-                <Progress value={(clarificationCount / 5) * 100} />
+                {/* <Progress value={(clarificationCount / 5) * 100} /> */}
 
-                {/* Query Card */}
                 {/* <CardContent className="rounded-none"> */}
-                <CardContent className="px-0 space-y-3 my-10 rounded-none">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wide">
-                        <MessageSquare className="w-4 h-4" />
+                <Card className="p-4 my-5 rounded-none gap-2">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wide font-semibold">
+                        <MessageSquare className="w-5 h-5" />
                         Your Query
                     </div>
 
-                    <Separator />
+                    {/* <Separator /> */}
 
-                    <p className="text-sm font-medium leading-relaxed">
+                    <p className="text-sm font-medium leading-relaxed pl-7">
                         {originalQuery}
                     </p>
-                </CardContent>
-                {/* </CardContent> */}
+                </Card>
 
                 {/* Question Card */}
                 <CardContent
-                    className="border overflow-hidden rounded-none p-5"
+                    className="border overflow-hidden rounded-none p-3"
                     style={{
                         backgroundColor: "var(--surface)",
                         borderColor: "color-mix(in srgb, var(--primary) 20%, transparent)",
@@ -178,7 +176,7 @@ export default function ClarifyPage({ query_id }) {
 
                                 <div>
                                     <p
-                                        className="text-[10px] font-black uppercase tracking-[0.18em]"
+                                        className="text-sm font-bold uppercase tracking-wider"
                                         style={{ color: "var(--text-subtle)" }}
                                     >
                                         Clarification needed
@@ -233,7 +231,7 @@ export default function ClarifyPage({ query_id }) {
                             {answer.length} chars
                         </span>
 
-                        <Button disabled={!canSubmit} type="submit">
+                        <Button disabled={!canSubmit} type="submit" className={'text-white'}>
                             {submitting ? (
                                 <Loader2 className="w-4 h-4 animate-spin" />
                             ) : (

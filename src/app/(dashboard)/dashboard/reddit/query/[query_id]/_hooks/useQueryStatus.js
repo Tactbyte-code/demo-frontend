@@ -8,6 +8,7 @@ export function useQueryStatus(status, postsLoaded, failureReason, failedAtStep)
 
     const isProcessing = ["WEB_SEARCHING", "SUMMARIZING"].includes(status);
     const isCheckpoint = ["CLARIFIED", "SEARCH_COMPLETE"].includes(status);
+
     const isClarifying = status === "CLARIFYING";
     const isClarified = status === "CLARIFIED";
     const isSearchComplete = status === "SEARCH_COMPLETE";
@@ -15,6 +16,9 @@ export function useQueryStatus(status, postsLoaded, failureReason, failedAtStep)
     const isFailed = status === "FAILED";
     const isTimeout = status === "TIMEOUT";
     const isCancelled = status === "CANCELLED";
+
+    // CLARIFIED, WEB_SEARCHING, SEARCH_COMPLETE, SUMMARIZING, COMPLETED
+
     const isTerminal = isFailed || isTimeout || isCancelled;
     const showPipeline = !!status;
     const showSources = postsLoaded && ["SEARCH_COMPLETE", "SUMMARIZING", "COMPLETED"].includes(status);

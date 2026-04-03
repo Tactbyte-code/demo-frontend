@@ -51,6 +51,8 @@ export function Pipeline({
         return null;
     };
 
+    console.log('pipeline status: ', status);
+
     const borderColor = isTerminal
         ? "var(--destructive)"
         : isCompleted
@@ -76,7 +78,7 @@ export function Pipeline({
                         <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-3">
                                 <div
-                                    className="p-2"
+                                    className="p-2 rounded-full"
                                     style={{ background: "var(--surface-raised)" }}
                                 >
                                     {getStatusIcon()}
@@ -88,7 +90,7 @@ export function Pipeline({
                                     >
                                         {getStatusLabel()}
                                     </p>
-                                    <p className="text-xs opacity-60">Pipeline execution status</p>
+                                    <p className="text-xs opacity-60">Pipeline execution flow</p>
                                 </div>
                             </div>
 
@@ -116,7 +118,7 @@ export function Pipeline({
                     </div>
 
                     {/* ── Stage Cards ────────────────────────────────────────── */}
-                    <div className="px-6 pb-5">
+                    <div className="px-6 py-3">
                         <PipelineSteps
                             currentStep={currentStep}
                             isCompleted={isCompleted}
@@ -126,48 +128,23 @@ export function Pipeline({
                     </div>
 
                     {/* ── Stream Log ─────────────────────────────────────────── */}
-                    {streamChunks.length > 0 && (
-                        <>
-                            <div
-                                className="h-px mx-6 opacity-40"
-                                style={{ background: "var(--border-solid)" }}
-                            />
-                            <div className="px-6 py-4 max-h-48 overflow-y-auto">
-                                <StreamLog
-                                    sources={sources}
-                                    streamChunks={streamChunks}
-                                    getStreamLabel={getStreamLabel}
-                                />
-                            </div>
-                        </>
-                    )}
-
-                    {/* ── Actions ────────────────────────────────────────────── */}
+                    {/* {streamChunks.length > 0 && ( */}
+                    {/* <> */}
                     <div
                         className="h-px mx-6 opacity-40"
                         style={{ background: "var(--border-solid)" }}
                     />
-                    {/* <div className="px-6 py-5">
-                        <PipelineActions
-                            isClarifying={isClarifying}
-                            isClarified={isClarified}
-                            isSearchComplete={isSearchComplete}
-                            isTerminal={isTerminal}
-                            isFailed={isFailed}
-                            isTimeout={isTimeout}
-                            canRetrySearch={canRetrySearch}
-                            canRetrySummarize={canRetrySummarize}
-                            actionLoading={actionLoading}
+
+                    <div className="px-6 py-4 max-h-48 overflow-y-auto">
+                        <StreamLog
                             sources={sources}
-                            approvedCount={approvedCount}
-                            getTerminalMessage={getTerminalMessage}
-                            onClarify={onClarify}
-                            onSearch={onSearch}
-                            onSummarize={onSummarize}
-                            onRetrySearch={onRetrySearch}
-                            onRetrySummarize={onRetrySummarize}
+                            // streamChunks={streamChunks}
+                            getStreamLabel={getStreamLabel}
+                            status={status}
                         />
-                    </div> */}
+                    </div>
+                    {/* </> */}
+                    {/* )} */}
                 </motion.div>
             )}
         </AnimatePresence>

@@ -66,7 +66,7 @@ export default function UserProfileButton() {
             >
                 {user.photo_url ? (
                     <div className="relative w-7 h-7 rounded-full overflow-hidden ring-1 ring-white/20">
-                        <Image src={user.photo_url} alt="Profile" fill className="object-cover" />
+                        <Image src={user.photo_url} alt="Profile" fill className="object-cover" priority />
                     </div>
                 ) : (
                     <div

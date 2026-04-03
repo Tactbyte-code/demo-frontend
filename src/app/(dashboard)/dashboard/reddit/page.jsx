@@ -85,7 +85,7 @@ export default function RedditIntelligencePage() {
     const handleSubmitQuery = (e) => {
         e.preventDefault();
 
-        router.replace(`/dashboard/reddit/processing?query=${encodeURIComponent(query)}`);
+        router.push(`/dashboard/reddit/processing?query=${encodeURIComponent(query)}`);
     }
 
     return (

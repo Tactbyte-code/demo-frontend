@@ -264,6 +264,9 @@ export default function QueryResultPage() {
         );
     }
 
+    // console.log('parent page status: ', status);
+    const isCompleted = status === "COMPLETED";
+
     return (
         <PageShell>
             {/* Back button */}
@@ -271,7 +274,7 @@ export default function QueryResultPage() {
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
                 onClick={() => router.push("/dashboard/reddit")}
-                className="flex items-center gap-2 mb-6 text-xs font-semibold uppercase tracking-widest transition-all"
+                className="flex items-center gap-2 mb-3 text-xs font-semibold uppercase tracking-widest transition-all"
                 style={{ color: "var(--text-subtle)" }}
                 onMouseEnter={(e) => (e.currentTarget.style.color = "var(--primary)")}
                 onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-subtle)")}
@@ -279,41 +282,43 @@ export default function QueryResultPage() {
                 <ArrowLeft className="w-3.5 h-3.5" /> Back
             </motion.button>
 
-            <QueryCard query={query} />
+            <QueryCard query={query} isCompleted={isCompleted} />
 
             {/* Processing Stages */}
-            <Pipeline
-                showPipeline={qs.showPipeline}
-                status={status}
-                currentStep={qs.currentStep}
-                progressPercent={qs.progressPercent}
-                isProcessing={qs.isProcessing}
-                isCheckpoint={qs.isCheckpoint}
-                isClarifying={qs.isClarifying}
-                isClarified={qs.isClarified}
-                isSearchComplete={qs.isSearchComplete}
-                isCompleted={qs.isCompleted}
-                isFailed={qs.isFailed}
-                isTimeout={qs.isTimeout}
-                isCancelled={qs.isCancelled}
-                isTerminal={qs.isTerminal}
-                canRetrySearch={qs.canRetrySearch}
-                canRetrySummarize={qs.canRetrySummarize}
-                actionLoading={actionLoading}
-                sources={sources}
-                approvedCount={approvedCount}
-                streamChunks={streamChunks}
-                getStatusLabel={qs.getStatusLabel}
-                getStatusColor={qs.getStatusColor}
-                getProgressColor={qs.getProgressColor}
-                getTerminalMessage={qs.getTerminalMessage}
-                getStreamLabel={getStreamLabel}
-                onClarify={() => router.push(`/dashboard/reddit/query/${query_id}/clarify`)}
-                onSearch={handleTriggerSearch}
-                onSummarize={handleContinueToSummarize}
-                onRetrySearch={handleRetrySearch}
-                onRetrySummarize={handleRetrySummarize}
-            />
+            {!isCompleted && (
+                <Pipeline
+                    showPipeline={qs.showPipeline}
+                    status={status}
+                    currentStep={qs.currentStep}
+                    progressPercent={qs.progressPercent}
+                    isProcessing={qs.isProcessing}
+                    isCheckpoint={qs.isCheckpoint}
+                    isClarifying={qs.isClarifying}
+                    isClarified={qs.isClarified}
+                    isSearchComplete={qs.isSearchComplete}
+                    isCompleted={qs.isCompleted}
+                    isFailed={qs.isFailed}
+                    isTimeout={qs.isTimeout}
+                    isCancelled={qs.isCancelled}
+                    isTerminal={qs.isTerminal}
+                    canRetrySearch={qs.canRetrySearch}
+                    canRetrySummarize={qs.canRetrySummarize}
+                    actionLoading={actionLoading}
+                    sources={sources}
+                    approvedCount={approvedCount}
+                    streamChunks={streamChunks}
+                    getStatusLabel={qs.getStatusLabel}
+                    getStatusColor={qs.getStatusColor}
+                    getProgressColor={qs.getProgressColor}
+                    getTerminalMessage={qs.getTerminalMessage}
+                    getStreamLabel={getStreamLabel}
+                    onClarify={() => router.push(`/dashboard/reddit/query/${query_id}/clarify`)}
+                    onSearch={handleTriggerSearch}
+                    onSummarize={handleContinueToSummarize}
+                    onRetrySearch={handleRetrySearch}
+                    onRetrySummarize={handleRetrySummarize}
+                />
+            )}
 
             {status === "COMPLETED" && summary && (
                 <>

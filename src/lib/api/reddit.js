@@ -30,7 +30,7 @@ export const getQueries = async () => {
  */
 export const getQuery = async (queryId) => {
     const response = await api.get(`/reddit/query/${queryId}`);
-    console.log('fetched query: ', response);
+    // console.log('fetched query: ', response);
 
     return response.data;
 };

@@ -1,6 +1,6 @@
 export function PageShell({ children }) {
     return (
-        <div className="min-h-screen p-8" style={{ backgroundColor: "var(--background)" }}>
+        <div className="min-h-screen px-8 py-5" style={{ backgroundColor: "var(--background)" }}>
             <div className="w-full max-w-7xl mx-auto">{children}</div>
         </div>
     );

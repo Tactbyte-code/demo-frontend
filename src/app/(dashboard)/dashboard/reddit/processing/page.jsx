@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import ClarificationComponent from '../_components/ClarificationComponent';
 import QueryProcessingLoader from '../_components/QueryProcessingLoader';
 import { useSidebarStore } from '@/context/useSidebarStore';
+import AILoader from '@/components/shared/AiLoader';
 
 const page = () => {
 
@@ -63,8 +64,9 @@ const page = () => {
     );
 
     return (
-        <div>
-            <p className='text-base text-muted'>Page is loading...</p>
+        <div className='flex items-center justify-center min-h-[85vh] flex-col'>
+            <AILoader />
+            <p className='text-sm text-muted'>Loading...</p>
         </div>
     );
 };

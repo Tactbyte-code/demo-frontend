@@ -60,7 +60,7 @@ const TABS = [
     { id: 'overview', label: 'Overview' },
     { id: 'themes', label: 'Core Issues' },
     { id: 'actions', label: 'Actions' },
-    { id: 'sources', label: 'Sources' },  // ← ADD THIS
+    { id: 'sources', label: 'Sources' },
     { id: 'signals', label: 'Signals' },
     { id: 'meta', label: 'Meta' },
 ];
