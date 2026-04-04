@@ -1,6 +1,7 @@
 # Project Guidelines
 
 ## Code Style
+
 - Use PascalCase for component names (e.g., `LoginForm.jsx`)
 - Use camelCase with "use" prefix for custom hooks (e.g., `useTheme.js`)
 - Always use `@/*` path alias pointing to `src/`
@@ -9,6 +10,7 @@
 - Prefer CSS variables for theming over hardcoded values
 
 ## Architecture
+
 - **App Router**: Use Next.js 16 app router with route groups for logical separation ((auth), (dashboard), (marketing))
 - **State Management**: Zustand for global UI state, React Query for server state
 - **Authentication**: Firebase Auth with Google OAuth, protected routes via AuthGuard middleware
@@ -17,6 +19,7 @@
 - **Theming**: next-themes with CSS variables, supports light/dark modes
 
 ## Build and Test
+
 - `npm run dev` — Start development server
 - `npm run build` — Production build
 - `npm run start` — Run production server
@@ -24,6 +27,7 @@
 - No test runner configured yet
 
 ## Conventions
+
 - Wrap new pages in "use client" for interactivity
 - All feature-specific code in `src/features/{feature}/` with consistent api/components/hooks structure
 - Use dynamic segments for query IDs: `[query_id]/page.jsx`

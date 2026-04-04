@@ -1,13 +1,30 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, use } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ArrowLeft, Sparkles, AlertCircle } from "lucide-react";
+import {
+    ArrowRight,
+    ArrowLeft,
+    Loader2,
+    MessageSquare,
+    HelpCircle,
+    Sparkles,
+    AlertCircle
+} from "lucide-react";
 import { getQuery, submitClarification } from "@/lib/api/reddit";
-import { use } from "react";
+import AILoader from "@/components/shared/AiLoader";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { useSidebarStore } from "@/context/useSidebarStore";
 
 export default function ClarifyPage({ params }) {
+
     const { query_id } = use(params);
     const router = useRouter();
 
@@ -22,13 +39,23 @@ export default function ClarifyPage({ params }) {
     const textareaRef = useRef(null);
     const canSubmit = answer.trim() && !submitting;
 
+    const { setSidebarOpen } = useSidebarStore();
+
+    // Auto-collapse sidebar on mount, restore on leave
+    useEffect(() => {
+        setSidebarOpen(false);
+        return () => setSidebarOpen(true);
+    }, []);
+
+    // fetch a single query
     useEffect(() => {
         const fetchQuery = async () => {
             try {
                 const data = await getQuery(query_id);
+                console.log('a single query: ', data);
 
                 // any status other than CLARIFYING means we don't belong here
-                if (data.status !== "CLARIFYING") {
+                if (data?.status !== "CLARIFYING") {
                     router.replace(`/dashboard/reddit/query/${query_id}`);
                     return;
                 }
@@ -52,6 +79,7 @@ export default function ClarifyPage({ params }) {
         if (!loading && textareaRef.current) textareaRef.current.focus();
     }, [loading, question]);
 
+    // submit clarification answer
     const handleSubmit = async (e) => {
         e?.preventDefault();
         if (!canSubmit) return;
@@ -67,7 +95,7 @@ export default function ClarifyPage({ params }) {
                 return;
             }
 
-            // CLARIFIED, FAILED, or anything else — go back to query page
+            // CLARIFIED, FAILED, or anything else — go to query_id page
             router.push(`/dashboard/reddit/query/${query_id}`);
         } catch (err) {
             setError(err.response?.data?.detail || "Something went wrong");
@@ -76,155 +104,164 @@ export default function ClarifyPage({ params }) {
         }
     };
 
+    // on pressing Enter
     const handleKeyDown = (e) => {
-        if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleSubmit();
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            handleSubmit();
+        }
     };
 
+    // loading UI
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: "var(--background)" }}>
-                <div className="w-full max-w-xl space-y-4 animate-pulse">
-                    <div className="h-4 rounded-lg w-1/3" style={{ backgroundColor: "var(--surface-raised)" }} />
-                    <div className="h-12 rounded-xl w-full" style={{ backgroundColor: "var(--surface-raised)" }} />
-                    <div className="h-24 rounded-xl w-full" style={{ backgroundColor: "var(--surface-raised)" }} />
-                    <div className="h-10 rounded-xl w-full" style={{ backgroundColor: "var(--surface-raised)" }} />
+            <div className="min-h-screen flex flex-col items-center justify-center gap-6">
+                <AILoader />
+
+                <div className="text-center space-y-2">
+                    <p className="text-sm font-medium">
+                        Intent clarification in progress
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                        Asking a few quick questions
+                    </p>
                 </div>
+
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center px-6 py-16" style={{ backgroundColor: "var(--background)" }}>
-            <div className="w-full max-w-xl">
+        <div className="min-h-screen flex justify-center px-4 py-10">
+            <div className="w-full max-w-2xl space-y-6">
 
-                {/* back */}
-                <motion.button
-                    initial={{ opacity: 0, x: -8 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    onClick={() => router.push(`/dashboard/reddit/query/${query_id}`)}
-                    className="flex items-center gap-2 mb-8 text-xs font-semibold uppercase tracking-widest transition-all"
-                    style={{ color: "var(--text-subtle)" }}
-                    onMouseEnter={(e) => (e.currentTarget.style.color = "var(--primary)")}
-                    onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-subtle)")}
-                >
-                    <ArrowLeft className="w-3.5 h-3.5" /> Back
-                </motion.button>
+                {/* Top */}
+                <div className="flex justify-between items-center">
+                    <Button
+                        variant="ghost"
+                        className="px-0"
+                        onClick={() => router.back()}
+                    >
+                        <ArrowLeft className="w-4 h-4 mr-2" /> Back
+                    </Button>
 
-                {/* header */}
-                <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
-                    <div className="flex justify-center mb-4">
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style={{ background: "var(--primary)" }}>
-                            <Sparkles className="w-4 h-4 text-white" />
-                        </div>
+                    <span className="text-sm text-muted">
+                        Clarifying the intent
+                    </span>
+                </div>
+
+                {/* Progress */}
+                {/* <Progress value={(clarificationCount / 5) * 100} /> */}
+
+                {/* <CardContent className="rounded-none"> */}
+                <Card className="p-4 my-5 rounded-none gap-2">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wide font-semibold">
+                        <MessageSquare className="w-5 h-5" />
+                        Your Query
                     </div>
-                    <p className="text-[11px] font-mono uppercase tracking-widest mb-1" style={{ color: "var(--text-subtle)" }}>
-                        Question {clarificationCount} of 5
-                    </p>
-                    <h1 className="text-2xl font-black tracking-tight" style={{ color: "var(--text-main)" }}>
-                        A quick clarification
-                    </h1>
-                </motion.div>
 
-                {/* original query */}
-                <motion.div
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.05 }}
-                    className="mb-6 px-4 py-3 rounded-xl border"
-                    style={{ backgroundColor: "var(--surface-card)", borderColor: "var(--border-solid)" }}
-                >
-                    <p className="text-[10px] font-mono uppercase tracking-widest mb-1" style={{ color: "var(--text-subtle)" }}>
-                        Your query
-                    </p>
-                    <p className="text-sm font-medium" style={{ color: "var(--text-main)" }}>
+                    {/* <Separator /> */}
+
+                    <p className="text-sm font-medium leading-relaxed pl-7">
                         {originalQuery}
                     </p>
-                </motion.div>
+                </Card>
 
-                {/* question + answer */}
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={question}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2 }}
-                    >
-                        <form onSubmit={handleSubmit}>
-                            <div className="rounded-2xl border overflow-hidden" style={{ backgroundColor: "var(--surface)", borderColor: "var(--border-solid)" }}>
-
-                                {/* agent question */}
-                                <div className="px-5 pt-5 pb-3">
-                                    <p className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: "var(--text-subtle)" }}>
-                                        Agent
-                                    </p>
-                                    <p className="text-sm leading-relaxed font-medium" style={{ color: "var(--text-main)" }}>
-                                        {question}
-                                    </p>
-                                </div>
-
-                                <div className="mx-5 border-t my-3" style={{ borderColor: "var(--border-solid)" }} />
-
-                                {/* user answer */}
-                                <div className="px-5 pb-4">
-                                    <p className="text-[10px] font-mono uppercase tracking-widest mb-2" style={{ color: "var(--text-subtle)" }}>
-                                        Your answer
-                                    </p>
-                                    <textarea
-                                        ref={textareaRef}
-                                        value={answer}
-                                        onChange={(e) => setAnswer(e.target.value)}
-                                        onKeyDown={handleKeyDown}
-                                        rows={3}
-                                        placeholder="Type your answer..."
-                                        className="w-full bg-transparent outline-none resize-none text-sm leading-relaxed"
-                                        style={{ color: "var(--text-main)" }}
-                                    />
-                                </div>
-
-                                {/* footer */}
+                {/* Question Card */}
+                <CardContent
+                    className="border overflow-hidden rounded-none p-3"
+                    style={{
+                        backgroundColor: "var(--surface)",
+                        borderColor: "color-mix(in srgb, var(--primary) 20%, transparent)",
+                    }}
+                >
+                    <CardContent className="p-5 space-y-4">
+                        {/* Header row */}
+                        <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-center gap-2.5">
+                                {/* Icon bubble */}
                                 <div
-                                    className="flex items-center justify-between px-5 py-3 border-t"
-                                    style={{ borderColor: "var(--border-solid)", backgroundColor: "var(--surface-card)" }}
+                                    className="w-8 h-8 flex items-center justify-center shrink-0"
+                                    style={{
+                                        background: "linear-gradient(135deg, var(--primary), var(--accent))",
+                                    }}
                                 >
-                                    <span className="text-[10px] font-mono" style={{ color: "var(--text-subtle)" }}>
-                                        {answer.length > 0 ? `${answer.length} chars` : "⌘↵ to continue"}
-                                    </span>
-                                    <button
-                                        type="submit"
-                                        disabled={!canSubmit}
-                                        className="flex items-center gap-2 px-5 h-9 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all"
-                                        style={{
-                                            background: canSubmit ? "var(--primary)" : "var(--surface-raised)",
-                                            color: canSubmit ? "#fff" : "var(--text-subtle)",
-                                            cursor: canSubmit ? "pointer" : "not-allowed",
-                                        }}
+                                    <Sparkles className="w-3.5 h-3.5 text-white" />
+                                </div>
+
+                                <div>
+                                    <p
+                                        className="text-sm font-bold uppercase tracking-wider"
+                                        style={{ color: "var(--text-subtle)" }}
                                     >
-                                        {submitting ? "Thinking..." : <> Continue <ArrowRight className="w-3 h-3" /> </>}
-                                    </button>
+                                        Clarification needed
+                                    </p>
+                                    <p
+                                        className="text-[11px] font-medium"
+                                        style={{ color: "var(--primary)" }}
+                                    >
+                                        Question {clarificationCount}
+                                    </p>
                                 </div>
                             </div>
-                        </form>
-                    </motion.div>
-                </AnimatePresence>
 
-                {/* error */}
-                <AnimatePresence>
-                    {error && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0 }}
-                            className="mt-4 p-4 rounded-xl border flex items-start gap-3"
-                            style={{ backgroundColor: "var(--destructive-bg)", borderColor: "var(--destructive)" }}
+                            {/* <Badge
+                                variant="outline"
+                                className="text-[10px] px-2 py-0.5 shrink-0"
+                                style={{
+                                    backgroundColor: "var(--info-bg)",
+                                    color: "var(--primary)",
+                                    borderColor: "color-mix(in srgb, var(--primary) 20%, transparent)",
+                                }}
+                            >
+                                AI generated
+                            </Badge> */}
+                        </div>
+
+                        <Separator style={{ backgroundColor: "var(--border-solid)", opacity: 0.4 }} />
+
+                        {/* Question text */}
+                        <p
+                            className="text-sm leading-relaxed font-medium mt-5"
+                            style={{ color: "var(--text-main)" }}
                         >
-                            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "var(--destructive)" }} />
-                            <p className="text-sm font-semibold" style={{ color: "var(--destructive)" }}>
-                                {error}
-                            </p>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                            {question}
+                        </p>
+                    </CardContent>
+                </CardContent>
+
+                {/* Input */}
+                <form onSubmit={handleSubmit} className="space-y-3">
+                    <Textarea
+                        ref={textareaRef}
+                        value={answer}
+                        onChange={(e) => setAnswer(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder="Type your answer..."
+                        style={{ minHeight: "140px" }}
+                    />
+
+                    <div className="flex justify-between items-center">
+                        <span className="text-xs text-muted-foreground">
+                            {answer.length} chars
+                        </span>
+
+                        <Button disabled={!canSubmit} type="submit" className={'text-white'}>
+                            {submitting ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                                <ArrowRight className="w-4 h-4" />
+                            )}
+                        </Button>
+                    </div>
+                </form>
+
+                {/* Error */}
+                {error && (
+                    <Alert variant="destructive" className="rounded-none">
+                        <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                )}
 
             </div>
         </div>

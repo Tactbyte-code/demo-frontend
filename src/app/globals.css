@@ -13,6 +13,7 @@
   --surface: #ffffff;
   --surface-card: #e8f0f5;
   --surface-raised: #dce8ef;
+  --input-background: #d6eff9;
 
   /* Sidebar */
   --sidebar-bg: #ffffff;
@@ -26,10 +27,12 @@
   --text-main: #0d1f2d;
   --text-muted: #3d5a6e;
   --text-subtle: #333;
+  --text-light: #ffffff;
 
   /* Border */
   --border: rgba(26, 127, 168, 0.18);
   --border-solid: #c8dde8;
+  --border-input: #aeaeae;
 
   /* Status */
   --success: #00b894;
@@ -70,11 +73,12 @@
   /* Near-void: deepest ocean trench */
   --surface: #171717;
   /* 1 step above background */
-  --surface-card: #0f1923;
+  --surface-card: #1a2c3d;
   /* was #0b1520 — a touch lighter, more neutral grey-blue */
   --surface-raised: #203146;
   /* was #101e2a — bumped up to match */
   /* Elevated element */
+  --input-background: #0f4b63;
 
   /* Sidebar */
   --sidebar-bg: #050c12;
@@ -91,10 +95,12 @@
   /* Deeper steel-blue mid */
   --text-subtle: #406781;
   /* Near-invisible on dark surfaces */
+  --text-light: #ffffff;
 
   /* Border — very subtle on near-black */
   --border: rgba(41, 168, 204, 0.09);
   --border-solid: #101e2a;
+  --border-input: #888888;
 
   /* Status */
   --success: #00ba95;
@@ -134,6 +140,7 @@
   --color-background: var(--background);
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
+  --color-input-background: var(--input-background);
 
   /* Sidebar */
   --color-sidebar: var(--sidebar-bg);
@@ -147,10 +154,12 @@
   --color-foreground: var(--text-main);
   --color-muted: var(--text-muted);
   --color-subtle: var(--text-subtle);
+  --color-light: var(--text-light);
 
   /* Border */
   --color-border: var(--border);
   --color-border-solid: var(--border-solid);
+  --color-border-input: var(--border-input);
 
   /* Status */
   --color-success: var(--success);

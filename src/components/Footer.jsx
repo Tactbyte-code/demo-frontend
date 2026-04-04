@@ -57,7 +57,9 @@ export default function Footer() {
                                 <Image
                                     src="/images/logo2.png"
                                     alt="Logo"
+                                    priority
                                     fill
+                                    sizes="(max-width: 640px) 100vw, 160px"
                                     className="object-contain group-hover:scale-110 transition-transform duration-300"
                                 />
                             </div>

@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 export function QueryCard({ query, isCompleted }) {
 
     const [editing, setEditing] = useState(false);
-    const [value, setValue] = useState(query?.query ?? "");
+    const [value, setValue] = useState(query || null);
     const textareaRef = useRef(null);
     const router = useRouter();
 

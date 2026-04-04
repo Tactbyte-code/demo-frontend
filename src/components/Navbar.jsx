@@ -100,7 +100,7 @@ export default function Navbar() {
                     {/* Center: Logo */}
                     <Link href="/" className="absolute left-[54%] top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center cursor-pointer">
                         <div className="relative h-14 w-14">
-                            <Image src="/images/logo2.png" alt="Logo" fill className="object-contain" priority />
+                            <Image src="/images/logo2.png" alt="Logo" fill sizes="(max-width: 640px) 100vw, 160px" className="object-contain" priority />
                         </div>
                         <span className="font-bold text-lg tracking-tight text-white">DEMO</span>
                     </Link>

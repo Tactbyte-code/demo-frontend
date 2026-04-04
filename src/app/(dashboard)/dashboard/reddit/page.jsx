@@ -2,12 +2,15 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ChevronRight, RefreshCcw, Sparkles, CheckCircle2, Clock, AlertCircle, Timer } from "lucide-react";
+import { ArrowRight, ChevronRight, RefreshCcw, Sparkles, CheckCircle2, Clock, AlertCircle, Timer, ClockFading } from "lucide-react";
 import { getToken } from "@/utils/getToken";
 import Link from "next/link";
+import ClarificationComponent from './_components/ClarificationComponent';
 import { createQuery, getQueries } from "@/lib/api/reddit";
 import RedditQueryHistoryTable from "./_components/RedditQueryHistoryTable";
 import { useRouter } from "next/navigation";
+import QueryProcessingLoader from "./_components/QueryProcessingLoader";
+// import AILoader from "@/components/shared/AiLoader";
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const EXAMPLES = ["gym culture in Mumbai", "solo travel north east India", "EV adoption challenges India", "street food safety Delhi", "remote work culture Bangalore", "startup funding climate 2024"];
@@ -19,26 +22,17 @@ export default function RedditIntelligencePage() {
 
     const [query, setQuery] = useState("");
     const [focused, setFocused] = useState(false);
-    const [submitLoading, setSubmitLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [navigating, setNavigating] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [jobs, setJobs] = useState([]);
-    const [jobsLoading, setJobsLoading] = useState(true);
+    // const [intialLoading, setInitialLoading] = useState(true);
     const [error, setError] = useState(null);
     const [countdown, setCountdown] = useState(REFRESH_INTERVAL_MS / 1000);
 
-    const [queries, setQueries] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    const fetchQueries = async () => {
-        setLoading(true);
-        const data = await getQueries();
-        setQueries(data);
-        setLoading(false);
-    };
-
-    useEffect(() => {
-        fetchQueries();
-    }, []);
+    const [queryId, setQueryId] = useState(null);
+    // const [error, setError] = useState(null);
+    const [status, setStatus] = useState(null);
 
     // ── Rate limit state ──────────────────────────────────────
     const [cooldownMinutes, setCooldownMinutes] = useState(0);
@@ -49,44 +43,56 @@ export default function RedditIntelligencePage() {
     const textareaRef = useRef(null);
     const jobsIntervalRef = useRef(null);
     const cooldownIntervalRef = useRef(null);
-    const canSubmit = query.trim() && !submitLoading && !isOnCooldown;
+    const canSubmit = query.trim() && !loading && !isOnCooldown;
     const router = useRouter();
 
-    // const fetched_queries = getQueries();
-    // console.log(fetched_queries);
-
-    const submitQuery = async (e) => {
+    const handleSubmitQuery = async (e) => {
         e?.preventDefault();
-        setSubmitLoading(true);
+
+        setLoading(true);
         setError(null);
+        setStatus(null);
 
         try {
+            console.log('function entered ...');
+
             const response = await createQuery(query);
+            if (response) setQueryId(response.id);
 
-            if (response?.status === "CLARIFYING") {
+            // console.log('status from reddit page: ', response?.status);
+
+            if (response.status === "CLARIFYING") {
+                setNavigating(true);
                 router.push(`/dashboard/reddit/query/${response.id}/clarify`);
-            };
-
-            if (response?.status === "CLARIFIED") {
+            }
+            if (response.status === "CLARIFIED") {
+                setNavigating(true);
                 router.push(`/dashboard/reddit/query/${response.id}`);
-            };
+            }
 
             if (response?.status === "FAILED") {
+                setStatus("FAILED");
                 setError(response?.failure_reason || "Something went wrong");
-            };
+            }
         } catch (err) {
             console.log('submit query error: ', err);
             setError(err?.response?.data?.detail || "Something went wrong");
+            setStatus("FAILED");
         } finally {
-            setSubmitLoading(false);
+            setLoading(false);
         }
     };
 
-    const handleSubmitQuery = (e) => {
-        e.preventDefault();
+    const handleKeyDown = (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            // e.preventDefault();
+            if (canSubmit) handleSubmitQuery(e);
+        }
+    };
 
-        router.push(`/dashboard/reddit/processing?query=${encodeURIComponent(query)}`);
-    }
+    if (loading || navigating) return <QueryProcessingLoader />;
+
+    // if (intialLoading) return <AILoader />;
 
     return (
         <div className="min-h-screen flex flex-col items-center px-6 py-16 pb-14 relative overflow-hidden" style={{ backgroundColor: "var(--background)" }}>
@@ -148,10 +154,9 @@ export default function RedditIntelligencePage() {
                         <form onSubmit={handleSubmitQuery}>
                             <motion.div
                                 animate={{ boxShadow: focused ? "var(--shadow-lg)" : "var(--shadow-md)" }}
-                                className="rounded-2xl overflow-hidden border"
+                                className="overflow-hidden border border-border-input"
                                 style={{
                                     backgroundColor: "var(--surface)",
-                                    borderColor: isOnCooldown ? "var(--warning)" : "var(--border-solid)",
                                     opacity: isOnCooldown ? 0.7 : 1,
                                 }}
                             >
@@ -162,7 +167,7 @@ export default function RedditIntelligencePage() {
                                         onChange={(e) => setQuery(e.target.value)}
                                         onFocus={() => setFocused(true)}
                                         onBlur={() => setFocused(false)}
-                                        // onKeyDown={handleKeyDown}
+                                        onKeyDown={handleKeyDown}
                                         rows={3}
                                         disabled={isOnCooldown}
                                         placeholder={isOnCooldown ? "Please wait for the cooldown to finish..." : "Describe the topic you want to analyze..."}
@@ -172,29 +177,20 @@ export default function RedditIntelligencePage() {
                                 </div>
 
                                 <div className="flex items-center justify-between px-5 py-3 border-t" style={{ borderColor: "var(--border-solid)", backgroundColor: "var(--surface-card)" }}>
-                                    <span className="text-[10px] font-mono" style={{ color: "var(--text-subtle)" }}>
-                                        {isOnCooldown ? `⏳ ${String(cooldownMinutes).padStart(2, "0")}:${String(cooldownSeconds).padStart(2, "0")} remaining` : query.length > 0 ? `${query.length} chars` : "⌘↵ to run"}
+                                    <span className="text-[10px] font-mono text-muted">
+                                        {isOnCooldown ? `⏳ ${String(cooldownMinutes).padStart(2, "0")}:${String(cooldownSeconds).padStart(2, "0")} remaining` : query.length > 0 ? `${query.length} chars` : "Press ↵ to run"}
                                     </span>
                                     <button
                                         type="submit"
                                         disabled={!canSubmit}
-                                        className="flex items-center gap-2 px-5 h-9 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all"
+                                        className="flex items-center gap-2 px-5 h-9 text-[11px] font-bold uppercase tracking-widest transition-all"
                                         style={{
                                             background: canSubmit ? "var(--primary)" : "var(--surface-raised)",
                                             color: canSubmit ? "#fff" : "var(--text-subtle)",
                                             cursor: canSubmit ? "pointer" : "not-allowed",
                                         }}
                                     >
-                                        {submitLoading ? (
-                                            "Analyzing..."
-                                        ) : isOnCooldown ? (
-                                            "On Cooldown"
-                                        ) : (
-                                            <>
-                                                {" "}
-                                                Analyze <ArrowRight className="w-3 h-3" />{" "}
-                                            </>
-                                        )}
+                                        Analyze <ArrowRight className="w-3 h-3" />
                                     </button>
                                 </div>
                             </motion.div>
@@ -270,7 +266,7 @@ export default function RedditIntelligencePage() {
                             type="button"
                             onClick={() => !isOnCooldown && setQuery(s)}
                             disabled={isOnCooldown}
-                            className="px-3 py-1 cursor-pointer rounded-full text-[11px] font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                            className="px-3 py-1 cursor-pointer text-[11px] font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                             style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border-solid)", color: "var(--text-muted)" }}
                             onMouseEnter={(e) => {
                                 if (!isOnCooldown) {
@@ -292,12 +288,12 @@ export default function RedditIntelligencePage() {
             </div>
 
             {/* ─── DIVIDER ─── */}
-            <div className="w-full max-w-5xl mt-20 mb-10 flex items-center gap-4">
+            <div className="w-full max-w-5xl mt-15 mb-15 flex items-center gap-4">
                 <div className="h-px flex-1" style={{ backgroundColor: "var(--border-solid)" }} />
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-subtle)" }}>
+                {/* <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-subtle)" }}>
                     <Clock className="w-4 h-4" /> Syncing in {countdown}s
-                </div>
-                <div className="h-px flex-1" style={{ backgroundColor: "var(--border-solid)" }} />
+                </div> */}
+                {/* <div className="h-px flex-1" style={{ backgroundColor: "var(--border-solid)" }} /> */}
             </div>
 
             <RedditQueryHistoryTable />

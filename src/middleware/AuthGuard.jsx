@@ -22,6 +22,8 @@ export default function AuthGuard({ children }) {
                     : pathname === route || pathname.startsWith(route + "/")
             );
 
+            console.log('auth guard: ', firebaseUser);
+
             if (!firebaseUser) {
                 if (!isPublic) router.replace("/login");
                 setChecking(false);

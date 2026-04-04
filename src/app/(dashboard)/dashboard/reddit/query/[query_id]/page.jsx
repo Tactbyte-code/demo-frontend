@@ -39,10 +39,9 @@ export default function QueryResultPage() {
     const [postsLoaded, setPostsLoaded] = useState(false);
     const [isPolling, setIsPolling] = useState(false);
     const [summary, setSummary] = useState(null);
-    // Tracks whether the auto-search has already been fired for this mount
     const [autoSearchFired, setAutoSearchFired] = useState(false);
-    // Tracks whether the auto-summarize has already been fired for this mount
     const [autoSummarizeFired, setAutoSummarizeFired] = useState(false);
+    const [isSummarized, setIsSummarized] = useState(false);
 
     // ── fetch helpers ──────────────────────────────────────────────────────────
     const fetchPosts = useCallback(async () => {
@@ -58,7 +57,10 @@ export default function QueryResultPage() {
         }
     }, [query_id]);
 
+    // get summary when completed
     const fetchResult = useCallback(async () => {
+        setIsSummarized(false);
+
         try {
             const data = await getQueryResult(query_id);
             console.log('final summary: ', data);
@@ -66,20 +68,25 @@ export default function QueryResultPage() {
             setSummary(data); // store full summary object
         } catch (e) {
             console.error(e);
+        } finally {
+            setIsSummarized(true);
         }
     }, [query_id]);
 
-    // ── init ───────────────────────────────────────────────────────────────────
+    // ── get the query on load - status, query, etc.
     useEffect(() => {
         let cancelled = false;
 
         const init = async () => {
             try {
                 const data = await getQuery(query_id);
+
+                console.log('get a query: ', data);
+
                 if (cancelled) return;
 
-                setQuery(data);
-                setStatus(data.status);
+                setQuery(data?.query);
+                setStatus(data?.status);
                 setFailureReason(data.failure_reason ?? null);
                 setFailedAtStep(data.failed_at_step ?? null);
 
@@ -173,8 +180,6 @@ export default function QueryResultPage() {
     }, [query_id, setApprovalError]);
 
     // ── Auto-trigger search on mount when status is CLARIFIED ──────────────────
-    // Runs once after the init fetch resolves and status is set to CLARIFIED.
-    // The `autoSearchFired` guard prevents double-firing in StrictMode or re-renders.
     useEffect(() => {
         if (!loading && status === "CLARIFIED" && !autoSearchFired) {
             setAutoSearchFired(true);
@@ -206,9 +211,6 @@ export default function QueryResultPage() {
     }, [approvedCount, runStream, setApprovalError]);
 
     // ── Auto-trigger summarize when SEARCH_COMPLETE and posts are loaded ───────
-    // Fires once posts have been fetched (postsLoaded = true) and status has
-    // settled at SEARCH_COMPLETE. The skipApprovalCheck flag bypasses the
-    // manual-selection guard so it runs even with 0 approved posts.
     useEffect(() => {
         if (
             status === "SEARCH_COMPLETE" &&
@@ -255,17 +257,16 @@ export default function QueryResultPage() {
         }
     };
 
-    // ── render ─────────────────────────────────────────────────────────────────
+    // console.log('parent page status: ', status);
+    const isCompleted = status === "COMPLETED";
+
     if (loading) {
         return (
             <PageShell>
                 <LoadingSkeleton />
             </PageShell>
         );
-    }
-
-    // console.log('parent page status: ', status);
-    const isCompleted = status === "COMPLETED";
+    };
 
     return (
         <PageShell>
@@ -285,7 +286,7 @@ export default function QueryResultPage() {
             <QueryCard query={query} isCompleted={isCompleted} />
 
             {/* Processing Stages */}
-            {!isCompleted && (
+            {(!isSummarized) && (
                 <Pipeline
                     showPipeline={qs.showPipeline}
                     status={status}
@@ -320,7 +321,7 @@ export default function QueryResultPage() {
                 />
             )}
 
-            {status === "COMPLETED" && summary && (
+            {status === "COMPLETED" && isSummarized && (
                 <>
                     <SummaryResult data={summary} sources={sources} approvedCount={approvedCount} onToggleSource={handleToggleApproval} />
                 </>
