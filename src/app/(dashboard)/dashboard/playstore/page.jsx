@@ -68,10 +68,10 @@ export default function AppAnalysisPage() {
                     <motion.div
                         initial={{ opacity: 0, y: -8 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-semibold"
+                        className="flex items-center gap-2.5 px-4 py-3 text-sm font-semibold"
                         style={{ backgroundColor: "var(--destructive-bg)", border: "1px solid color-mix(in srgb, var(--destructive) 25%, transparent)", color: "var(--destructive)" }}
                     >
-                        <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                        <AlertCircle className="w-4 h-4 shrink-0" />
                         {error}
                     </motion.div>
                 )}
@@ -80,7 +80,7 @@ export default function AppAnalysisPage() {
                     <div className="flex flex-col items-center gap-6">
                         <div className="relative">
                             <div
-                                className="w-24 h-24 rounded-3xl flex items-center justify-center"
+                                className="w-24 h-24 rounded-full flex items-center justify-center"
                                 style={{
                                     background: "linear-gradient(135deg, color-mix(in srgb, var(--primary) 15%, var(--surface)), color-mix(in srgb, var(--accent) 10%, var(--surface)))",
                                     border: "1px solid var(--glass-border)",
@@ -107,7 +107,7 @@ export default function AppAnalysisPage() {
                         {/* App ID input */}
                         <motion.div
                             transition={{ duration: 0.2 }}
-                            className="relative flex items-center rounded-2xl overflow-hidden"
+                            className="relative flex items-center overflow-hidden"
                             style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border-solid)" }}
                         >
                             <motion.div className="absolute top-0 left-0 right-0 h-px" transition={{ duration: 0.3 }} />
@@ -120,7 +120,7 @@ export default function AppAnalysisPage() {
                                 value={appUrl}
                                 onChange={(e) => setAppUrl(e.target.value)}
                                 placeholder="Enter you app's playstore url"
-                                className="flex-1 py-4 bg-transparent outline-none text-sm font-medium font-mono"
+                                className="flex-1 py-4 bg-transparent outline-none text-sm font-medium"
                                 style={{ color: "var(--text-main)" }}
                             />
                         </motion.div>

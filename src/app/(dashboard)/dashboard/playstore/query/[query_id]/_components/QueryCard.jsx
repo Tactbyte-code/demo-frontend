@@ -17,40 +17,54 @@ export function QueryCard({ query }) {
         <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-2xl p-6 flex flex-col gap-4"
-            style={{
-                backgroundColor: "var(--surface)",
-                border: "1px solid var(--border-solid)",
-                boxShadow: "var(--shadow-sm)",
-            }}
+            className="flex"
         >
-            <div className="flex items-start justify-between gap-4 flex-wrap">
+            {/* Left Accent */}
+            <div style={{ width: "3px", backgroundColor: "var(--primary)" }} />
+
+            {/* Main Card */}
+            <div
+                className="flex-1 p-6 flex flex-col gap-5"
+                style={{
+                    backgroundColor: "var(--surface)",
+                    borderTop: "1px solid var(--border-solid)",
+                    borderRight: "1px solid var(--border-solid)",
+                    borderBottom: "1px solid var(--border-solid)",
+                    boxShadow: "var(--shadow-sm)",
+                }}
+            >
+                {/* Header */}
                 <div className="flex items-center gap-3">
                     <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                        className="w-9 h-9 flex items-center justify-center shrink-0"
                         style={{
-                            background: "linear-gradient(135deg, color-mix(in srgb, var(--primary) 15%, var(--surface)), color-mix(in srgb, var(--accent) 10%, var(--surface)))",
-                            border: "1px solid var(--glass-border)",
+                            backgroundColor: "var(--surface-raised)",
+                            border: "1px solid var(--border-solid)",
                         }}
                     >
-                        <Cpu className="w-5 h-5" style={{ color: "var(--primary)" }} />
+                        <Cpu className="w-4 h-4" style={{ color: "var(--primary)" }} />
                     </div>
+
                     <div>
-                        <p className="text-xs font-semibold uppercase tracking-widest mb-0.5" style={{ color: "var(--text-subtle)" }}>
+                        <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "var(--text-subtle)" }}>
                             App Analysis
                         </p>
-                        <h1 className="text-lg font-bold leading-tight" style={{ color: "var(--text-main)" }}>
+                        <h1 className="text-base font-bold leading-tight" style={{ color: "var(--text-main)" }}>
                             {query.app_name || query.app_id}
                         </h1>
                     </div>
                 </div>
-            </div>
 
-            <div className="flex flex-wrap gap-4">
-                <Meta icon={Hash} label="App ID" value={query.app_id} mono />
-                <Meta icon={Calendar} label="Created" value={fmt(query.created_at)} />
-                {query.fetched_at && <Meta icon={Calendar} label="Fetched" value={fmt(query.fetched_at)} />}
-                {query.summarized_at && <Meta icon={Calendar} label="Analyzed" value={fmt(query.summarized_at)} />}
+                {/* Divider */}
+                <div style={{ height: "1px", backgroundColor: "var(--border-solid)" }} />
+
+                {/* Meta */}
+                <div className="flex flex-wrap gap-3">
+                    <Meta icon={Hash} label="App ID" value={query.app_id} mono />
+                    <Meta icon={Calendar} label="Created" value={fmt(query.created_at)} />
+                    {query.fetched_at && <Meta icon={Calendar} label="Fetched" value={fmt(query.fetched_at)} />}
+                    {query.summarized_at && <Meta icon={Calendar} label="Analyzed" value={fmt(query.summarized_at)} />}
+                </div>
             </div>
         </motion.div>
     );
@@ -58,11 +72,19 @@ export function QueryCard({ query }) {
 
 function Meta({ icon: Icon, label, value, mono = false }) {
     return (
-        <div className="flex items-center gap-2">
+        <div
+            className="flex items-center gap-2 px-2 py-1"
+            style={{
+                backgroundColor: "var(--surface-raised)",
+                border: "1px solid var(--border-solid)",
+            }}
+        >
             <Icon className="w-3.5 h-3.5 shrink-0" style={{ color: "var(--text-subtle)" }} />
-            <span className="text-xs" style={{ color: "var(--text-subtle)" }}>{label}:</span>
+            <span className="text-[10px]" style={{ color: "var(--text-subtle)" }}>
+                {label}
+            </span>
             <span
-                className={`text-xs font-semibold ${mono ? "font-mono" : ""}`}
+                className={`text-[11px] font-semibold ${mono ? "font-mono" : ""}`}
                 style={{ color: "var(--text-main)" }}
             >
                 {value}

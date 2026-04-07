@@ -45,7 +45,7 @@ export function Pipeline({
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
-            className="rounded-2xl p-6 flex flex-col gap-5"
+            className="p-6 flex flex-col gap-5"
             style={{
                 backgroundColor: "var(--surface)",
                 border: "1px solid var(--border-solid)",
@@ -110,9 +110,9 @@ export function Pipeline({
             </div>
 
             {/* Progress bar */}
-            <div className="relative h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--border-solid)" }}>
+            <div className="relative h-1.5 overflow-hidden" style={{ backgroundColor: "var(--border-solid)" }}>
                 <motion.div
-                    className="absolute left-0 top-0 h-full rounded-full"
+                    className="absolute left-0 top-0 h-full"
                     style={{ backgroundColor: getProgressColor(status) }}
                     initial={{ width: 0 }}
                     animate={{ width: `${progressPercent}%` }}
@@ -131,7 +131,7 @@ export function Pipeline({
                     return (
                         <div
                             key={step.key}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-all"
                             style={{
                                 backgroundColor: isDone
                                     ? "color-mix(in srgb, var(--success) 12%, var(--surface))"
@@ -143,10 +143,10 @@ export function Pipeline({
                                                 ? "color-mix(in srgb, var(--accent) 12%, var(--surface))"
                                                 : "color-mix(in srgb, var(--border-solid) 50%, var(--surface))",
                                 border: `1px solid ${isDone ? "color-mix(in srgb, var(--success) 25%, transparent)"
-                                        : isCurrent && isProcessing ? "color-mix(in srgb, var(--primary) 25%, transparent)"
-                                            : isFailedStep ? "color-mix(in srgb, var(--destructive) 25%, transparent)"
-                                                : isCurrent ? "color-mix(in srgb, var(--accent) 25%, transparent)"
-                                                    : "var(--border-solid)"
+                                    : isCurrent && isProcessing ? "color-mix(in srgb, var(--primary) 25%, transparent)"
+                                        : isFailedStep ? "color-mix(in srgb, var(--destructive) 25%, transparent)"
+                                            : isCurrent ? "color-mix(in srgb, var(--accent) 25%, transparent)"
+                                                : "var(--border-solid)"
                                     }`,
                                 color: isDone
                                     ? "var(--success)"
@@ -176,7 +176,7 @@ export function Pipeline({
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="flex items-start gap-2.5 px-4 py-3 rounded-xl text-sm"
+                        className="flex items-start gap-2.5 px-4 py-3 text-sm"
                         style={{
                             backgroundColor: "var(--destructive-bg)",
                             border: "1px solid color-mix(in srgb, var(--destructive) 25%, transparent)",
@@ -211,7 +211,7 @@ function ActionButton({ icon: Icon, label, loading, onClick, variant = "primary"
         <button
             onClick={onClick}
             disabled={loading}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ backgroundColor: colors.bg, border: `1px solid ${colors.border}`, color: colors.color }}
         >
             {loading

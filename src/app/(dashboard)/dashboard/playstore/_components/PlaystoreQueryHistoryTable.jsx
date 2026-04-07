@@ -31,7 +31,7 @@ export default function RedditQueryHistoryTable() {
                         Your analysis history and status
                     </p>
                 </div>
-                <button
+                {/* <button
                     onClick={fetchQueries}
                     className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider px-3 py-2 rounded-lg border transition-colors"
                     style={{
@@ -42,22 +42,22 @@ export default function RedditQueryHistoryTable() {
                 >
                     <RefreshCcw className={`w-3 h-3 ${loading ? "animate-spin" : ""}`} />
                     Sync Now
-                </button>
+                </button> */}
             </div>
 
             <div
-                className="rounded-2xl border overflow-hidden"
+                className="border border-border overflow-hidden"
                 style={{
-                    borderColor: "var(--border-solid)",
+                    // borderColor: "var(--border-solid)",
                     backgroundColor: "var(--surface)",
                     boxShadow: "var(--shadow-sm)",
                 }}
             >
                 <table className="w-full text-left">
                     <thead style={{ backgroundColor: "var(--surface-card)" }}>
-                        <tr className="border-b" style={{ borderColor: "var(--border-solid)" }}>
+                        <tr className="border-b border-border">
                             {["App ID", "Created", "Status", "Action"].map((h) => (
-                                <th key={h} className="px-6 py-4 text-[10px] font-black uppercase tracking-widest" style={{ color: "var(--text-subtle)" }}>
+                                <th key={h} className="px-6 py-4 text-[12px] font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
                                     {h}
                                 </th>
                             ))}

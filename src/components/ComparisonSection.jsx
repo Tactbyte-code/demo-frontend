@@ -11,26 +11,33 @@ import {
     Search,
     BrainCircuit,
     ArrowRight,
+    Shield,
 } from 'lucide-react';
 
 const comparisonData = [
     {
         label: "Market Research",
-        before: "Spending weeks manually reading Reddit threads and App Store reviews.",
-        after: "Instant extraction of millions of data points across all platforms.",
+        before: "Expensive, slow market research",
+        after: "Proven demand signals from thousands of sources",
         icon: Search
     },
     {
-        label: "Sentiment Analysis",
-        before: "Subjective guessing based on a handful of vocal users.",
-        after: "Objective Frustration Scoring using proprietary NLP models.",
+        label: "Idea generation",
+        before: "Random idea brainstorming with no data",
+        after: "Data-driven decisions backed by real evidence",
         icon: BrainCircuit
     },
     {
-        label: "Feature Prioritization",
-        before: "Building based on 'gut feeling' or internal team opinions.",
-        after: "Data-backed roadmaps focused on highest-impact user pain points.",
+        label: "Timely result",
+        before: "Weeks of validation before you can move",
+        after: "Higher success probability from day one",
         icon: Target
+    },
+    {
+        label: "failure shield",
+        before: "High failure risk from unvalidated assumptions",
+        after: "Faster product development with less guesswork",
+        icon: Shield
     }
 ];
 

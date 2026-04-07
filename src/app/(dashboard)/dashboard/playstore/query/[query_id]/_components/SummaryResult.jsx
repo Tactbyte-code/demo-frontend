@@ -25,7 +25,7 @@ function Card({ children, delay = 0, className = "" }) {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay }}
-            className={`rounded-2xl p-6 ${className}`}
+            className={`p-6 ${className}`}
             style={{
                 backgroundColor: "var(--surface)",
                 border: "1px solid var(--border-solid)",
@@ -66,7 +66,7 @@ function SeverityBadge({ severity }) {
     };
     const style = colorMap[severity] || colorMap.Medium;
     return (
-        <span className="text-xs font-bold px-2 py-0.5 rounded" style={style}>
+        <span className="text-xs font-bold px-2 py-0.5" style={style}>
             {severity}
         </span>
     );
@@ -117,7 +117,7 @@ function PainPointItem({ point }) {
 
             {point.example_quote && (
                 <div
-                    className="text-xs italic px-3 py-2 rounded-lg border-l-2 flex items-start gap-2"
+                    className="text-xs italic px-3 py-2 border-l-2 flex items-start gap-2"
                     style={{ backgroundColor: "var(--glass-surface)", borderColor: "var(--primary)", color: "var(--text-muted)" }}
                 >
                     <Quote className="w-3 h-3 mt-0.5 shrink-0 opacity-50" />
@@ -142,7 +142,7 @@ function PainPointItem({ point }) {
                         </span>
                         <ul className="space-y-1.5">
                             {point.system_actions.map((action, i) => (
-                                <li key={i} className="flex flex-col p-2 rounded bg-black/5 dark:bg-white/5">
+                                <li key={i} className="flex flex-col p-2 bg-black/5 dark:bg-white/5">
                                     <span className="font-semibold" style={{ color: "var(--text-main)" }}>{action.action}</span>
                                     {action.why && <span style={{ color: "var(--text-muted)" }} className="mt-0.5">Why: {action.why}</span>}
                                     {action.how && <span style={{ color: "var(--text-muted)" }} className="mt-0.5 opacity-80">How: {action.how}</span>}
@@ -162,7 +162,7 @@ function ThemeCard({ theme }) {
 
     return (
         <motion.div
-            className="rounded-xl p-4 flex flex-col"
+            className="p-4 flex flex-col"
             // style={{ backgroundColor: s.bg, border: `1px solid ${s.border}` }}
             style={{ backgroundColor: "var(--surface)", border: `1px solid ${s.border}` }}
             initial={{ opacity: 0, scale: 0.98 }}
@@ -209,7 +209,7 @@ function MarketSignalCategory({ title, items, icon: Icon, colorVar }) {
                 {items.map((item, i) => (
                     <span
                         key={i}
-                        className="text-xs px-2 py-1 rounded-md"
+                        className="text-xs px-2 py-1"
                         style={{ backgroundColor: "var(--glass-surface)", border: "1px solid var(--border-subtle)", color: "var(--text-main)" }}
                     >
                         {item}
@@ -246,7 +246,7 @@ function NextStep({ step, index }) {
     };
 
     return (
-        <div className="flex gap-3 items-start p-3 rounded-xl" style={{ backgroundColor: "var(--glass-surface)" }}>
+        <div className="flex gap-3 items-start p-3" style={{ backgroundColor: "var(--glass-surface)" }}>
             <div
                 className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5"
                 style={{ backgroundColor: "var(--primary)", color: "white" }}
@@ -258,12 +258,12 @@ function NextStep({ step, index }) {
                     <span className="text-sm font-bold mr-2" style={{ color: "var(--text-main)" }}>{step.step}</span>
                     <div className="flex gap-1.5">
                         {step.quick_win && (
-                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase flex items-center gap-1" style={{ backgroundColor: "color-mix(in srgb, var(--success) 20%, transparent)", color: "var(--success)" }}>
+                            <span className="px-1.5 py-0.5 text-[10px] font-bold uppercase flex items-center gap-1" style={{ backgroundColor: "color-mix(in srgb, var(--success) 20%, transparent)", color: "var(--success)" }}>
                                 <Sparkles className="w-2.5 h-2.5" /> Quick Win
                             </span>
                         )}
                         {step.effort && (
-                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase" style={{ backgroundColor: "var(--border-solid)", color: "var(--text-subtle)" }}>
+                            <span className="px-1.5 py-0.5 text-[10px] font-bold uppercase" style={{ backgroundColor: "var(--border-solid)", color: "var(--text-subtle)" }}>
                                 {step.effort}
                             </span>
                         )}
@@ -334,7 +334,7 @@ export function SummaryResult({ data }) {
                     )}
                 </div>
                 {meta?.model && (
-                    <span className="text-xs font-mono px-2 py-1 rounded-md flex items-center gap-1" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border-solid)", color: "var(--text-subtle)" }}>
+                    <span className="text-xs font-mono px-2 py-1 flex items-center gap-1" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border-solid)", color: "var(--text-subtle)" }}>
                         <Cpu className="w-3 h-3" /> {meta.model}
                     </span>
                 )}
@@ -344,7 +344,7 @@ export function SummaryResult({ data }) {
             {direct_answer && (
                 <Card delay={0.05}>
                     <div
-                        className="rounded-xl px-5 py-4"
+                        className="px-5 py-4"
                         style={{
                             background: "linear-gradient(135deg, color-mix(in srgb, var(--primary) 8%, var(--surface)), color-mix(in srgb, var(--accent) 5%, var(--surface)))",
                             border: "1px solid var(--glass-border)",

@@ -17,11 +17,11 @@ function StatCard({ label, value, icon: Icon, colorClass, bgClass, delta, delay 
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay, duration: 0.3 }}
-            className="bg-surface border border-border-solid rounded-2xl p-5 flex flex-col gap-3 shadow-sm"
+            className="bg-surface border border-border p-5 flex flex-col gap-3 shadow-sm"
         >
             <div className="flex items-center justify-between">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] font-mono text-subtle">{label}</span>
-                <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${bgClass}`}>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] font-mono text-muted">{label}</span>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center border border-border-input ${bgClass}`}>
                     <Icon className={`w-3.5 h-3.5 ${colorClass}`} />
                 </div>
             </div>
@@ -49,7 +49,7 @@ function EmptyState({ href, cta }) {
     return (
         <tr>
             <td colSpan={4}>
-                <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
+                <div className="flex flex-col items-center justify-center py-18 gap-4 text-center">
                     <div className="p-4 rounded-full border border-border-solid">
                         <TrendingUp className="w-5 h-5 text-subtle" />
                     </div>
@@ -59,7 +59,7 @@ function EmptyState({ href, cta }) {
                     </div>
                     <Link
                         href={href}
-                        className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider text-white bg-primary shadow-sm transition-all hover:opacity-90"
+                        className="mt-2 inline-flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider text-white bg-primary shadow-sm transition-all hover:opacity-90"
                     >
                         {cta} <ArrowUpRight className="w-3 h-3" />
                     </Link>
@@ -72,7 +72,7 @@ function EmptyState({ href, cta }) {
 // ── JOBS TABLE ────────────────────────────────────────
 function JobsTable({ jobs, loading }) {
     return (
-        <div className="overflow-hidden rounded-2xl border border-border-solid bg-surface">
+        <div className="overflow-hidden rounded-none border border-border-solid bg-surface">
             <table className="w-full text-sm">
                 <thead>
                     <tr className="border-b border-border-solid">
@@ -122,9 +122,9 @@ function PlaystoreComingSoon() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="rounded-2xl border border-border-solid bg-surface flex flex-col items-center justify-center py-20 gap-5"
+            className="rounded-none border border-border-solid bg-surface flex flex-col items-center justify-center py-20 gap-5"
         >
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-info-bg border border-primary/20">
+            <div className="w-14 h-14 rounded-none flex items-center justify-center bg-info-bg border border-primary/20">
                 <Star className="w-6 h-6 text-primary" />
             </div>
             <div className="text-center">
@@ -148,9 +148,9 @@ function ActivityFeed({ jobs }) {
     };
 
     return (
-        <div className="bg-surface border border-border-solid rounded-2xl p-5 flex flex-col gap-4">
+        <div className="bg-surface border border-border rounded-none p-5 flex flex-col gap-4">
             <div className="flex items-center justify-between">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] font-mono text-subtle">Recent Activity</p>
+                <p className="text-xs font-black uppercase tracking-wider font-mono text-muted">Recent Activity</p>
                 <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
             </div>
 
@@ -162,14 +162,14 @@ function ActivityFeed({ jobs }) {
                         const s = iconMap[job.status] || iconMap.PROCESSING;
                         return (
                             <motion.div key={job.id} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.06 }} className="flex items-center gap-3">
-                                <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${s.bg}`}>
+                                <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${s.bg}`}>
                                     <s.Icon className={`w-3.5 h-3.5 ${s.color}`} />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-[12px] font-semibold text-foreground truncate">{job.query}</p>
                                     <p className="text-[10px] text-subtle font-mono">{formatDate(job.created_at)}</p>
                                 </div>
-                                <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full font-mono ${s.bg} ${s.color}`}>
+                                <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 border border-glass-border rounded-none font-mono ${s.bg} ${s.color}`}>
                                     {job.status === "USER_PENDING" ? "Pending" : job.status.charAt(0) + job.status.slice(1).toLowerCase()}
                                 </span>
                             </motion.div>
@@ -184,22 +184,22 @@ function ActivityFeed({ jobs }) {
 // ── QUICK ACTIONS ─────────────────────────────────────
 function QuickActions() {
     const actions = [
-        { label: "New Reddit Scan", href: "/dashboard/reddit", icon: MessageSquare, color: "text-primary", bg: "bg-info-bg" },
+        { label: "New Reddit Scan", href: "/dashboard/reddit", icon: MessageSquare, color: "text-primary", bg: "bg-info-bg/100" },
         { label: "View App Analysis", href: "/dashboard/playstore", icon: Star, color: "text-warning", bg: "bg-warning-bg" },
         // { label: 'Browse History', href: '/dashboard/history', icon: Clock, color: 'text-muted', bg: 'bg-surface-raised' },
     ];
 
     return (
-        <div className="bg-surface border border-border-solid rounded-2xl p-5 flex flex-col gap-4">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] font-mono text-subtle">Quick Actions</p>
+        <div className="bg-surface border border-border rounded-none p-5 flex flex-col gap-4">
+            <p className="text-xs font-black uppercase tracking-wider font-mono text-muted">Quick Actions</p>
             <div className="flex flex-col gap-2">
                 {actions.map(({ label, href, icon: Icon, color, bg }) => (
                     <Link
                         key={label}
                         href={href}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-border-solid bg-surface-card hover:border-primary/40 hover:bg-info-bg transition-all group"
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-none border border-border-input bg-surface-card hover:border-primary/40 hover:bg-info-bg transition-all group"
                     >
-                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${bg}`}>
+                        <div className={`w-7 h-7 rounded-full flex items-center justify-center ${bg}`}>
                             <Icon className={`w-3.5 h-3.5 ${color}`} />
                         </div>
                         <span className="text-[12px] font-semibold text-foreground flex-1">{label}</span>
@@ -286,15 +286,15 @@ export default function DashboardPage() {
                         {total} {total === 1 ? "job" : "jobs"} total
                     </span>
                 </div>
-                <div className="flex items-center gap-3">
+                {/* <div className="flex items-center gap-3">
                     <div className="flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
                         <span className="text-[9px] font-mono text-subtle">LIVE POLLING</span>
                     </div>
-                    <button onClick={() => fetchJobs()} className="p-1.5 rounded-lg border border-border-solid bg-surface-card hover:border-primary/40 transition-all">
+                    <button onClick={() => fetchJobs()} className="p-1.5 rounded-full border border-border-solid bg-surface-card hover:border-primary/40 transition-all">
                         <RefreshCcw className={`w-3 h-3 text-muted ${loading ? "animate-spin" : ""}`} />
                     </button>
-                </div>
+                </div> */}
             </header>
 
             <div className="px-8 py-8 flex flex-col gap-8">
@@ -311,18 +311,18 @@ export default function DashboardPage() {
                     {/* LEFT — TABS + TABLE */}
                     <div className="flex flex-col gap-4">
                         {/* Sliding tab bar */}
-                        <div className="flex items-center gap-1 p-1 rounded-xl bg-surface-raised border border-border-solid w-fit">
+                        <div className="flex items-center gap-1 p-1 rounded-none bg-surface-raised border border-border w-fit">
                             {TABS.map(({ id, label, icon: Icon }) => (
                                 <button
                                     key={id}
                                     onClick={() => setActiveTab(id)}
-                                    className="relative flex items-center gap-2 px-4 py-2 rounded-lg text-[11px] font-bold transition-all duration-200 cursor-pointer"
-                                    style={{ color: activeTab === id ? "var(--primary)" : "var(--text-subtle)" }}
+                                    className="relative flex items-center gap-2 px-4 py-2 text-[11px] font-bold transition-all duration-200 cursor-pointer"
+                                    style={{ color: activeTab === id ? "var(--primary)" : "var(--text-muted)" }}
                                 >
                                     {activeTab === id && (
                                         <motion.div
                                             layoutId="activeTab"
-                                            className="absolute inset-0 rounded-lg bg-surface shadow-sm border border-border-solid"
+                                            className="absolute inset-0 bg-surface/90 shadow-sm border border-border-input"
                                             transition={{ type: "spring", stiffness: 400, damping: 30 }}
                                         />
                                     )}
@@ -344,7 +344,7 @@ export default function DashboardPage() {
                         </AnimatePresence>
 
                         {/* Error banner */}
-                        {error && <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-xs font-semibold bg-destructive-bg border border-destructive/20 text-destructive">{error}</div>}
+                        {error && <div className="flex items-center gap-2.5 px-4 py-3 rounded-none text-xs font-semibold bg-destructive-bg border border-destructive/20 text-destructive">{error}</div>}
                     </div>
 
                     {/* RIGHT SIDEBAR */}

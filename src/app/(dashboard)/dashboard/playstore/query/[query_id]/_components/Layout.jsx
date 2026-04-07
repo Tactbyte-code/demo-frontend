@@ -20,22 +20,22 @@ export function LoadingSkeleton() {
     return (
         <div className="flex flex-col gap-4 pt-10 animate-pulse">
             {/* back button placeholder */}
-            <div className="h-4 w-16 rounded-full" style={{ backgroundColor: "var(--surface)" }} />
+            <div className="h-4 w-16 rounded-none" style={{ backgroundColor: "var(--surface)" }} />
 
             {/* query card */}
-            <div className="rounded-2xl p-6 flex flex-col gap-3" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border-solid)" }}>
-                <div className="h-4 w-40 rounded-full" style={{ backgroundColor: "var(--border-solid)" }} />
-                <div className="h-6 w-72 rounded-full" style={{ backgroundColor: "var(--border-solid)" }} />
-                <div className="h-3 w-32 rounded-full" style={{ backgroundColor: "var(--border-solid)" }} />
+            <div className="rounded-none p-6 flex flex-col gap-3" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border-solid)" }}>
+                <div className="h-4 w-40 rounded-none" style={{ backgroundColor: "var(--border-solid)" }} />
+                <div className="h-6 w-72 rounded-none" style={{ backgroundColor: "var(--border-solid)" }} />
+                <div className="h-3 w-32 rounded-none" style={{ backgroundColor: "var(--border-solid)" }} />
             </div>
 
             {/* pipeline skeleton */}
-            <div className="rounded-2xl p-6 flex flex-col gap-4" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border-solid)" }}>
-                <div className="h-3 w-24 rounded-full" style={{ backgroundColor: "var(--border-solid)" }} />
-                <div className="h-2 w-full rounded-full" style={{ backgroundColor: "var(--border-solid)" }} />
+            <div className="rounded-none p-6 flex flex-col gap-4" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border-solid)" }}>
+                <div className="h-3 w-24 rounded-none" style={{ backgroundColor: "var(--border-solid)" }} />
+                <div className="h-2 w-full rounded-none" style={{ backgroundColor: "var(--border-solid)" }} />
                 <div className="flex gap-3">
                     {[...Array(4)].map((_, i) => (
-                        <div key={i} className="h-8 flex-1 rounded-xl" style={{ backgroundColor: "var(--border-solid)" }} />
+                        <div key={i} className="h-8 flex-1" style={{ backgroundColor: "var(--border-solid)" }} />
                     ))}
                 </div>
             </div>

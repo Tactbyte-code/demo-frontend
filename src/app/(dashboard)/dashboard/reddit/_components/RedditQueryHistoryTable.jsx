@@ -1,7 +1,8 @@
 "use client";
 
 import { getQueries } from "@/lib/api/reddit";
-import { ArrowRight, Clock, RefreshCcw, AlertCircle, CheckCircle2, Loader2, HelpCircle, XCircle } from "lucide-react";
+import { ArrowRight, Clock, RefreshCcw, AlertCircle, CheckCircle2, Loader2, HelpCircle, XCircle, ChevronFirst, ChevronLast, ChevronLeft, ChevronRight } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -115,11 +116,77 @@ function ActionLink({ query }) {
     );
 }
 
+const ROWS_PER_PAGE = 10;
+
+function Pagination({ page, totalPages, onPage }) {
+    const [jump, setJump] = useState("");
+
+    const handleJump = (e) => {
+        if (e.key === "Enter") {
+            const p = parseInt(jump);
+            if (!isNaN(p) && p >= 1 && p <= totalPages) onPage(p);
+            setJump("");
+        }
+    };
+
+    if (totalPages <= 1) return null;
+
+    return (
+        <div className="flex items-center gap-3 mt-4">
+            {/* Page label */}
+            <p className="text-[13px] tabular-nums" style={{ color: "var(--text-muted)" }}>
+                Page <span className="font-bold" style={{ color: "var(--text-main)" }}>{page}</span> of{" "}
+                <span className="font-bold" style={{ color: "var(--text-main)" }}>{totalPages}</span>
+            </p>
+
+            {/* Nav buttons */}
+            <div className="flex items-center gap-1">
+                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-none border border-border-input"
+                    disabled={page === 1} onClick={() => onPage(1)}>
+                    <ChevronFirst className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-none border border-border-input"
+                    // style={{ borderColor: "var(--border-solid)" }}
+                    disabled={page === 1} onClick={() => onPage(page - 1)}>
+                    <ChevronLeft className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-none border border-border-input"
+                    // style={{ borderColor: "var(--border-solid)" }}
+                    disabled={page === totalPages} onClick={() => onPage(page + 1)}>
+                    <ChevronRight className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-none border border-border-input"
+                    // style={{ borderColor: "var(--border-solid)" }}
+                    disabled={page === totalPages} onClick={() => onPage(totalPages)}>
+                    <ChevronLast className="w-4 h-4" />
+                </Button>
+            </div>
+
+            {/* Jump to page */}
+            {/* <div className="flex items-center gap-1.5">
+                <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>Go to</span>
+                <Input
+                    value={jump}
+                    onChange={(e) => setJump(e.target.value)}
+                    onKeyDown={handleJump}
+                    placeholder="pg"
+                    className="h-7 w-12 rounded-none border text-[11px] text-center p-1 shadow-none focus-visible:ring-0"
+                    style={{ borderColor: "var(--border-solid)", backgroundColor: "var(--surface)", color: "var(--text-main)" }}
+                />
+            </div> */}
+        </div>
+    );
+}
+
 // ── Main component ─────────────────────────────────────────────────────────────
 export default function RedditQueryHistoryTable() {
     const [queries, setQueries] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [page, setPage] = useState(1);
+
+    const totalPages = Math.ceil(queries.length / ROWS_PER_PAGE);
+    const paginatedQueries = queries.slice((page - 1) * ROWS_PER_PAGE, page * ROWS_PER_PAGE);
 
     const fetchQueries = async (isRefresh = false) => {
         if (isRefresh) setRefreshing(true);
@@ -127,6 +194,7 @@ export default function RedditQueryHistoryTable() {
         try {
             const data = await getQueries();
             setQueries(data);
+            setPage(1); // ← reset on refresh
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -173,9 +241,9 @@ export default function RedditQueryHistoryTable() {
 
             {/* Table */}
             <div
-                className="border overflow-hidden"
+                className="border border-border overflow-hidden"
                 style={{
-                    borderColor: "var(--border-solid)",
+                    // borderColor: "var(--border-border)",
                     backgroundColor: "var(--surface)",
                     boxShadow: "var(--shadow-sm)",
                 }}
@@ -183,14 +251,13 @@ export default function RedditQueryHistoryTable() {
                 <Table>
                     <TableHeader style={{ backgroundColor: "var(--surface-card)" }}>
                         <TableRow
-                            className="border-b hover:bg-transparent"
-                            style={{ borderColor: "var(--border-solid)" }}
+                            className="border-b border-border hover:bg-transparent"
+                        // style={{ borderColor: "var(--border-solid)" }}
                         >
                             {["Query", "Created", "Status", "Action"].map((h) => (
                                 <TableHead
                                     key={h}
-                                    className="px-6 py-4 text-[10px] font-black uppercase tracking-[0.15em]"
-                                    style={{ color: "var(--text-muted)" }}
+                                    className="px-6 py-4 text-[12px] font-bold uppercase tracking-[0.15em] text-muted"
                                 >
                                     {h}
                                 </TableHead>
@@ -209,16 +276,16 @@ export default function RedditQueryHistoryTable() {
                                         style={{ borderColor: "var(--border-solid)" }}
                                     >
                                         <TableCell className="px-6 py-4">
-                                            <Skeleton className="h-3.5 w-56 rounded-none" style={{ backgroundColor: "var(--surface-raised)" }} />
+                                            <Skeleton className="h-4 w-56 rounded-none" style={{ backgroundColor: "var(--surface-raised)" }} />
                                         </TableCell>
                                         <TableCell className="px-6 py-4">
-                                            <Skeleton className="h-3.5 w-20 rounded-none" style={{ backgroundColor: "var(--surface-raised)" }} />
+                                            <Skeleton className="h-4 w-20 rounded-none" style={{ backgroundColor: "var(--surface-raised)" }} />
                                         </TableCell>
                                         <TableCell className="px-6 py-4">
                                             <Skeleton className="h-5 w-24 rounded-none" style={{ backgroundColor: "var(--surface-raised)" }} />
                                         </TableCell>
                                         <TableCell className="px-6 py-4">
-                                            <Skeleton className="h-3.5 w-12 rounded-none" style={{ backgroundColor: "var(--surface-raised)" }} />
+                                            <Skeleton className="h-4 w-12 rounded-none" style={{ backgroundColor: "var(--surface-raised)" }} />
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -243,7 +310,7 @@ export default function RedditQueryHistoryTable() {
                         )}
 
                         {/* Data rows */}
-                        {!loading && queries.map((query, i) => (
+                        {!loading && paginatedQueries.map((query, i) => (
                             <TableRow
                                 key={query.id}
                                 className="border-b transition-colors duration-75 hover:bg-[var(--surface-card)]"
@@ -291,12 +358,12 @@ export default function RedditQueryHistoryTable() {
 
             {/* Footer count */}
             {!loading && queries.length > 0 && (
-                <p
-                    className="mt-3 text-[11px] text-right"
-                    style={{ color: "var(--text-muted)", opacity: 0.5 }}
-                >
-                    {queries.length} {queries.length === 1 ? "query" : "queries"} total
-                </p>
+                <div className="flex items-center justify-end mt-1">
+                    {/* <p className="text-[11px]" style={{ color: "var(--text-muted)", opacity: 0.5 }}>
+                        {queries.length} {queries.length === 1 ? "query" : "queries"} total
+                    </p> */}
+                    <Pagination page={page} totalPages={totalPages} onPage={setPage} />
+                </div>
             )}
         </div>
     );

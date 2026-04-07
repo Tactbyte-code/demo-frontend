@@ -1,8 +1,9 @@
 "use client"
 
 import React, { useState } from 'react'
-import { ChevronRight } from "lucide-react";
+import { CheckCircle, CheckCircle2, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ActionsTab } from './summary/ActionsTab';
 
 // ── Config maps ───────────────────────────────────────────
 const sentimentConfig = {
@@ -39,7 +40,7 @@ const fmt = (iso) => iso ? new Date(iso).toLocaleDateString('en-US', { year: 'nu
 const SentimentBadge = ({ sentiment, small = false }) => {
     const c = sentimentConfig[sentiment?.toLowerCase()] ?? sentimentConfig.neutral
     return (
-        <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium ${small ? 'text-[10px]' : 'text-xs'} ${c.bg} ${c.text}`}>
+        <span className={`inline-flex items-center gap-1.5 border border-border px-2.5 py-1 font-medium ${small ? 'text-[10px]' : 'text-xs'} ${c.bg} ${c.text}`}>
             <span className={`h-1.5 w-1.5 rounded-full ${c.dot}`} />
             {c.label}
         </span>
@@ -47,8 +48,8 @@ const SentimentBadge = ({ sentiment, small = false }) => {
 };
 
 const Pill = ({ label, muted = false }) => (
-    <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${muted
-        ? 'border-border-solid text-muted'
+    <span className={`border px-2.5 py-0.5 text-[11px] font-medium ${muted
+        ? 'border-border-solid text-muted bg-info-bg'
         : 'border-primary bg-info-bg text-primary'
         }`}>
         {label}
@@ -106,7 +107,7 @@ const PainPointRow = ({ pp }) => {
                             )}
 
                             {pp.impact && (
-                                <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ${ic}`}>
+                                <span className={`text-[9px] font-bold uppercase px-2 py-0.5 ${ic}`}>
                                     {pp.impact}
                                 </span>
                             )}
@@ -153,7 +154,7 @@ const PainPointRow = ({ pp }) => {
                                     <div className="space-y-2">
                                         {pp.user_suggested_solutions.map((s, i) => (
                                             <div key={i} className="flex items-start gap-2">
-                                                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+                                                <span className="mt-1.5 h-1.5 w-1.5 bg-primary shrink-0" />
                                                 <p className="text-xs text-foreground leading-relaxed">
                                                     {s}
                                                 </p>
@@ -173,7 +174,7 @@ const PainPointRow = ({ pp }) => {
                                         {pp.system_actions.map((a, i) => (
                                             <div
                                                 key={i}
-                                                className="rounded-lg border border-border-solid bg-surface p-3 space-y-1.5"
+                                                className="border border-border-solid bg-surface p-3 space-y-1.5"
                                             >
                                                 <p className="text-xs font-semibold text-foreground">
                                                     {a.action}
@@ -221,7 +222,7 @@ const OverviewTab = ({ data }) => (
                 { label: 'Posts', value: data.meta?.total_posts },
                 { label: 'Comments', value: data.meta?.total_comments },
             ].map(({ label, value }) => (
-                <div key={label} className="rounded-xl border border-border-solid bg-surface p-4">
+                <div key={label} className="border border-border-solid bg-surface p-4">
                     <p className="text-2xl font-semibold text-foreground">{value ?? '—'}</p>
                     <p className="mt-0.5 text-xs text-muted">{label}</p>
                 </div>
@@ -230,16 +231,16 @@ const OverviewTab = ({ data }) => (
 
         {/* Direct answer */}
         {data.direct_answer && (
-            <div className="rounded-xl border border-border-solid bg-surface p-5">
-                <p className="text-[10px] uppercase tracking-widest text-subtle mb-2">Direct Answer</p>
+            <div className="border border-border-solid bg-surface p-5">
+                <p className="text-[12px] uppercase tracking-widest text-muted mb-2">Direct Answer</p>
                 <p className="text-sm leading-relaxed text-foreground">{data.direct_answer}</p>
             </div>
         )}
 
         {/* Executive summary */}
         {data.executive_summary && (
-            <div className="rounded-xl border border-border-solid bg-surface p-5">
-                <p className="text-[10px] uppercase tracking-widest text-subtle mb-2">Executive Summary</p>
+            <div className="border border-border-solid bg-surface p-5">
+                <p className="text-[12px] uppercase tracking-widest text-muted mb-2">Executive Summary</p>
                 <p className="text-sm leading-relaxed text-foreground">{data.executive_summary}</p>
             </div>
         )}
@@ -259,7 +260,7 @@ const ThemesTab = ({ data }) => {
                     <button
                         key={t.id}
                         onClick={() => setActiveTheme(t.id)}
-                        className={`flex w-full cursor-pointer flex-col items-start rounded-lg border px-3 py-2.5 text-left transition-all ${activeTheme === t.id
+                        className={`flex w-full cursor-pointer flex-col items-start border px-3 py-2.5 text-left transition-all ${activeTheme === t.id
                             ? 'border-primary bg-info-bg'
                             : 'border-border-solid bg-surface hover:bg-surface-card'
                             }`}
@@ -268,8 +269,8 @@ const ThemesTab = ({ data }) => {
                             {t.title}
                         </span>
                         <div className="mt-1 flex flex-wrap gap-x-2">
-                            <span className="font-mono text-[10px] text-subtle">{t.signal_count} signals</span>
-                            <span className="font-mono text-[10px] text-subtle">{t.relevance_score}%</span>
+                            <span className="font-mono text-[10px] text-muted">{t.signal_count} signals</span>
+                            <span className="font-mono text-[10px] text-muted">{t.relevance_score}%</span>
                         </div>
                         <div className="mt-1.5">
                             <SentimentBadge sentiment={t.sentiment} small />
@@ -281,7 +282,7 @@ const ThemesTab = ({ data }) => {
             {/* Theme detail */}
             {theme && (
                 <div className="min-w-0 flex-1 space-y-4">
-                    <div className="rounded-xl border border-border-solid bg-surface p-5">
+                    <div className="border border-border-solid bg-surface p-5">
                         <div className="flex items-start justify-between gap-3 mb-3">
                             <div>
                                 <h2 className="text-sm font-semibold text-foreground">{theme.title}</h2>
@@ -294,13 +295,14 @@ const ThemesTab = ({ data }) => {
                         <p className="text-sm leading-relaxed text-muted">{theme.summary}</p>
 
                         {theme.brands_mentioned?.length > 0 && (
-                            <div className="mt-4">
+                            <div className="mt-4 rounded-none">
                                 <p className="text-[10px] uppercase tracking-widest text-subtle mb-2">Brands</p>
                                 <div className="flex flex-wrap gap-1.5">
                                     {theme.brands_mentioned.map(b => <Pill key={b} label={b} />)}
                                 </div>
                             </div>
                         )}
+
                         {theme.demographic_signals?.length > 0 && (
                             <div className="mt-3">
                                 <p className="text-[10px] uppercase tracking-widest text-subtle mb-2">Demographics</p>
@@ -313,7 +315,7 @@ const ThemesTab = ({ data }) => {
 
                     {/* Pain points for this theme */}
                     {theme.pain_points?.length > 0 && (
-                        <div className="rounded-xl border border-border-solid bg-surface overflow-hidden">
+                        <div className="border border-border-solid bg-surface overflow-hidden">
                             <div className="px-4 py-3 border-b border-border-solid">
                                 <p className="text-[10px] uppercase tracking-widest text-subtle">
                                     Pain Points ({theme.pain_points.length})
@@ -328,89 +330,64 @@ const ThemesTab = ({ data }) => {
     )
 };
 
-// ── Tab: All Pain Points ──────────────────────────────────
-const PainPointsTab = ({ data }) => {
-    const allPainPoints = data.themes?.flatMap(t =>
-        (t.pain_points ?? []).map(pp => ({ ...pp, _theme: t.title }))
-    ) ?? []
+// // ── Tab: Actions ──────────────────────────────────────────
+// const ActionsTab = ({ data }) => {
+//     const steps = [...(data.actionable_next_steps ?? [])].sort((a, b) => a.priority - b.priority)
 
-    if (!allPainPoints.length) return (
-        <p className="text-sm text-muted py-8 text-center">No pain points found.</p>
-    )
+//     if (!steps.length) return (
+//         <p className="text-sm text-muted py-8 text-center">No actions found.</p>
+//     )
 
-    return (
-        <div className="rounded-xl border border-border-solid bg-surface overflow-hidden">
-            {allPainPoints.map((pp, i) => (
-                <div key={i}>
-                    {/* Theme label */}
-                    <div className="px-4 pt-3 pb-1">
-                        <span className="text-[9px] uppercase tracking-widest text-subtle font-mono">{pp._theme}</span>
-                    </div>
-                    <PainPointRow pp={pp} />
-                </div>
-            ))}
-        </div>
-    )
-};
+//     return (
+//         <div className="space-y-3">
+//             {steps.map((item, i) => (
+//                 <div key={i} className="rounded-xl border border-border-solid bg-surface p-4">
+//                     <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
+//                         <div className="flex items-center gap-2">
+//                             <span className="font-mono text-[10px] font-black px-2 py-0.5 rounded-full bg-info-bg text-primary">
+//                                 #{item.priority}
+//                             </span>
+//                             <p className="text-sm font-semibold text-foreground">{item.step}</p>
+//                         </div>
+//                         <div className="flex items-center gap-1.5">
+//                             {item.quick_win && (
+//                                 <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-success-bg text-success">
+//                                     Quick Win
+//                                 </span>
+//                             )}
+//                             <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full bg-surface-raised text-muted">
+//                                 {item.effort}
+//                             </span>
+//                         </div>
+//                     </div>
 
-// ── Tab: Actions ──────────────────────────────────────────
-const ActionsTab = ({ data }) => {
-    const steps = [...(data.actionable_next_steps ?? [])].sort((a, b) => a.priority - b.priority)
+//                     <p className="text-xs text-muted leading-relaxed mb-3">{item.rationale}</p>
 
-    if (!steps.length) return (
-        <p className="text-sm text-muted py-8 text-center">No actions found.</p>
-    )
+//                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-border-solid pt-3">
+//                         <div>
+//                             <p className="text-[10px] uppercase tracking-widest text-subtle mb-1">How</p>
+//                             <p className="text-xs text-foreground leading-relaxed">{item.how}</p>
+//                         </div>
+//                         <div>
+//                             <p className="text-[10px] uppercase tracking-widest text-subtle mb-1">Impact</p>
+//                             <p className="text-xs text-foreground leading-relaxed">{item.impact}</p>
+//                         </div>
+//                     </div>
 
-    return (
-        <div className="space-y-3">
-            {steps.map((item, i) => (
-                <div key={i} className="rounded-xl border border-border-solid bg-surface p-4">
-                    <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
-                        <div className="flex items-center gap-2">
-                            <span className="font-mono text-[10px] font-black px-2 py-0.5 rounded-full bg-info-bg text-primary">
-                                #{item.priority}
-                            </span>
-                            <p className="text-sm font-semibold text-foreground">{item.step}</p>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                            {item.quick_win && (
-                                <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-success-bg text-success">
-                                    Quick Win
-                                </span>
-                            )}
-                            <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full bg-surface-raised text-muted">
-                                {item.effort}
-                            </span>
-                        </div>
-                    </div>
-
-                    <p className="text-xs text-muted leading-relaxed mb-3">{item.rationale}</p>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-border-solid pt-3">
-                        <div>
-                            <p className="text-[10px] uppercase tracking-widest text-subtle mb-1">How</p>
-                            <p className="text-xs text-foreground leading-relaxed">{item.how}</p>
-                        </div>
-                        <div>
-                            <p className="text-[10px] uppercase tracking-widest text-subtle mb-1">Impact</p>
-                            <p className="text-xs text-foreground leading-relaxed">{item.impact}</p>
-                        </div>
-                    </div>
-
-                    {item.addresses_themes?.length > 0 && (
-                        <div className="mt-3 flex flex-wrap gap-1.5">
-                            {item.addresses_themes.map(t => (
-                                <span key={t} className="text-[10px] font-medium px-2 py-0.5 rounded-full border border-border-solid text-muted">
-                                    {t}
-                                </span>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            ))}
-        </div>
-    )
-};
+//                     {item.addresses_themes?.length > 0 && (
+//                         <div className="mt-3 flex flex-wrap gap-1.5">
+//                             {item.addresses_themes.map(t => (
+//                                 <span key={t} className="text-[10px] font-medium px-2 py-0.5 rounded-full border border-border-solid text-muted">
+//                                     {t}
+//                                 </span>
+//                             ))}
+//                         </div>
+//                     )}
+//                 </div>
+//             ))}
+//         </div>
+//     )
+// };
 
 // ── Tab: Signals ──────────────────────────────────────────
 const SignalsTab = ({ data }) => {
@@ -427,8 +404,8 @@ const SignalsTab = ({ data }) => {
     return (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {sections.map(({ label, items }) => (
-                <div key={label} className="rounded-xl border border-border-solid bg-surface p-4">
-                    <p className="text-[10px] uppercase tracking-widest text-subtle mb-3">{label}</p>
+                <div key={label} className="border border-border-solid bg-surface p-4">
+                    <p className="text-[10px] uppercase tracking-widest text-muted mb-3">{label}</p>
                     <div className="flex flex-wrap gap-1.5">
                         {items?.length
                             ? items.map(item => <Pill key={item} label={item} muted />)
@@ -457,7 +434,7 @@ const MetaTab = ({ data }) => {
     ]
 
     return (
-        <div className="rounded-xl border border-border-solid bg-surface overflow-hidden">
+        <div className="border border-border-solid bg-surface overflow-hidden">
             {rows.filter(r => r.value != null).map(({ label, value, mono, color, italic }, i) => (
                 <div key={label} className={`flex items-start gap-4 px-5 py-3.5 ${i % 2 === 0 ? 'bg-surface' : 'bg-surface-card'}`}>
                     <p className="text-[10px] uppercase tracking-widest text-subtle w-36 shrink-0 pt-0.5">{label}</p>
@@ -475,8 +452,6 @@ const SourcesTab = ({ sources = [], approvedCount = 0, maxApproved = 10, onToggl
     if (!sources.length) return (
         <p className="text-sm text-muted py-8 text-center">No sources found.</p>
     )
-
-    console.log('sources: ', sources)
 
     return (
         <div className="space-y-3">
@@ -503,7 +478,7 @@ const SourcesTab = ({ sources = [], approvedCount = 0, maxApproved = 10, onToggl
                             key={source.id ?? i}
                             onClick={() => !atMax && onToggle?.(source.id)}
                             disabled={atMax}
-                            className={`w-full text-left rounded-xl border p-4 transition-all ${selected
+                            className={`w-full text-left border p-4 transition-all ${selected
                                 ? 'border-primary bg-info-bg'
                                 : atMax
                                     ? 'border-border-solid bg-surface opacity-40 cursor-not-allowed'
@@ -511,13 +486,13 @@ const SourcesTab = ({ sources = [], approvedCount = 0, maxApproved = 10, onToggl
                                 }`}
                         >
                             <div className="flex items-start justify-between gap-3 mb-1.5">
-                                <p className={`text-sm font-medium leading-snug ${selected ? 'text-primary' : 'text-foreground'}`}>
+                                <p className={`text-sm font-medium leading-snug ${selected ? 'text-primary' : 'text-foreground'
+                                    }`}>
                                     {source.title}
                                 </p>
+
                                 {selected && (
-                                    <span className="shrink-0 text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-info-bg text-primary">
-                                        Selected
-                                    </span>
+                                    <CheckCircle className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
                                 )}
                             </div>
 
@@ -532,9 +507,24 @@ const SourcesTab = ({ sources = [], approvedCount = 0, maxApproved = 10, onToggl
                                     <span className="text-[10px] font-mono text-subtle">{source.num_comments} comments</span>
                                 )}
                                 {source.created_utc && (
-                                    <span className="text-[10px] font-mono text-subtle">{fmt(source.created_utc * 1000)}</span>
+                                    <span className="text-[10px] font-mono text-subtle">
+                                        {fmt(source.created_utc * 1000)}
+                                    </span>
                                 )}
                             </div>
+
+                            {/* URL */}
+                            {source.url && (
+                                <a
+                                    href={source.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="block mt-2 text-xs text-blue-500 underline truncate"
+                                >
+                                    {source.url}
+                                </a>
+                            )}
 
                             {source.selftext && (
                                 <p className="mt-2 text-xs text-muted leading-relaxed line-clamp-2">
@@ -551,11 +541,13 @@ const SourcesTab = ({ sources = [], approvedCount = 0, maxApproved = 10, onToggl
 
 // ── Main Component ────────────────────────────────────────
 export const SummaryResult = ({ data, sources = [], approvedCount = 0, maxApproved = 10, onToggleSource }) => {
-    const [activeTab, setActiveTab] = useState('overview')
+    console.log('summary data: ', data);
 
-    if (!data) return null
+    const [activeTab, setActiveTab] = useState('overview');
 
-    const painPointCount = data.themes?.reduce((acc, t) => acc + (t.pain_points?.length ?? 0), 0) ?? 0
+    if (!data) return null;
+
+    const painPointCount = data?.themes?.reduce((acc, t) => acc + (t.pain_points?.length ?? 0), 0) ?? 0;
 
     return (
         <div className="py-4 space-y-4">
@@ -566,10 +558,8 @@ export const SummaryResult = ({ data, sources = [], approvedCount = 0, maxApprov
                     <p className="font-mono text-[10px] uppercase tracking-widest text-subtle mb-1">
                         {data.subreddit}
                     </p>
-                    {/* <h1 className="text-lg font-semibold text-foreground leading-snug">
-                        {data.search_query}
-                    </h1> */}
                 </div>
+
                 <div className="flex items-center gap-3 shrink-0">
                     <SentimentBadge sentiment={data.overall_sentiment} />
                     <p className="font-mono text-[11px] text-subtle">{fmt(data.analyzed_at)}</p>
@@ -613,7 +603,6 @@ export const SummaryResult = ({ data, sources = [], approvedCount = 0, maxApprov
             <div>
                 {activeTab === 'overview' && <OverviewTab data={data} />}
                 {activeTab === 'themes' && <ThemesTab data={data} />}
-                {/* {activeTab === 'painpoints' && <PainPointsTab data={data} />} */}
                 {activeTab === 'actions' && <ActionsTab data={data} />}
                 {activeTab === 'signals' && <SignalsTab data={data} />}
                 {activeTab === 'meta' && <MetaTab data={data} />}

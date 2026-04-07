@@ -20,6 +20,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import UserProfileButton from '@/components/ui/UserProfileButton';
 import { auth } from '@/lib/firebase';
 import { useSidebarStore } from '@/context/useSidebarStore';
+import Image from 'next/image';
 
 export default function DashboardLayout({ children }) {
 
@@ -96,14 +97,8 @@ export default function DashboardLayout({ children }) {
                             {/* Brand */}
                             <div className="px-6 pt-7 pb-5">
                                 <Link href="/" className="flex items-center gap-3 mb-8 no-underline group">
-                                    <div
-                                        className="w-9 h-9 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform"
-                                        style={{
-                                            background: 'linear-gradient(135deg, var(--primary), var(--accent))',
-                                            boxShadow: '0 4px 12px color-mix(in srgb, var(--primary) 30%, transparent)',
-                                        }}
-                                    >
-                                        <Zap className="w-4 h-4 fill-white text-white" />
+                                    <div className="relative h-14 w-14">
+                                        <Image src="/images/logo3.png" alt="Logo" fill sizes="(max-width: 640px) 100vw, 160px" className="object-contain" priority />
                                     </div>
                                     <div>
                                         <p className="text-base font-black tracking-tighter leading-none" style={{ color: 'var(--text-main)' }}>
@@ -139,7 +134,7 @@ export default function DashboardLayout({ children }) {
             </AnimatePresence>
 
             {/* ── MAIN ── */}
-            <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex-1 flex flex-col overflow-hidden bg-surface">
                 {/* Topbar */}
                 <div className="flex items-center justify-between h-17.5 px-5 shrink-0 bg-sidebar border-b border-sidebar-border">
 
@@ -148,7 +143,7 @@ export default function DashboardLayout({ children }) {
                         <button
                             onClick={toggleSidebar}
                             title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
-                            className="flex items-center justify-center w-8 h-8 rounded-lg transition-colors cursor-pointer border border-border-solid text-subtle hover:bg-sidebar-hover hover:text-foreground hover:border-primary"
+                            className="flex items-center justify-center w-8 h-8 transition-colors cursor-pointer border border-border-solid text-subtle hover:bg-sidebar-hover hover:text-foreground hover:border-primary"
                         >
                             {sidebarOpen ? <PanelLeftClose className="w-4 h-4" /> : <PanelLeftOpen className="w-4 h-4" />}
                         </button>
@@ -161,14 +156,14 @@ export default function DashboardLayout({ children }) {
                     {/* Right */}
                     <div className="flex items-center gap-3">
 
-                        {loading && (
+                        {/* {loading && (
                             <div className="flex items-center gap-2">
                                 <div className="h-8 w-48 rounded-2xl bg-surface-raised animate-pulse" />
                                 <div className="h-8 w-20 rounded-xl bg-surface-raised animate-pulse" />
                             </div>
-                        )}
+                        )} */}
 
-                        {!loading && hasNoPlan && (
+                        {/* {!loading && hasNoPlan && (
                             <motion.div
                                 animate={{ scale: [1, 1.03, 1] }}
                                 transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
@@ -193,9 +188,9 @@ export default function DashboardLayout({ children }) {
                                     <span className="relative z-10 text-[13px] tracking-wider font-bold">Buy a Plan</span>
                                 </Link>
                             </motion.div>
-                        )}
+                        )} */}
 
-                        {!loading && !hasNoPlan && (
+                        {/* {!loading && !hasNoPlan && (
                             <div
                                 className="flex items-center gap-3 px-4 py-2 rounded-xl border transition-all"
                                 style={{
@@ -268,7 +263,7 @@ export default function DashboardLayout({ children }) {
                                     <span className="relative z-10">{isEmpty ? 'Buy Credits' : 'Top Up'}</span>
                                 </Link>
                             </motion.div>
-                        )}
+                        )} */}
 
                         <div className="rounded-full bg-foreground/85">
                             <UserProfileButton />
@@ -297,7 +292,7 @@ function NavGroup({ label, items, pathname }) {
                         <Link
                             key={item.name}
                             href={item.href}
-                            className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all no-underline group"
+                            className="flex items-center justify-between px-3 py-2.5 text-sm font-semibold transition-all no-underline group"
                             style={{
                                 backgroundColor: isActive ? 'var(--sidebar-item-active-bg)' : 'transparent',
                                 color: isActive ? 'var(--sidebar-item-active-text)' : 'var(--text-muted)',

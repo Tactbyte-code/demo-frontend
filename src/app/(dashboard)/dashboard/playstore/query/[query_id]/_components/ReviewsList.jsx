@@ -28,7 +28,7 @@ function ReviewCard({ review, index }) {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.03 }}
-            className="rounded-xl p-4 flex flex-col gap-2"
+            className="p-4 flex flex-col gap-2"
             style={{
                 backgroundColor: "var(--surface)",
                 border: "1px solid var(--border-solid)",
@@ -87,7 +87,7 @@ export function ReviewsList({ reviewsLoaded, showReviews, reviews }) {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="rounded-2xl p-6 flex flex-col gap-4"
+            className="p-6 flex flex-col gap-4"
             style={{
                 backgroundColor: "var(--surface)",
                 border: "1px solid var(--border-solid)",
@@ -118,7 +118,7 @@ export function ReviewsList({ reviewsLoaded, showReviews, reviews }) {
             {!reviewsLoaded ? (
                 <div className="flex flex-col gap-3 animate-pulse">
                     {[...Array(4)].map((_, i) => (
-                        <div key={i} className="h-20 rounded-xl" style={{ backgroundColor: "var(--border-solid)" }} />
+                        <div key={i} className="h-20" style={{ backgroundColor: "var(--border-solid)" }} />
                     ))}
                 </div>
             ) : reviews.length === 0 ? (
@@ -126,7 +126,7 @@ export function ReviewsList({ reviewsLoaded, showReviews, reviews }) {
                     No reviews found.
                 </p>
             ) : (
-                <div className="flex flex-col gap-3 max-h-[600px] overflow-y-auto pr-1">
+                <div className="flex flex-col gap-3 max-h-150 overflow-y-auto pr-1">
                     {reviews.map((r, i) => (
                         <ReviewCard key={r.id ?? r.review_id ?? i} review={r} index={i} />
                     ))}

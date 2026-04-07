@@ -62,7 +62,7 @@ export default function UserProfileButton() {
             {/* Trigger */}
             <button
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="flex items-center gap-2 px-2 py-1.5 transition-all duration-200 bg-background/80 hover:bg-background/60 cursor-pointer rounded-full"
+                className="flex items-center gap-2 px-2 py-1.5 transition-all duration-200 bg-background/30 hover:bg-background/50 cursor-pointer rounded-full"
             >
                 {user.photo_url ? (
                     <div className="relative w-7 h-7 rounded-full overflow-hidden ring-1 ring-white/20">

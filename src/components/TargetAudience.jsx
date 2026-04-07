@@ -12,36 +12,36 @@ import {
 
 const audiences = [
     {
-        title: "Founders",
+        title: "Startup Founders",
         subtitle: "Product-Market Fit",
-        description: "Stop building in the dark. Validate your MVP roadmap by identifying high-conviction market gaps before you write a single line of code.",
+        description: "Validate ideas before writing a single line of code or spending a dollar.",
         icon: Rocket,
         metric: "De-risk MVP",
         features: ["P-M Fit Analysis", "Gap Discovery"],
         color: "text-blue-500"
     },
     {
-        title: "Agencies",
+        title: "Agencies & Consultants",
         subtitle: "Strategic Delivery",
-        description: "Win more pitches with raw data. Deliver research-backed strategies that prove ROI to your clients using global sentiment trends.",
+        description: "Discover services businesses are actively seeking and build offers around real demand.",
         icon: Building2,
         metric: "Higher Win-Rate",
         features: ["Client ROI", "Trend Logic"],
         color: "text-amber-500"
     },
     {
-        title: "Consultants",
+        title: "Product Managers",
         subtitle: "Expert Advisory",
-        description: "Upgrade your advisory. Back every recommendation with millions of data points and specialized frustration scores from the market.",
+        description: "Identify unmet needs in your market with evidence, not internal politics.",
         icon: UserCheck,
         metric: "Evidence-Based",
         features: ["Niche Research", "Deep Metrics"],
         color: "text-emerald-500"
     },
     {
-        title: "Product Teams",
+        title: "Entrepreneurs",
         subtitle: "Engineering Units",
-        description: "Unify your engineering sprint. Focus your team on the features users are actually begging for on Reddit and the Play Store.",
+        description: "Find profitable opportunities without guessing. Data-backed confidence from day one.",
         icon: Users,
         metric: "Sprint Velocity",
         features: ["Backlog Grooming", "Validation"],

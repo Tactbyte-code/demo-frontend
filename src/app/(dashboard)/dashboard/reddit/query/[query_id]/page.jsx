@@ -43,6 +43,8 @@ export default function QueryResultPage() {
     const [autoSummarizeFired, setAutoSummarizeFired] = useState(false);
     const [isSummarized, setIsSummarized] = useState(false);
 
+    const [isRequerying, setIsRequerying] = useState(false);
+
     // ── fetch helpers ──────────────────────────────────────────────────────────
     const fetchPosts = useCallback(async () => {
         try {
@@ -80,7 +82,6 @@ export default function QueryResultPage() {
         const init = async () => {
             try {
                 const data = await getQuery(query_id);
-
                 console.log('get a query: ', data);
 
                 if (cancelled) return;
@@ -90,8 +91,8 @@ export default function QueryResultPage() {
                 setFailureReason(data.failure_reason ?? null);
                 setFailedAtStep(data.failed_at_step ?? null);
 
-                if (POSTS_STATUSES.includes(data.status)) await fetchPosts();
-                if (data.status === "COMPLETED") await fetchResult();
+                if (POSTS_STATUSES?.includes(data.status)) await fetchPosts();
+                if (data?.status === "COMPLETED") await fetchResult();
             } catch (e) {
                 console.error(e);
             } finally {
@@ -283,10 +284,14 @@ export default function QueryResultPage() {
                 <ArrowLeft className="w-3.5 h-3.5" /> Back
             </motion.button>
 
-            <QueryCard query={query} isCompleted={isCompleted} />
+            <QueryCard
+                query={query}
+                isCompleted={isCompleted}
+                onRequeryStart={() => setIsRequerying(true)}
+            />
 
             {/* Processing Stages */}
-            {(!isSummarized) && (
+            {(!isSummarized) && !isRequerying && (
                 <Pipeline
                     showPipeline={qs.showPipeline}
                     status={status}
@@ -321,7 +326,7 @@ export default function QueryResultPage() {
                 />
             )}
 
-            {status === "COMPLETED" && isSummarized && (
+            {status === "COMPLETED" && isSummarized && !isRequerying && (
                 <>
                     <SummaryResult data={summary} sources={sources} approvedCount={approvedCount} onToggleSource={handleToggleApproval} />
                 </>
