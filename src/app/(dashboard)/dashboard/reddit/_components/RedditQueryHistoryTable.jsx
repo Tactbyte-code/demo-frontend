@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import { useGetQueries } from "@/features/reddit/hooks/useGetQueries";
 
 // ── Status config ──────────────────────────────────────────────────────────────
 const STATUS_CONFIG = {
@@ -81,7 +82,7 @@ function StatusBadge({ status }) {
             {cfg.label}
         </span>
     );
-}
+};
 
 function ActionLink({ query }) {
     if (query.status === "CLARIFYING") {
@@ -114,7 +115,7 @@ function ActionLink({ query }) {
             View <ArrowRight className="w-3 h-3" />
         </Link>
     );
-}
+};
 
 const ROWS_PER_PAGE = 10;
 
@@ -176,37 +177,30 @@ function Pagination({ page, totalPages, onPage }) {
             </div> */}
         </div>
     );
-}
+};
 
 // ── Main component ─────────────────────────────────────────────────────────────
 export default function RedditQueryHistoryTable() {
-    const [queries, setQueries] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
+
     const [page, setPage] = useState(1);
 
-    const totalPages = Math.ceil(queries.length / ROWS_PER_PAGE);
-    const paginatedQueries = queries.slice((page - 1) * ROWS_PER_PAGE, page * ROWS_PER_PAGE);
+    const userId = localStorage.getItem('user').firebase_uid;
 
-    const fetchQueries = async (isRefresh = false) => {
-        if (isRefresh) setRefreshing(true);
-        else setLoading(true);
-        try {
-            const data = await getQueries();
-            setQueries(data);
-            setPage(1); // ← reset on refresh
-        } finally {
-            setLoading(false);
-            setRefreshing(false);
-        }
-    };
+    const {
+        data,
+        isLoading,
+        isFetching,
+        refetch,
+    } = useGetQueries(userId);
 
-    useEffect(() => { fetchQueries(); }, []);
+    console.log('queries data: ', data);
+
+    const totalPages = Math.ceil(data?.length / ROWS_PER_PAGE);
+    const paginatedQueries = data?.slice((page - 1) * ROWS_PER_PAGE, page * ROWS_PER_PAGE);
 
     return (
         <div className="w-full max-w-5xl">
-
-            {/* Header row */}
+            {/* Header */}
             <div className="flex items-end justify-between mb-5">
                 <div className="">
                     <div className="flex items-center gap-2 mb-1">
@@ -222,28 +216,12 @@ export default function RedditQueryHistoryTable() {
                         Your analysis history and current status
                     </p>
                 </div>
-
-                {/* <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => fetchQueries(true)}
-                    disabled={refreshing}
-                    className="h-8 gap-1.5 text-[11px] font-semibold uppercase tracking-widest rounded-none border"
-                    style={{
-                        borderColor: "var(--border-solid)",
-                        color: "var(--text-muted)",
-                    }}
-                >
-                    <RefreshCcw className={`w-3 h-3 ${refreshing ? "animate-spin" : ""}`} />
-                    Refresh
-                </Button> */}
             </div>
 
             {/* Table */}
             <div
                 className="border border-border overflow-hidden"
                 style={{
-                    // borderColor: "var(--border-border)",
                     backgroundColor: "var(--surface)",
                     boxShadow: "var(--shadow-sm)",
                 }}
@@ -252,7 +230,6 @@ export default function RedditQueryHistoryTable() {
                     <TableHeader style={{ backgroundColor: "var(--surface-card)" }}>
                         <TableRow
                             className="border-b border-border hover:bg-transparent"
-                        // style={{ borderColor: "var(--border-solid)" }}
                         >
                             {["Query", "Created", "Status", "Action"].map((h) => (
                                 <TableHead
@@ -267,7 +244,7 @@ export default function RedditQueryHistoryTable() {
 
                     <TableBody>
                         {/* Loading skeletons */}
-                        {loading && (
+                        {isLoading && (
                             <>
                                 {[...Array(3)].map((_, i) => (
                                     <TableRow
@@ -293,7 +270,7 @@ export default function RedditQueryHistoryTable() {
                         )}
 
                         {/* Empty state */}
-                        {!loading && queries.length === 0 && (
+                        {!isLoading && data?.length === 0 && (
                             <TableRow className="hover:bg-transparent">
                                 <TableCell colSpan={4} className="px-6 py-16 text-center">
                                     <div className="flex flex-col items-center gap-2">
@@ -310,7 +287,7 @@ export default function RedditQueryHistoryTable() {
                         )}
 
                         {/* Data rows */}
-                        {!loading && paginatedQueries.map((query, i) => (
+                        {!isLoading && paginatedQueries?.map((query, i) => (
                             <TableRow
                                 key={query.id}
                                 className="border-b transition-colors duration-75 hover:bg-[var(--surface-card)]"
@@ -357,11 +334,8 @@ export default function RedditQueryHistoryTable() {
             </div>
 
             {/* Footer count */}
-            {!loading && queries.length > 0 && (
+            {!isLoading && data?.length > 0 && (
                 <div className="flex items-center justify-end mt-1">
-                    {/* <p className="text-[11px]" style={{ color: "var(--text-muted)", opacity: 0.5 }}>
-                        {queries.length} {queries.length === 1 ? "query" : "queries"} total
-                    </p> */}
                     <Pagination page={page} totalPages={totalPages} onPage={setPage} />
                 </div>
             )}

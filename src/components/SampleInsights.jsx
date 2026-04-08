@@ -70,11 +70,11 @@ export default function SampleInsights() {
                             whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: index * 0.1 }}
-                            className="group flex flex-col lg:flex-row items-stretch lg:items-center gap-6 p-6 lg:p-8 bg-surface border border-border rounded-[2.5rem] hover:border-primary/30 cursor-pointer transition-all duration-500"
+                            className="group flex flex-col lg:flex-row items-stretch lg:items-center gap-6 p-6 lg:p-8 bg-surface border border-border hover:border-primary/30 cursor-pointer transition-all duration-500"
                         >
                             {/* Source Identity */}
                             <div className="flex items-center gap-4 lg:w-48 shrink-0">
-                                <div className="p-3 rounded-2xl bg-background border border-border-solid shadow-sm group-hover:scale-110 transition-transform">
+                                <div className="p-3 rounded-full bg-background border border-border-solid shadow-sm group-hover:scale-110 transition-transform">
                                     {item.source === "Reddit" ? (
                                         <MessageSquare className="w-5 h-5 text-[#FF4500]" />
                                     ) : (
@@ -88,11 +88,11 @@ export default function SampleInsights() {
                             </div>
 
                             {/* The Comment */}
-                            <div className="flex-1 bg-surface-raised border border-border p-5 rounded-2xl italic text-sm text-muted leading-relaxed relative">
+                            <div className="flex-1 bg-surface-raised border border-border p-5 rounded-none italic text-sm text-muted leading-relaxed relative">
                                 "{item.comment}"
                                 <div className="absolute -top-2 -left-2">
-                                    <div className="h-4 w-4 bg-primary/10 rounded-full flex items-center justify-center">
-                                        <div className="h-1.5 w-1.5 bg-primary rounded-full animate-pulse" />
+                                    <div className="h-4 w-4 bg-primary/10 rounded-none flex items-center justify-center">
+                                        <div className="h-1.5 w-1.5 bg-primary rounded-none animate-pulse" />
                                     </div>
                                 </div>
                             </div>
@@ -105,13 +105,13 @@ export default function SampleInsights() {
                                         <div className={`text-2xl font-black text-${item.color}-500 tracking-tighter`}>
                                             {item.score.toFixed(1)}
                                         </div>
-                                        <div className={`px-2 py-0.5 rounded-md bg-${item.color}-50 text-${item.color}-600 text-[10px] font-bold border border-${item.color}-100 uppercase`}>
+                                        <div className={`px-2 py-0.5 rounded-none bg-${item.color}-50 text-${item.color}-600 text-[10px] font-bold border border-${item.color}-100 uppercase`}>
                                             {item.status}
                                         </div>
                                     </div>
                                 </div>
                                 <div className="h-10 w-px bg-border-solid hidden lg:block" />
-                                <div className="p-2 rounded-lg bg-background border border-border-solid text-muted group-hover:text-primary transition-colors">
+                                <div className="p-2 rounded-full bg-background border border-border-solid text-muted group-hover:text-primary transition-colors">
                                     <ArrowRight className="w-4 h-4" />
                                 </div>
                             </div>

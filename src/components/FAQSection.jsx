@@ -37,7 +37,7 @@ export default function FAQSection() {
 
             {/* Background glow */}
             <div className="absolute inset-0 pointer-events-none -z-10">
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[55%] h-[40%] bg-primary/5 blur-[120px] rounded-full" />
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[55%] h-[40%] bg-primary/5 blur-[120px]" />
             </div>
 
             <div className="max-w-7xl mx-auto px-6 relative z-10">
@@ -48,7 +48,7 @@ export default function FAQSection() {
                         initial={{ opacity: 0, y: 10 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="inline-flex items-center gap-2 bg-primary/8 border border-primary/15 text-primary font-bold text-xs uppercase tracking-[0.3em] px-4 py-2 rounded-full"
+                        className="inline-flex items-center gap-2 bg-primary/8 border border-primary/15 text-primary font-bold text-xs uppercase tracking-[0.3em] px-4 py-2"
                     >
                         <HelpCircle className="w-3.5 h-3.5" />
                         Support Center
@@ -81,7 +81,7 @@ export default function FAQSection() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: 0.15 }}
-                    className="rounded-[2rem] border border-border-solid overflow-hidden bg-surface shadow-md mb-6"
+                    className="border border-border-solid overflow-hidden bg-surface shadow-md mb-6"
                 >
                     {faqs.map((faq, index) => {
                         const isOpen = openIndex === index;
@@ -117,7 +117,7 @@ export default function FAQSection() {
                                     </div>
 
                                     <div className={`
-                                        shrink-0 w-8 h-8 rounded-full border flex items-center justify-center
+                                        shrink-0 w-8 h-8 border flex items-center justify-center
                                         transition-all duration-300
                                         ${isOpen
                                             ? 'bg-primary border-primary text-white'
@@ -146,10 +146,10 @@ export default function FAQSection() {
                                                     <p className="text-muted text-sm leading-relaxed max-w-3xl">
                                                         {faq.answer}
                                                     </p>
-                                                    <button className="mt-4 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-primary/60 hover:text-primary transition-colors duration-200 group">
+                                                    {/* <button className="mt-4 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-primary/60 hover:text-primary transition-colors duration-200 group">
                                                         Read Documentation
                                                         <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-                                                    </button>
+                                                    </button> */}
                                                 </div>
                                             </div>
                                         </motion.div>
@@ -166,7 +166,7 @@ export default function FAQSection() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: 0.1 }}
-                    className="relative rounded-[2rem] overflow-hidden border border-border-solid"
+                    className="relative overflow-hidden border border-border-solid"
                 >
                     {/* Dark background */}
                     <div className="absolute inset-0 bg-gradient-to-br from-[#0f172a] to-[#1e293b]" />
@@ -174,7 +174,7 @@ export default function FAQSection() {
 
                     <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 p-8 lg:p-10">
                         <div className="flex items-center gap-5">
-                            <div className="w-12 h-12 rounded-xl bg-white/8 border border-white/10 flex items-center justify-center shrink-0">
+                            <div className="w-12 h-12 bg-white/8 border border-white/10 flex items-center justify-center shrink-0">
                                 <MessageCircle className="w-5 h-5 text-primary" />
                             </div>
                             <div>
@@ -186,7 +186,7 @@ export default function FAQSection() {
                                 </p>
                             </div>
                         </div>
-                        <Link href="/contact" className="group flex items-center gap-2 cursor-pointer bg-white/10 hover:bg-primary border border-white/15 hover:border-primary text-white px-7 py-3 rounded-xl font-bold text-sm">
+                        <Link href="/contact" className="group flex items-center gap-2 cursor-pointer bg-white/10 hover:bg-primary border border-white/15 hover:border-primary text-white px-7 py-3 font-bold text-sm">
                             Contact Support
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                         </Link>

@@ -8,6 +8,7 @@ import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import { useRouter } from 'next/navigation';
 import ThemeToggle from '@/components/ui/ThemeToggle';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function UserProfileButton() {
 
@@ -15,6 +16,8 @@ export default function UserProfileButton() {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const profileRef = useRef(null);
     const router = useRouter();
+
+    const queryClient = useQueryClient();
 
     const loadUser = () => {
         const stored = localStorage.getItem("user");
@@ -49,6 +52,7 @@ export default function UserProfileButton() {
     const handleLogout = async () => {
         await signOut(auth);
         // localStorage.removeItem("token");
+        queryClient.clear(); // 🔥 clears everything
         localStorage.removeItem("user");
         setUser(null);
         setIsProfileOpen(false);

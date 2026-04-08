@@ -99,11 +99,11 @@ export default function PricingPage() {
         >
             {/* Background */}
             <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-[-15%] left-[10%] w-[600px] h-[600px] rounded-full blur-[160px] opacity-30"
+                <div className="absolute top-[-15%] left-[10%] w-[600px] h-[600px] rounded-none blur-[160px] opacity-30"
                     style={{ backgroundColor: "var(--primary)" }} />
-                <div className="absolute bottom-[-10%] right-[5%] w-[500px] h-[500px] rounded-full blur-[140px] opacity-20"
+                <div className="absolute bottom-[-10%] right-[5%] w-[500px] h-[500px] rounded-none blur-[140px] opacity-20"
                     style={{ backgroundColor: "var(--accent)" }} />
-                <div className="absolute top-[40%] left-[50%] w-[300px] h-[300px] rounded-full blur-[120px] opacity-10"
+                <div className="absolute top-[40%] left-[50%] w-[300px] h-[300px] rounded-none blur-[120px] opacity-10"
                     style={{ backgroundColor: "var(--warning)" }} />
             </div>
 
@@ -136,11 +136,11 @@ export default function PricingPage() {
                         </span>
                         <button
                             onClick={() => setYearly(!yearly)}
-                            className="relative w-14 h-7 rounded-full transition-all duration-300 focus:outline-none"
+                            className="relative w-14 h-7 rounded-full transition-all duration-300 focus:outline-none border border-border-input"
                             style={{ backgroundColor: yearly ? "var(--primary)" : "var(--surface-raised)" }}
                         >
                             <motion.div
-                                className="absolute top-1 w-5 h-5 rounded-full shadow-md"
+                                className="absolute top-0.75 w-5 h-5 rounded-full shadow-md"
                                 style={{ backgroundColor: "white" }}
                                 animate={{ left: yearly ? "calc(100% - 24px)" : "4px" }}
                                 transition={{ type: "spring", stiffness: 500, damping: 30 }}
@@ -150,19 +150,19 @@ export default function PricingPage() {
                             <span className="text-sm font-bold" style={{ color: yearly ? "var(--text-main)" : "var(--text-subtle)" }}>
                                 Yearly
                             </span>
-                            <AnimatePresence>
+                            {/* <AnimatePresence>
                                 {yearly && (
                                     <motion.span
                                         initial={{ opacity: 0, scale: 0.8, x: -10 }}
                                         animate={{ opacity: 1, scale: 1, x: 0 }}
                                         exit={{ opacity: 0, scale: 0.8, x: -10 }}
-                                        className="text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest"
+                                        className="text-[10px] font-black px-2 py-0.5 rounded-none uppercase tracking-widest"
                                         style={{ backgroundColor: "var(--success-bg)", color: "var(--success)" }}
                                     >
                                         Save 20%
                                     </motion.span>
                                 )}
-                            </AnimatePresence>
+                            </AnimatePresence> */}
                         </div>
                     </div>
                 </motion.div>
@@ -180,7 +180,7 @@ export default function PricingPage() {
                             variants={cardVariants}
                             onMouseEnter={() => setHoveredPlan(plan.id)}
                             onMouseLeave={() => setHoveredPlan(null)}
-                            className="relative rounded-[2rem] p-6 flex flex-col transition-all duration-300 cursor-pointer"
+                            className="relative p-6 flex flex-col transition-all duration-300 cursor-pointer"
                             style={{
                                 backgroundColor: plan.popular ? "var(--surface)" : "var(--surface)",
                                 border: hoveredPlan === plan.id
@@ -199,7 +199,7 @@ export default function PricingPage() {
                             {/* Popular badge */}
                             {plan.popular && (
                                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                                    <div className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap"
+                                    <div className="flex items-center gap-1.5 px-4 py-1.5 rounded-none text-[10px] font-black uppercase tracking-widest whitespace-nowrap"
                                         style={{ backgroundColor: "var(--accent)", color: "#000" }}>
                                         <Zap className="w-3 h-3 fill-current" />
                                         Best Value
@@ -209,7 +209,7 @@ export default function PricingPage() {
 
                             {/* Plan tag */}
                             <div className="flex items-center justify-between mb-5">
-                                <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full"
+                                <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-none"
                                     style={{ backgroundColor: plan.accentBg, color: plan.accent }}>
                                     {plan.tag}
                                 </span>
@@ -258,7 +258,7 @@ export default function PricingPage() {
                             <button
                                 onClick={() => handlePurchase(plan.id)}
                                 disabled={purchasingPlan === plan.id}
-                                className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] mb-6 disabled:opacity-70"
+                                className="w-full py-3.5 rounded-none font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] mb-6 disabled:opacity-70"
                                 style={{
                                     backgroundColor: plan.popular ? "var(--accent)" : plan.monthlyPrice === 0 ? "var(--surface-raised)" : "var(--primary)",
                                     color: plan.popular ? "#000" : plan.monthlyPrice === 0 ? "var(--text-main)" : "#fff",
@@ -278,7 +278,7 @@ export default function PricingPage() {
                             <ul className="space-y-3 flex-1">
                                 {plan.features.map((feature, i) => (
                                     <li key={i} className="flex items-start gap-3">
-                                        <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                                        <div className="w-4 h-4 rounded-none flex items-center justify-center flex-shrink-0 mt-0.5"
                                             style={{
                                                 backgroundColor: feature.included ? "var(--success-bg)" : "var(--surface-raised)",
                                             }}>
@@ -315,9 +315,9 @@ export default function PricingPage() {
                     <p className="text-sm font-medium" style={{ color: "var(--text-subtle)" }}>
                         All plans include a <span className="font-bold" style={{ color: "var(--text-main)" }}>14-day free trial</span>. No credit card required.
                         {" "}
-                        <span className="font-bold" style={{ color: "var(--primary)", cursor: "pointer" }}>
+                        {/* <span className="font-bold" style={{ color: "var(--primary)", cursor: "pointer" }}>
                             Compare all features →
-                        </span>
+                        </span> */}
                     </p>
                 </motion.div>
             </div>

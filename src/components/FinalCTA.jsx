@@ -9,7 +9,7 @@ export default function FinalCTA() {
         <section className="relative py-24 bg-background overflow-hidden">
             <div className="max-w-8xl mx-auto px-6">
                 {/* The "Power" Container */}
-                <div className="relative bg-[#050505] rounded-[3.5rem] p-8 md:p-16 lg:p-24 overflow-hidden shadow-2xl shadow-primary/20 border border-primary">
+                <div className="relative bg-[#050505] p-8 md:p-16 lg:p-24 overflow-hidden shadow-2xl shadow-primary/20 border border-primary">
 
                     {/* Background Decorative Elements */}
                     <div className="absolute inset-0 pointer-events-none">
@@ -34,7 +34,7 @@ export default function FinalCTA() {
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9 }}
                             whileInView={{ opacity: 1, scale: 1 }}
-                            className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8"
+                            className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 mb-8"
                         >
                             <Zap className="w-4 h-4 text-primary fill-primary" />
                             <span className="text-[11px] font-bold text-white uppercase tracking-[0.3em]">Ready to Deploy</span>
@@ -62,7 +62,7 @@ export default function FinalCTA() {
                         <div className="flex flex-col sm:flex-row items-center gap-6">
                             <Link
                                 href="/dashboard"
-                                className="group flex items-center gap-2 bg-primary text-white px-10 py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/25"
+                                className="group flex items-center gap-2 bg-primary text-white px-10 py-5 rounded-none font-black text-sm uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/25"
                             >
                                 Start Building Now
                                 <Rocket className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
@@ -70,7 +70,7 @@ export default function FinalCTA() {
 
                             <Link
                                 href="/demo"
-                                className="group flex items-center gap-2 bg-white/5 border border-white/10 text-white px-10 py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-white/10 transition-all"
+                                className="group flex items-center gap-2 bg-white/5 border border-white/10 text-white px-10 py-5 rounded-none font-black text-sm uppercase tracking-widest hover:bg-white/10 transition-all"
                             >
                                 Book a Demo
                                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

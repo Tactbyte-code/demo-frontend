@@ -22,6 +22,7 @@ import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { useSidebarStore } from "@/context/useSidebarStore";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function ClarifyPage({ params }) {
 
@@ -40,6 +41,10 @@ export default function ClarifyPage({ params }) {
     const canSubmit = answer.trim() && !submitting;
 
     const { setSidebarOpen } = useSidebarStore();
+
+    const user_id = localStorage.getItem('user').firebase_uid;
+
+    const queryClient = useQueryClient();
 
     // Auto-collapse sidebar on mount, restore on leave
     useEffect(() => {
@@ -87,6 +92,8 @@ export default function ClarifyPage({ params }) {
         setError(null);
         try {
             const response = await submitClarification(query_id, answer);
+
+            if (response) queryClient.invalidateQueries({ queryKey: ["queries", user_id] });
 
             if (response.status === "CLARIFYING") {
                 setQuestion(response.question);

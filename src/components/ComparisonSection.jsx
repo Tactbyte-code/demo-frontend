@@ -53,7 +53,7 @@ export default function ComparisonSection() {
 
             {/* Subtle background glow */}
             <div className="absolute inset-0 pointer-events-none -z-10">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[50%] bg-primary/5 blur-[120px] rounded-full" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[50%] bg-primary/5 blur-[120px] rounded-none" />
             </div>
 
             <div className="max-w-6xl mx-auto px-6">
@@ -64,9 +64,9 @@ export default function ComparisonSection() {
                         initial={{ opacity: 0, y: 10 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="inline-flex items-center gap-2 bg-primary/8 border border-primary/15 text-primary font-bold text-xs uppercase tracking-[0.3em] px-4 py-2 rounded-full mb-6"
+                        className="inline-flex items-center gap-2 bg-primary/8 border border-primary/15 text-primary font-bold text-xs uppercase tracking-[0.3em] px-4 py-2 rounded-none mb-6"
                     >
-                        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                        <span className="w-1.5 h-1.5 rounded-none bg-primary animate-pulse" />
                         The Paradigm Shift
                     </motion.div>
                     <motion.h2
@@ -76,15 +76,15 @@ export default function ComparisonSection() {
                         transition={{ delay: 0.1 }}
                         className="text-4xl lg:text-5xl font-extrabold text-foreground tracking-tight leading-tight"
                     >
-                        Stop guessing. <br />
-                        <span className="text-primary">Start building with certainty.</span>
+                        The Difference
+                        <span className="text-primary"> is clear.</span>
                     </motion.h2>
                     <motion.p
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.2 }}
-                        className="mt-4 text-muted text-lg max-w-xl mx-auto"
+                        className="mt-2 text-muted text-lg max-w-3xl mx-auto"
                     >
                         See exactly how we replace outdated research workflows with
                         precision intelligence.
@@ -98,23 +98,23 @@ export default function ComparisonSection() {
                     viewport={{ once: true }}
                     className="hidden lg:grid grid-cols-[1fr_56px_1fr] mb-3 px-2"
                 >
-                    <div className="flex items-center gap-2.5 px-6">
+                    <div className="flex items-center justify-center gap-2.5 px-6">
                         <div className="w-2 h-2 rounded-full bg-destructive/50" />
-                        <span className="text-xs font-black text-subtle uppercase tracking-[0.25em]">
-                            Before — The Old Way
+                        <span className="text-xs text-center font-bold text-subtle uppercase tracking-[0.25em]">
+                            Without Demo
                         </span>
                     </div>
                     <div />
-                    <div className="flex items-center gap-2.5 px-6">
+                    <div className="flex items-center gap-2.5 px-6 justify-center">
                         <div className="w-2 h-2 rounded-full bg-success" />
-                        <span className="text-xs font-black text-primary uppercase tracking-[0.25em]">
-                            After — With Demo
+                        <span className="text-xs font-bold text-primary uppercase tracking-[0.25em]">
+                            With Demo
                         </span>
                     </div>
                 </motion.div>
 
                 {/* ── Comparison Rows ───────────────────── */}
-                <div className="rounded-[2rem] border border-border-solid overflow-hidden bg-surface shadow-md">
+                <div className="rounded-none border border-border-solid overflow-hidden bg-surface shadow-md">
                     {comparisonData.map((item, index) => (
                         <motion.div
                             key={index}
@@ -130,7 +130,7 @@ export default function ComparisonSection() {
                         >
                             {/* Before */}
                             <div className="flex items-start gap-5 p-8 lg:p-10">
-                                <div className="shrink-0 mt-0.5 p-2.5 rounded-xl bg-destructive-bg border border-destructive/15 text-destructive opacity-50 group-hover:opacity-80 transition-opacity duration-300">
+                                <div className="shrink-0 mt-0.5 p-2.5 rounded-none bg-destructive-bg border border-destructive/15 text-destructive opacity-50 group-hover:opacity-80 transition-opacity duration-300">
                                     <XCircle className="w-5 h-5" />
                                 </div>
                                 <div>
@@ -145,15 +145,15 @@ export default function ComparisonSection() {
 
                             {/* Center icon */}
                             <div className="hidden lg:flex flex-col items-center justify-center gap-2 border-x border-border py-4">
-                                <div className="w-9 h-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary group-hover:bg-primary/15 group-hover:scale-110 transition-all duration-300">
+                                {/* <div className="w-9 h-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary group-hover:bg-primary/15 group-hover:scale-110 transition-all duration-300">
                                     <item.icon className="w-4 h-4" />
-                                </div>
-                                <ArrowRight className="w-3 h-3 text-border-solid group-hover:text-primary transition-colors duration-300" />
+                                </div> */}
+                                <ArrowRight className="w-5 h-5 text-muted group-hover:text-primary transition-colors duration-300" />
                             </div>
 
                             {/* After */}
                             <div className="flex items-start gap-5 p-8 lg:p-10 bg-primary/[0.02] border-t border-border lg:border-t-0">
-                                <div className="shrink-0 mt-0.5 p-2.5 rounded-xl bg-success-bg border border-success/20 text-success group-hover:scale-110 transition-transform duration-300">
+                                <div className="shrink-0 mt-0.5 p-2.5 rounded-none bg-success-bg border border-success/20 text-success group-hover:scale-110 transition-transform duration-300">
                                     <CheckCircle2 className="w-5 h-5" />
                                 </div>
                                 <div>
@@ -178,10 +178,10 @@ export default function ComparisonSection() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: index * 0.1 }}
-                            className="group flex items-center gap-5 p-6 rounded-2xl bg-surface border border-border-solid hover:border-primary/25 hover:shadow-md transition-all duration-300"
+                            className="group flex items-center gap-5 p-6 rounded-none bg-surface border border-border-solid hover:border-primary/25 hover:shadow-md transition-all duration-300"
                         >
                             {/* Icon */}
-                            <div className="shrink-0 w-12 h-12 rounded-xl bg-primary/8 border border-primary/15 flex items-center justify-center text-primary group-hover:bg-primary/12 group-hover:scale-110 transition-all duration-300">
+                            <div className="shrink-0 w-12 h-12 rounded-none bg-primary/8 border border-primary/15 flex items-center justify-center text-primary group-hover:bg-primary/12 group-hover:scale-110 transition-all duration-300">
                                 <stat.icon className="w-5 h-5" />
                             </div>
 

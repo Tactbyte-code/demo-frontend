@@ -247,7 +247,8 @@ export default function ContactPage() {
                                     {/* Submit */}
                                     <button
                                         type="button"
-                                        onClick={handleSubmit}
+                                        // onClick={handleSubmit} // to be changed after creating the API
+                                        onClick={() => setIsSuccess(true)}
                                         disabled={isSubmitting}
                                         className="w-full bg-primary hover:bg-primary-hover text-white py-5 rounded-none font-bold text-sm uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-md disabled:opacity-60 active:scale-[0.98] cursor-pointer"
                                     >
@@ -258,7 +259,6 @@ export default function ContactPage() {
                                     </button>
                                 </div>
                             </motion.div>
-
                         ) : (
                             /* ── Success ──────────────────────── */
                             <motion.div

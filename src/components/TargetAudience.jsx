@@ -76,22 +76,22 @@ export default function TargetAudience() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: index * 0.1 }}
-                            className="flex flex-col bg-surface border border-border-solid rounded-[2.5rem] p-2 hover:border-primary/40 transition-all duration-500 group"
+                            className="flex flex-col bg-surface border border-border-solid p-2 hover:border-primary/40 transition-all duration-500 group"
                         >
                             {/* Inner Dashboard Module — distinct from page bg */}
-                            <div className="rounded-4xl p-8 flex-1 flex flex-col" style={{ background: 'var(--gradient-card)' }}>
+                            <div className="p-8 flex-1 flex flex-col" style={{ background: 'var(--gradient-card)' }}>
                                 <div className="flex justify-between items-start mb-8">
-                                    <div className={`p-3 rounded-2xl bg-surface shadow-sm border border-border-solid ${group.color} group-hover:scale-110 transition-transform duration-500`}>
+                                    <div className={`p-3 bg-surface shadow-sm border rounded-full border-border-solid ${group.color} group-hover:scale-110 transition-transform duration-500`}>
                                         <group.icon className="w-6 h-6" />
                                     </div>
-                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success-bg border border-success/20">
-                                        <div className="w-1 h-1 rounded-full bg-success" />
+                                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-success-bg border border-success/20">
+                                        <div className="w-1 h-1 bg-success" />
                                         <span className="text-[9px] font-bold text-success uppercase tracking-wider">Verified</span>
                                     </div>
                                 </div>
 
                                 <div className="space-y-3 mb-8">
-                                    <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{group.subtitle}</p>
+                                    <p className="text-xs font-bold text-primary uppercase tracking-wide">{group.subtitle}</p>
                                     <h3 className="text-2xl font-bold text-foreground tracking-tight leading-tight">
                                         {group.title}
                                     </h3>
@@ -103,7 +103,7 @@ export default function TargetAudience() {
                                 {/* Feature Tags */}
                                 <div className="flex flex-wrap gap-2 mb-8">
                                     {group.features.map((tag, i) => (
-                                        <span key={i} className="text-[10px] font-bold py-1 px-2.5 bg-background border border-border-solid rounded-lg text-subtle">
+                                        <span key={i} className="text-[10px] font-bold py-1 px-2.5 bg-background border border-border-solid text-subtle">
                                             {tag}
                                         </span>
                                     ))}
@@ -118,7 +118,7 @@ export default function TargetAudience() {
                                             {group.metric}
                                         </span>
                                     </div>
-                                    <div className="h-8 w-8 rounded-full border border-border-solid flex items-center justify-center text-muted group-hover:text-primary group-hover:border-primary/40 transition-colors">
+                                    <div className="h-8 rounded-full w-8 border border-border-solid flex items-center justify-center text-muted group-hover:text-primary group-hover:border-primary/40 transition-colors">
                                         <CheckCircle2 className="w-4 h-4" />
                                     </div>
                                 </div>

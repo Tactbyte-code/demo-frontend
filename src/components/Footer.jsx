@@ -38,8 +38,6 @@ const socialLinks = [
 ];
 
 export default function Footer() {
-    const currentYear = new Date().getFullYear();
-
     return (
         <footer className="border-t pt-16 pb-8 overflow-hidden"
             style={{
@@ -53,22 +51,9 @@ export default function Footer() {
                     {/* Left: Brand Section */}
                     <div className="lg:w-1/3 flex flex-col justify-center space-y-6">
                         <Link href="/" className="flex items-center gap-2 group w-fit">
-                            <div className="relative h-10 w-10">
-                                <Image
-                                    src="/images/logo2.png"
-                                    alt="Logo"
-                                    priority
-                                    fill
-                                    sizes="(max-width: 640px) 100vw, 160px"
-                                    className="object-contain group-hover:scale-110 transition-transform duration-300"
-                                />
+                            <div className="relative h-10 w-50 rounded-full">
+                                <Image src="/images/logo_with_text_2.png" alt="Logo" fill sizes="(max-width: 640px) 100vw, 160px" className="object-contain" priority />
                             </div>
-                            <span
-                                className="font-bold text-xl tracking-tight"
-                                style={{ color: 'var(--text-main)' }}
-                            >
-                                DEMO
-                            </span>
                         </Link>
                         <p
                             className="text-sm leading-relaxed max-w-sm"
@@ -234,7 +219,7 @@ export default function Footer() {
                         className="text-[11px] font-medium"
                         style={{ color: 'color-mix(in srgb, var(--text-subtle) 50%, transparent)' }}
                     >
-                        © {currentYear} Demo. Built with precision for the future.
+                        ©2026 Tactbyte Technologies Pvt. Ltd.
                     </p>
                 </div>
             </div>

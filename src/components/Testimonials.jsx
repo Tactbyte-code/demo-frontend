@@ -67,7 +67,7 @@ export default function Testimonials() {
 
             {/* Background glow */}
             <div className="absolute inset-0 pointer-events-none -z-10">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50%] h-[60%] bg-primary/5 blur-[130px] rounded-full" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50%] h-[60%] bg-primary/5 blur-[130px] rounded-none" />
             </div>
 
             <div className="relative max-w-7xl mx-auto px-6 lg:px-12">
@@ -79,9 +79,9 @@ export default function Testimonials() {
                             initial={{ opacity: 0, y: 10 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            className="inline-flex items-center gap-2 bg-primary/8 border border-primary/15 text-primary font-bold text-xs uppercase tracking-[0.3em] px-4 py-2 rounded-full mb-5"
+                            className="inline-flex items-center gap-2 bg-primary/8 border border-primary/15 text-primary font-bold text-xs uppercase tracking-[0.3em] px-4 py-2 rounded-none mb-5"
                         >
-                            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                            <span className="w-1.5 h-1.5 rounded-none bg-primary animate-pulse" />
                             Validation Pulse
                         </motion.div>
                         <motion.h2
@@ -103,7 +103,7 @@ export default function Testimonials() {
                                 key={i}
                                 onClick={() => goTo(i)}
                                 className={`
-                                    relative h-2 rounded-full overflow-hidden transition-all duration-500 cursor-pointer
+                                    relative h-2 rounded-none overflow-hidden transition-all duration-500 cursor-pointer
                                     ${i === active
                                         ? 'w-10 bg-primary'
                                         : 'w-2 bg-border-solid hover:bg-primary/40'
@@ -122,18 +122,18 @@ export default function Testimonials() {
                         initial={{ opacity: 0, y: direction > 0 ? 40 : -40, filter: 'blur(8px)' }}
                         animate={{ opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] } }}
                         exit={{ opacity: 0, y: direction > 0 ? -30 : 30, filter: 'blur(6px)', transition: { duration: 0.3 } }}
-                        className="grid lg:grid-cols-[1fr_auto] bg-surface border border-border-solid rounded-[2rem] overflow-hidden shadow-lg"
+                        className="grid lg:grid-cols-[1fr_auto] bg-surface border border-border-solid overflow-hidden shadow-lg"
                     >
                         {/* Left — content */}
                         <div className="p-10 lg:p-14 flex flex-col justify-between gap-10">
 
                             {/* Top row — badge + quote icon */}
                             <div className="flex items-start justify-between">
-                                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest bg-primary/10 text-primary border border-primary/20">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-none text-[11px] font-black uppercase tracking-widest bg-primary/10 text-primary border border-primary/20">
+                                    <span className="w-1.5 h-1.5 rounded-none bg-primary animate-pulse" />
                                     {t.result}
                                 </div>
-                                <div className="p-2.5 rounded-xl bg-primary/8 border border-primary/15 text-primary opacity-60">
+                                <div className="p-2.5 bg-primary/8 border border-primary/15 text-primary opacity-60">
                                     <Quote className="w-5 h-5" />
                                 </div>
                             </div>
@@ -145,7 +145,7 @@ export default function Testimonials() {
 
                             {/* Author */}
                             <div className="flex items-center gap-4 pt-6 border-t border-border">
-                                <div className="w-11 h-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                                <div className="w-11 h-11 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
                                     <span className="text-primary font-black text-sm tracking-tight">
                                         {t.name.split(' ').map(n => n[0]).join('')}
                                     </span>
@@ -172,7 +172,7 @@ export default function Testimonials() {
                                         key={i}
                                         onClick={() => goTo(i)}
                                         className={`
-                                            rounded-full transition-all duration-300 cursor-pointer
+                                            rounded-none transition-all duration-300 cursor-pointer
                                             ${i === active
                                                 ? 'w-1.5 h-5 bg-primary'
                                                 : 'w-1.5 h-1.5 bg-border-solid hover:bg-primary/40'
@@ -195,7 +195,7 @@ export default function Testimonials() {
                             <button
                                 key={label}
                                 onClick={() => { go(dir); resetTimer(); }}
-                                className="group flex items-center gap-2 px-5 py-2.5 rounded-full border border-border-solid hover:border-primary/40 bg-surface text-muted hover:text-primary text-sm font-semibold transition-all duration-200 shadow-sm cursor-pointer"
+                                className="group flex items-center gap-2 px-5 py-2.5 rounded-none border border-border-solid hover:border-primary/40 bg-surface text-muted hover:text-primary text-sm font-semibold transition-all duration-200 shadow-sm cursor-pointer"
                             >
                                 {label === 'Prev' && (
                                     <ArrowRight className={`w-4 h-4 transition-transform ${iconClass}`} />
@@ -213,7 +213,7 @@ export default function Testimonials() {
                         <span className="text-subtle text-[11px] font-mono tabular-nums">
                             {String(active + 1).padStart(2, '0')}
                         </span>
-                        <div className="w-28 h-px bg-border-solid relative overflow-hidden rounded-full">
+                        <div className="w-28 h-px bg-border-solid relative overflow-hidden rounded-none">
                             <motion.div
                                 key={active}
                                 className="absolute left-0 top-0 h-full bg-primary"

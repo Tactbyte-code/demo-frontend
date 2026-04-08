@@ -43,14 +43,17 @@ export function QueryCard({ query, isCompleted, onRequeryStart }) {
             console.log('edited query: ', value);
 
             const response = await createQuery(value);
-            if (response) setQueryId(response.id);
 
-            // console.log('status from reddit page: ', response?.status);
+            if (response) {
+                setQueryId(response?.id);
+                queryClient.invalidateQueries({ queryKey: ["queries", user_id] });
+            };
 
             if (response.status === "CLARIFYING") {
                 setNavigating(true);
                 router.push(`/dashboard/reddit/query/${response.id}/clarify`);
             }
+
             if (response.status === "CLARIFIED") {
                 setNavigating(true);
                 router.push(`/dashboard/reddit/query/${response.id}`);

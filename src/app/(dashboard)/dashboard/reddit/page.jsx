@@ -10,6 +10,7 @@ import { createQuery, getQueries } from "@/lib/api/reddit";
 import RedditQueryHistoryTable from "./_components/RedditQueryHistoryTable";
 import { useRouter } from "next/navigation";
 import QueryProcessingLoader from "./_components/QueryProcessingLoader";
+import { useQueryClient } from "@tanstack/react-query";
 // import AILoader from "@/components/shared/AiLoader";
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
@@ -46,6 +47,10 @@ export default function RedditIntelligencePage() {
     const canSubmit = query.trim() && !loading && !isOnCooldown;
     const router = useRouter();
 
+    const user_id = localStorage.getItem('user').firebase_uid;
+
+    const queryClient = useQueryClient();
+
     const handleSubmitQuery = async (e) => {
         e?.preventDefault();
 
@@ -57,7 +62,11 @@ export default function RedditIntelligencePage() {
             console.log('function entered ...');
 
             const response = await createQuery(query);
-            if (response) setQueryId(response.id);
+
+            if (response) {
+                setQueryId(response.id);
+                queryClient.invalidateQueries({ queryKey: ["queries", user_id] });
+            };
 
             // console.log('status from reddit page: ', response?.status);
 

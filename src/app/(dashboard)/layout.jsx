@@ -96,18 +96,18 @@ export default function DashboardLayout({ children }) {
                         <div className="w-65 flex flex-col h-full">
                             {/* Brand */}
                             <div className="px-6 pt-7 pb-5">
-                                <Link href="/" className="flex items-center gap-3 mb-8 no-underline group">
-                                    <div className="relative h-14 w-14 border border-border rounded-full">
-                                        <Image src="/images/logo3.png" alt="Logo" fill sizes="(max-width: 640px) 100vw, 160px" className="object-contain" priority />
+                                <Link href="/" className="flex items-center mb-8 no-underline group">
+                                    <div className="relative h-10 w-50 rounded-full">
+                                        <Image src="/images/logo_with_text_2.png" alt="Logo" fill sizes="(max-width: 640px) 100vw, 160px" className="object-contain" priority />
                                     </div>
-                                    <div>
+                                    {/* <div>
                                         <p className="text-base font-black tracking-tighter leading-none" style={{ color: 'var(--text-main)' }}>
                                             DEMO
                                         </p>
                                         <p className="text-[9px] font-bold tracking-[0.2em] uppercase mt-0.5" style={{ color: 'var(--primary)' }}>
                                             Intelligence
                                         </p>
-                                    </div>
+                                    </div> */}
                                 </Link>
 
                                 <NavGroup label="General" items={mainItems} pathname={pathname} />
