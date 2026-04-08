@@ -112,7 +112,7 @@ export default function Footer() {
 
                         {/* Top: Newsletter Container */}
                         <div
-                            className="p-6 rounded-4xl flex flex-col md:flex-row items-center justify-between gap-6"
+                            className="p-6 flex flex-col md:flex-row items-center justify-between gap-6"
                             style={{
                                 backgroundColor: 'var(--background)',
                                 border: '1px solid var(--glass-border)',
@@ -120,7 +120,7 @@ export default function Footer() {
                         >
                             <div className="flex items-center gap-4">
                                 <div
-                                    className="w-10 h-10 rounded-xl flex items-center justify-center"
+                                    className="w-10 h-10 flex items-center justify-center"
                                     style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 10%, transparent)' }}
                                 >
                                     <Mail className="w-5 h-5" style={{ color: 'var(--primary)' }} />
@@ -145,7 +145,7 @@ export default function Footer() {
                                 <input
                                     type="email"
                                     placeholder="your@email.com"
-                                    className="w-full rounded-xl px-4 py-3 text-sm focus:outline-none transition-all"
+                                    className="w-full px-4 py-3 text-sm focus:outline-none transition-all"
                                     style={{
                                         backgroundColor: 'var(--surface)',
                                         border: '1px solid var(--glass-border)',
@@ -164,7 +164,7 @@ export default function Footer() {
 
                                 <div
                                     type="submit"
-                                    className="absolute right-1.75 top-2.25 px-4 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all hover:brightness-110"
+                                    className="absolute right-1.75 top-2.25 px-4 py-1.5 text-xs font-bold flex items-center gap-1 transition-all hover:brightness-110"
                                     style={{
                                         backgroundColor: 'var(--primary)',
                                         color: '#ffffff',

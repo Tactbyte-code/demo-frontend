@@ -97,7 +97,7 @@ export default function DashboardLayout({ children }) {
                             {/* Brand */}
                             <div className="px-6 pt-7 pb-5">
                                 <Link href="/" className="flex items-center gap-3 mb-8 no-underline group">
-                                    <div className="relative h-14 w-14">
+                                    <div className="relative h-14 w-14 border border-border rounded-full">
                                         <Image src="/images/logo3.png" alt="Logo" fill sizes="(max-width: 640px) 100vw, 160px" className="object-contain" priority />
                                     </div>
                                     <div>

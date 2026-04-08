@@ -28,9 +28,11 @@ export default function AuthGuard({ children }) {
                 if (!isPublic) router.replace("/login");
                 setChecking(false);
                 return;
-            }
+            };
 
             const storedUser = localStorage.getItem("user");
+            console.log('auth guard stored user: ', storedUser);
+
             if (!storedUser) {
                 if (!isPublic) router.replace("/login");
                 setChecking(false);
@@ -38,18 +40,19 @@ export default function AuthGuard({ children }) {
             }
 
             const user = JSON.parse(storedUser);
+            console.log('auth guard user: ', user);
 
             if (!user.is_onboarded && pathname !== "/onboarding") {
                 router.replace("/onboarding");
                 setChecking(false);
                 return;
-            }
+            };
 
             if (user.is_onboarded && (pathname === "/login" || pathname === "/signup")) {
                 router.replace("/dashboard");
                 setChecking(false);
                 return;
-            }
+            };
 
             setChecking(false);
         });

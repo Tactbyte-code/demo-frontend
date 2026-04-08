@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { getToken } from '@/utils/getToken';
 
 export default function ContactPage() {
     const [user, setUser] = useState(null);
@@ -55,20 +56,26 @@ export default function ContactPage() {
         setIsSubmitting(true);
 
         try {
-            const firebaseUser = auth.currentUser;
-            if (!firebaseUser) { router.replace("/login"); return; }
-            const freshToken = await firebaseUser.getIdToken();
+            // const firebaseUser = auth.currentUser;
+            // const freshToken = await firebaseUser.getIdToken();
+
+            const token = await getToken();
+            if (!token) { router.replace("/login"); return; }
+
             const response = await fetch(`${apiUrl}/feedback`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${freshToken}`
+                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify({
                     phone: formData.phone ? `+ 91${formData.phone}` : null,
                     message: formData.message
                 })
             });
+
+            console.log('response: ', response);
+
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData?.detail || "Submission failed");
@@ -105,7 +112,7 @@ export default function ContactPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="relative z-10 w-full max-w-2xl"
             >
-                <div className="bg-surface mt-20 border border-border-solid rounded-[2.5rem] p-8 md:p-12 shadow-lg">
+                <div className="bg-surface mt-20 border border-border-solid p-8 md:p-12 shadow-lg">
                     <AnimatePresence mode="wait">
 
                         {/* ── Form ──────────────────────────── */}
@@ -136,7 +143,7 @@ export default function ContactPage() {
                                             exit={{ opacity: 0, height: 0 }}
                                             className="mb-6 overflow-hidden"
                                         >
-                                            <div className="bg-destructive-bg border border-destructive/20 rounded-2xl p-4 flex items-center gap-3 text-destructive">
+                                            <div className="bg-destructive-bg border border-destructive/20 p-4 flex items-center gap-3 text-destructive">
                                                 <AlertCircle size={16} className="shrink-0" />
                                                 <p className="text-xs font-bold">{error}</p>
                                             </div>
@@ -152,7 +159,7 @@ export default function ContactPage() {
                                             <label className="text-[11px] font-black uppercase tracking-widest text-subtle ml-1">
                                                 Full Name
                                             </label>
-                                            <div className="w-full bg-surface-raised border border-border-solid rounded-2xl px-5 py-4 text-sm font-semibold text-muted cursor-not-allowed">
+                                            <div className="w-full bg-surface-raised border border-border-solid rounded-none px-5 py-4 text-sm font-semibold text-muted cursor-not-allowed">
                                                 {user.full_name}
                                             </div>
                                         </div>
@@ -160,7 +167,7 @@ export default function ContactPage() {
                                             <label className="text-[11px] font-black uppercase tracking-widest text-subtle ml-1">
                                                 Email Address
                                             </label>
-                                            <div className="w-full bg-surface-raised border border-border-solid rounded-2xl px-5 py-4 text-sm font-semibold text-muted cursor-not-allowed truncate">
+                                            <div className="w-full bg-surface-raised border border-border-solid rounded-none px-5 py-4 text-sm font-semibold text-muted cursor-not-allowed truncate">
                                                 {user.email}
                                             </div>
                                         </div>
@@ -182,7 +189,7 @@ export default function ContactPage() {
                                                 type="tel"
                                                 placeholder="00000 00000"
                                                 value={formData.phone}
-                                                className={`w-full bg-background border rounded-2xl pl-20 pr-6 py-4 text-sm font-semibold text-foreground placeholder:text-subtle focus:outline-none focus:ring-2 primary/20 transition-all ${phoneError ? 'border-destructive/50 focus:border-destructive/50' : 'border-border-solid focus:border-primary/40'}`}
+                                                className={`w-full bg-background border rounded-none pl-20 pr-6 py-4 text-sm font-semibold text-foreground placeholder:text-subtle focus:outline-none focus:ring-2 primary/20 transition-all ${phoneError ? 'border-destructive/50 focus:border-destructive/50' : 'border-border-solid focus:border-primary/40'}`}
                                                 onChange={(e) => {
                                                     const val = e.target.value.replace(/\D/g, '').slice(0, 10); // only numbers, max 10
                                                     setFormData({ ...formData, phone: val });
@@ -220,7 +227,7 @@ export default function ContactPage() {
                                                         setMessageError("");
                                                     }
                                                 }}
-                                                className={`w-full bg-background border rounded-2xl pl-12 pr-6 py-4 text-sm font-semibold text-foreground placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-primary transition-all resize-y ${messageError ? 'border-destructive/50 focus:border-destructive/50' : 'border-border-solid focus:border-primary'}`}
+                                                className={`w-full bg-background border rounded-none pl-12 pr-6 py-4 text-sm font-semibold text-foreground placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-primary transition-all resize-y ${messageError ? 'border-destructive/50 focus:border-destructive/50' : 'border-border-solid focus:border-primary'}`}
                                             />
                                         </div>
                                         <div className="flex justify-between items-center ml-1">
@@ -242,7 +249,7 @@ export default function ContactPage() {
                                         type="button"
                                         onClick={handleSubmit}
                                         disabled={isSubmitting}
-                                        className="w-full bg-primary hover:bg-primary-hover text-white py-5 rounded-2xl font-bold text-sm uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-md disabled:opacity-60 active:scale-[0.98] cursor-pointer"
+                                        className="w-full bg-primary hover:bg-primary-hover text-white py-5 rounded-none font-bold text-sm uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-md disabled:opacity-60 active:scale-[0.98] cursor-pointer"
                                     >
                                         {isSubmitting
                                             ? <Loader2 className="w-5 h-5 animate-spin" />
@@ -275,7 +282,7 @@ export default function ContactPage() {
                                         setFormData({ phone: '', message: '' });
                                         setError("");
                                     }}
-                                    className="px-8 py-4 bg-surface-raised border border-border-solid text-muted rounded-2xl font-bold text-xs uppercase tracking-widest hover:text-foreground hover:border-primary/30 transition-all cursor-pointer"
+                                    className="px-8 py-4 bg-surface-raised border border-border-solid text-muted rounded-none font-bold text-xs uppercase tracking-widest hover:text-foreground hover:border-primary/30 transition-all cursor-pointer"
                                 >
                                     Send another
                                 </button>

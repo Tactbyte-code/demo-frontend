@@ -12,13 +12,14 @@ import { auth, googleProvider } from "@/lib/firebase";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useMutation } from '@tanstack/react-query';
+import Image from 'next/image';
 
 const STEPS = { EMAIL: "email", OTP: "otp", PASSWORD: "password", DONE: "done" };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // ── Shared input style helpers ────────────────────────────
-const inputClass = "w-full rounded-2xl px-6 py-4 text-base font-medium transition-all outline-none";
+const inputClass = "w-full rounded-none px-6 py-4 text-base font-medium transition-all outline-none";
 
 const inputStyle = {
     backgroundColor: 'var(--surface-card)',
@@ -53,7 +54,7 @@ function ErrorBanner({ message }) {
                     exit={{ opacity: 0, height: 0 }}
                     className="mb-5 overflow-hidden"
                 >
-                    <div className="rounded-2xl p-4 flex items-center gap-3"
+                    <div className="rounded-none p-4 flex items-center gap-3"
                         style={{ backgroundColor: 'var(--destructive-bg)', border: '1px solid color-mix(in srgb, var(--destructive) 20%, transparent)', color: 'var(--destructive)' }}>
                         <AlertCircle size={16} className="shrink-0" />
                         <p className="text-xs font-bold">{message}</p>
@@ -221,7 +222,7 @@ export default function LoginPage() {
 
             {/* Back to home */}
             <Link href="/"
-                className="absolute top-8 left-8 z-20 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300"
+                className="absolute top-8 left-8 z-20 flex items-center gap-2 px-4 py-2 text-sm font-bold transition-all duration-300"
                 style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border-solid)', color: 'var(--text-muted)', boxShadow: 'var(--shadow-sm)' }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.color = 'var(--primary)'; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-solid)'; e.currentTarget.style.color = 'var(--text-muted)'; }}>
@@ -229,9 +230,9 @@ export default function LoginPage() {
             </Link>
 
             {/* Ambient orbs */}
-            <div className="absolute top-[-20%] left-[-10%] w-150 h-150 rounded-full blur-[130px] animate-pulse pointer-events-none"
+            <div className="absolute top-[-20%] left-[-10%] w-150 h-150 blur-[130px] animate-pulse pointer-events-none"
                 style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 12%, transparent)' }} />
-            <div className="absolute bottom-[-10%] right-[-5%] w-125 h-125 rounded-full blur-[110px] pointer-events-none"
+            <div className="absolute bottom-[-10%] right-[-5%] w-125 h-125 blur-[110px] pointer-events-none"
                 style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 8%, transparent)' }} />
 
             <motion.div
@@ -242,9 +243,8 @@ export default function LoginPage() {
             >
                 {/* Brand */}
                 <div className="flex flex-row gap-4 items-center mt-4 justify-center mb-2">
-                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
-                        style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-md)' }}>
-                        <Zap className="w-8 h-8" style={{ color: 'var(--accent)', fill: 'var(--accent)' }} />
+                    <div className="relative h-14 w-14 border border-border rounded-full">
+                        <Image src="/images/logo3.png" alt="Logo" fill sizes="(max-width: 640px) 100vw, 160px" className="object-contain" priority />
                     </div>
                     <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: 'var(--text-main)' }}>Demo</h1>
                 </div>
@@ -253,9 +253,9 @@ export default function LoginPage() {
                     Intelligence at your fingertips
                 </p>
 
-                <div className="backdrop-blur-xl rounded-[2.5rem] p-10 relative overflow-hidden bg-background"
+                <div className="backdrop-blur-xl p-10 relative overflow-hidden bg-background"
                     style={{ border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-lg)' }}>
-                    <div className="absolute top-0 left-8 right-8 h-px rounded-full"
+                    <div className="absolute top-0 left-8 right-8 h-px rounded-none"
                         style={{ background: 'linear-gradient(90deg, transparent, var(--accent), transparent)', opacity: 0.3 }} />
 
                     <AnimatePresence mode="wait">
@@ -279,7 +279,7 @@ export default function LoginPage() {
                                                 Your password has been updated. You can now log in.
                                             </p>
                                             <button onClick={resetForgotFlow}
-                                                className="w-full py-3.5 rounded-2xl font-bold text-sm transition-all"
+                                                className="w-full py-3.5 rounded-none font-bold text-sm transition-all"
                                                 style={{ backgroundColor: 'var(--surface-card)', border: '1px solid var(--border-solid)', color: 'var(--text-main)' }}>
                                                 Back to Login
                                             </button>
@@ -303,17 +303,17 @@ export default function LoginPage() {
                                                         <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-subtle)' }} />
                                                         <input type="email" required placeholder="name@company.com"
                                                             value={forgotEmail} onChange={e => setForgotEmail(e.target.value)}
-                                                            className="w-full rounded-2xl pl-12 pr-6 py-4 text-base font-medium transition-all outline-none"
+                                                            className="w-full rounded-none pl-12 pr-6 py-4 text-base font-medium transition-all outline-none"
                                                             style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
                                                     </div>
                                                 </div>
                                                 <button type="submit" disabled={sendOTPMutation.isPending}
-                                                    className="w-full py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-70"
+                                                    className="w-full py-4 rounded-none font-bold text-base flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-70"
                                                     style={primaryBtnStyle}>
                                                     {sendOTPMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Send OTP <ArrowRight className="w-5 h-5" /></>}
                                                 </button>
                                                 <button type="button" onClick={resetForgotFlow}
-                                                    className="w-full py-3 rounded-2xl font-bold text-sm transition-all"
+                                                    className="w-full py-3 rounded-none font-bold text-sm transition-all"
                                                     style={{ backgroundColor: 'transparent', color: 'var(--text-subtle)' }}
                                                     onMouseEnter={e => e.currentTarget.style.color = 'var(--text-main)'}
                                                     onMouseLeave={e => e.currentTarget.style.color = 'var(--text-subtle)'}>
@@ -341,18 +341,18 @@ export default function LoginPage() {
                                                         <KeyRound className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-subtle)' }} />
                                                         <input type="text" required placeholder="______" maxLength={6} value={otp}
                                                             onChange={e => setOtp(e.target.value.replace(/\D/g, ''))}
-                                                            className="w-full rounded-2xl pl-12 pr-6 py-4 text-base font-bold tracking-[0.5em] transition-all outline-none"
+                                                            className="w-full rounded-none pl-12 pr-6 py-4 text-base font-bold tracking-[0.5em] transition-all outline-none"
                                                             style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
                                                     </div>
                                                 </div>
                                                 <button type="submit" disabled={verifyOTPMutation.isPending || otp.length !== 6}
-                                                    className="w-full py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-70"
+                                                    className="w-full py-4 rounded-none font-bold text-base flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-70"
                                                     style={primaryBtnStyle}>
                                                     {verifyOTPMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Verify OTP <ArrowRight className="w-5 h-5" /></>}
                                                 </button>
                                                 <button type="button"
                                                     onClick={() => { setForgotStep(STEPS.EMAIL); verifyOTPMutation.reset(); setOtp(''); }}
-                                                    className="w-full py-3 rounded-2xl font-bold text-sm transition-all"
+                                                    className="w-full py-3 rounded-none font-bold text-sm transition-all"
                                                     style={{ backgroundColor: 'transparent', color: 'var(--text-subtle)' }}
                                                     onMouseEnter={e => e.currentTarget.style.color = 'var(--text-main)'}
                                                     onMouseLeave={e => e.currentTarget.style.color = 'var(--text-subtle)'}>
@@ -384,7 +384,7 @@ export default function LoginPage() {
                                                         <input type={showNewPassword ? "text" : "password"} required
                                                             placeholder="Create a strong password" value={newPassword}
                                                             onChange={e => setNewPassword(e.target.value)}
-                                                            className="w-full rounded-2xl pl-12 pr-14 py-4 text-base font-medium transition-all outline-none"
+                                                            className="w-full rounded-none pl-12 pr-14 py-4 text-base font-medium transition-all outline-none"
                                                             style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
                                                         <button type="button" onClick={() => setShowNewPassword(!showNewPassword)}
                                                             className="absolute right-5 top-1/2 -translate-y-1/2 transition-colors"
@@ -400,7 +400,7 @@ export default function LoginPage() {
                                                         <input type="password" required placeholder="Repeat your password"
                                                             value={confirmNewPassword}
                                                             onChange={e => setConfirmNewPassword(e.target.value)}
-                                                            className="w-full rounded-2xl pl-12 pr-6 py-4 text-base font-medium transition-all outline-none"
+                                                            className="w-full rounded-none pl-12 pr-6 py-4 text-base font-medium transition-all outline-none"
                                                             style={{
                                                                 ...inputStyle,
                                                                 borderColor: confirmNewPassword && confirmNewPassword !== newPassword
@@ -417,7 +417,7 @@ export default function LoginPage() {
                                                 </div>
                                                 <button type="submit"
                                                     disabled={resetPasswordMutation.isPending || newPassword !== confirmNewPassword}
-                                                    className="w-full py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-70"
+                                                    className="w-full py-4 rounded-none font-bold text-base flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-70"
                                                     style={primaryBtnStyle}>
                                                     {resetPasswordMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Reset Password <ArrowRight className="w-5 h-5" /></>}
                                                 </button>
@@ -443,7 +443,7 @@ export default function LoginPage() {
                                 <div className="space-y-6">
                                     {/* Google */}
                                     <button onClick={() => googleMutation.mutate()} disabled={isLoading}
-                                        className="w-full flex items-center justify-center cursor-pointer gap-3 py-3.5 rounded-2xl font-semibold text-[15px] transition-all disabled:opacity-50"
+                                        className="w-full flex items-center justify-center cursor-pointer gap-3 py-3.5 rounded-none font-semibold text-[15px] transition-all disabled:opacity-50"
                                         style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border-solid)', color: 'var(--text-main)', boxShadow: 'var(--shadow-sm)' }}
                                         onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--surface-card)'; e.currentTarget.style.borderColor = 'var(--primary)'; }}
                                         onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'var(--surface)'; e.currentTarget.style.borderColor = 'var(--border-solid)'; }}>
@@ -502,7 +502,7 @@ export default function LoginPage() {
                                         </div>
 
                                         <button type="submit" disabled={isLoading}
-                                            className="w-full py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-70"
+                                            className="w-full py-4 rounded-none font-bold text-base flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-70"
                                             style={primaryBtnStyle}
                                             onMouseEnter={e => e.currentTarget.style.boxShadow = '0 6px 28px color-mix(in srgb, var(--accent) 30%, transparent)'}
                                             onMouseLeave={e => e.currentTarget.style.boxShadow = '0 4px 20px color-mix(in srgb, var(--primary) 35%, transparent)'}>
@@ -523,7 +523,7 @@ export default function LoginPage() {
                 </div>
 
                 <div className="mt-10 flex items-center justify-center">
-                    <div className="flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm"
+                    <div className="flex items-center gap-2 px-4 py-2 rounded-none backdrop-blur-sm"
                         style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--glass-border)' }}>
                         <ShieldCheck className="w-4 h-4" style={{ color: 'var(--success)' }} />
                         <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Enterprise Secure</span>

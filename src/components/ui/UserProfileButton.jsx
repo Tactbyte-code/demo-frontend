@@ -110,7 +110,7 @@ export default function UserProfileButton() {
                                 </div>
                             ) : (
                                 <div
-                                    className="w-8 h-8 flex items-center justify-center text-xs font-bold shrink-0"
+                                    className="w-8 h-8 flex rounded-full items-center justify-center text-xs font-bold shrink-0"
                                     style={{ background: 'linear-gradient(135deg, var(--primary), var(--accent))', color: '#080f14' }}
                                 >
                                     {user.full_name?.charAt(0).toUpperCase() || "U"}

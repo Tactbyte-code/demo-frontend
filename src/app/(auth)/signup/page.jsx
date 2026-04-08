@@ -11,6 +11,7 @@ import { auth, googleProvider } from "@/lib/firebase";
 import { createUserWithEmailAndPassword, signInWithPopup, updateProfile, sendEmailVerification } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function SignupPage() {
     const [name, setName] = useState('');
@@ -251,7 +252,7 @@ export default function SignupPage() {
             {/* Go to Home */}
             <Link
                 href="/"
-                className="absolute top-6 left-6 z-20 flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300"
+                className="absolute top-6 left-6 z-20 flex items-center gap-2 px-4 py-2 text-xs font-bold transition-all duration-300"
                 style={{
                     backgroundColor: 'var(--surface)',
                     border: '1px solid var(--border-solid)',
@@ -275,19 +276,12 @@ export default function SignupPage() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4, ease: "easeOut" }}
-                className="relative z-10 w-full max-w-[480px]"
+                className="relative z-10 w-full max-w-120"
             >
                 {/* Brand */}
                 <div className="flex flex-row gap-4 items-center mt-4 justify-center">
-                    <div
-                        className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
-                        style={{
-                            backgroundColor: 'var(--surface)',
-                            border: '1px solid var(--glass-border)',
-                            boxShadow: 'var(--shadow-md)',
-                        }}
-                    >
-                        <Zap className="w-8 h-8" style={{ color: 'var(--accent)', fill: 'var(--accent)' }} />
+                    <div className="relative h-14 w-14 border border-border rounded-full">
+                        <Image src="/images/logo3.png" alt="Logo" fill sizes="(max-width: 640px) 100vw, 160px" className="object-contain" priority />
                     </div>
                     <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: 'var(--text-main)' }}>
                         Demo
@@ -295,7 +289,7 @@ export default function SignupPage() {
                 </div>
 
                 <p
-                    className="text-sm font-medium text-center mb-10 tracking-wide uppercase"
+                    className="text-sm font-medium text-center mb-10 tracking-wide uppercase mt-4"
                     style={{ color: 'var(--text-subtle)' }}
                 >
                     Start your intelligence journey
@@ -311,7 +305,7 @@ export default function SignupPage() {
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
                             transition={{ duration: 0.3 }}
-                            className="backdrop-blur-xl rounded-[2.5rem] p-10"
+                            className="backdrop-blur-xl p-10"
                             style={{
                                 backgroundColor: 'var(--surface)',
                                 border: '1px solid var(--glass-border)',
@@ -326,7 +320,7 @@ export default function SignupPage() {
 
                             <div className="flex flex-col items-center text-center">
                                 <div
-                                    className="w-20 h-20 rounded-3xl flex items-center justify-center mb-6"
+                                    className="w-20 h-20 flex items-center justify-center mb-6"
                                     style={{
                                         backgroundColor: 'var(--surface-card)',
                                         border: '1px solid var(--glass-border)',
@@ -356,7 +350,7 @@ export default function SignupPage() {
                                         </p>
 
                                         <div
-                                            className="rounded-2xl p-4 w-full mb-6 text-left"
+                                            className="rounded-none p-4 w-full mb-6 text-left"
                                             style={{
                                                 backgroundColor: 'var(--surface-card)',
                                                 border: '1px solid var(--border-solid)',
@@ -407,7 +401,7 @@ export default function SignupPage() {
                                                 <motion.div
                                                     initial={{ opacity: 0 }}
                                                     animate={{ opacity: 1 }}
-                                                    className="mt-4 rounded-2xl p-4 flex items-center gap-3 w-full"
+                                                    className="mt-4 rounded-none p-4 flex items-center gap-3 w-full"
                                                     style={{
                                                         backgroundColor: 'var(--destructive-bg)',
                                                         border: '1px solid color-mix(in srgb, var(--destructive) 20%, transparent)',
@@ -433,7 +427,7 @@ export default function SignupPage() {
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
                             transition={{ duration: 0.3 }}
-                            className="backdrop-blur-xl rounded-[2.5rem] p-10 relative overflow-hidden"
+                            className="backdrop-blur-xl p-10 relative overflow-hidden"
                             style={{
                                 backgroundColor: 'var(--surface)',
                                 border: '1px solid var(--glass-border)',
@@ -464,14 +458,14 @@ export default function SignupPage() {
                                         className="mb-6 overflow-hidden"
                                     >
                                         <div
-                                            className="rounded-2xl p-4 flex items-center gap-3"
+                                            className="rounded-none p-4 flex items-center gap-3"
                                             style={{
                                                 backgroundColor: 'var(--destructive-bg)',
                                                 border: '1px solid color-mix(in srgb, var(--destructive) 20%, transparent)',
                                                 color: 'var(--destructive)',
                                             }}
                                         >
-                                            <AlertCircle size={18} className="flex-shrink-0" />
+                                            <AlertCircle size={18} className="shrink-0" />
                                             <p className="text-xs font-bold leading-snug">{error}</p>
                                         </div>
                                     </motion.div>
@@ -483,7 +477,7 @@ export default function SignupPage() {
                                 <button
                                     onClick={handleGoogleSignup}
                                     disabled={loading}
-                                    className="w-full flex items-center justify-center gap-3 py-3.5 rounded-2xl text-[15px] font-semibold transition-all duration-200 disabled:opacity-50"
+                                    className="w-full flex items-center justify-center gap-3 py-3.5 rounded-none text-[15px] font-semibold transition-all duration-200 disabled:opacity-50"
                                     style={{
                                         backgroundColor: 'var(--surface-card)',
                                         border: '1px solid var(--border-solid)',
@@ -529,7 +523,7 @@ export default function SignupPage() {
                                         <input
                                             type="text" value={name} onChange={(e) => setName(e.target.value)}
                                             placeholder="Your name" required
-                                            className="w-full rounded-2xl pl-5 pr-6 py-3.5 text-base font-medium outline-none transition-all"
+                                            className="w-full rounded-none pl-5 pr-6 py-3.5 text-base font-medium outline-none transition-all"
                                             style={inputBase}
                                             onFocus={onInputFocus}
                                             onBlur={onInputBlur}
@@ -544,7 +538,7 @@ export default function SignupPage() {
                                         <input
                                             type="email" value={email} onChange={(e) => setEmail(e.target.value)}
                                             placeholder="name@company.com" required
-                                            className="w-full rounded-2xl pl-5 pr-6 py-3.5 text-base font-medium outline-none transition-all"
+                                            className="w-full rounded-none pl-5 pr-6 py-3.5 text-base font-medium outline-none transition-all"
                                             style={inputBase}
                                             onFocus={onInputFocus}
                                             onBlur={onInputBlur}
@@ -561,7 +555,7 @@ export default function SignupPage() {
                                                 type={showPassword ? "text" : "password"}
                                                 value={password} onChange={(e) => setPassword(e.target.value)}
                                                 placeholder="Create a strong password" required
-                                                className="w-full rounded-2xl pl-5 pr-14 py-3.5 text-base font-medium outline-none transition-all"
+                                                className="w-full rounded-none pl-5 pr-14 py-3.5 text-base font-medium outline-none transition-all"
                                                 style={inputBase}
                                                 onFocus={onInputFocus}
                                                 onBlur={onInputBlur}
@@ -588,7 +582,7 @@ export default function SignupPage() {
                                                 type={showConfirmPassword ? "text" : "password"}
                                                 value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
                                                 placeholder="Repeat your password" required
-                                                className="w-full rounded-2xl pl-5 pr-14 py-3.5 text-base font-medium outline-none transition-all"
+                                                className="w-full rounded-none pl-5 pr-14 py-3.5 text-base font-medium outline-none transition-all"
                                                 style={{
                                                     backgroundColor: 'var(--surface-card)',
                                                     color: 'var(--text-main)',
@@ -631,7 +625,7 @@ export default function SignupPage() {
                                     {/* Submit */}
                                     <button
                                         type="submit" disabled={loading}
-                                        className="w-full py-4 mt-2 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-70"
+                                        className="w-full py-4 mt-2 rounded-none font-bold text-base flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-70"
                                         style={{
                                             background: 'linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 70%, var(--accent)))',
                                             color: '#ffffff',
@@ -669,7 +663,7 @@ export default function SignupPage() {
                 {/* Footer badge */}
                 <div className="mt-8 flex items-center justify-center">
                     <div
-                        className="flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm"
+                        className="flex items-center gap-2 px-4 py-2 backdrop-blur-sm"
                         style={{
                             backgroundColor: 'var(--surface)',
                             border: '1px solid var(--glass-border)',
