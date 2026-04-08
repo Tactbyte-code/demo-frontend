@@ -243,10 +243,10 @@ export default function LoginPage() {
             >
                 {/* Brand */}
                 <div className="flex flex-row gap-4 items-center mt-4 justify-center mb-2">
-                    <div className="relative h-14 w-14 border border-border rounded-full">
-                        <Image src="/images/logo3.png" alt="Logo" fill sizes="(max-width: 640px) 100vw, 160px" className="object-contain" priority />
+                    <div className="relative h-10 w-50 rounded-full">
+                        <Image src="/images/logo_with_text_2.png" alt="Logo" fill sizes="(max-width: 640px) 100vw, 160px" className="object-contain" priority />
                     </div>
-                    <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: 'var(--text-main)' }}>Demo</h1>
+                    {/* <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: 'var(--text-main)' }}>Demo</h1> */}
                 </div>
 
                 <p className="text-sm font-medium text-center mb-12" style={{ color: 'var(--text-subtle)' }}>
