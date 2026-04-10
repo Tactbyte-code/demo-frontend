@@ -156,7 +156,7 @@ export default function ContactPage() {
                                     {/* Auto-filled user info */}
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                         <div className="space-y-2">
-                                            <label className="text-[11px] font-black uppercase tracking-widest text-subtle ml-1">
+                                            <label className="text-[11px] font-bold uppercase tracking-wide text-subtle ml-1">
                                                 Full Name
                                             </label>
                                             <div className="w-full bg-surface-raised border border-border-solid rounded-none px-5 py-4 text-sm font-semibold text-muted cursor-not-allowed">
@@ -164,7 +164,7 @@ export default function ContactPage() {
                                             </div>
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[11px] font-black uppercase tracking-widest text-subtle ml-1">
+                                            <label className="text-[11px] font-bold uppercase tracking-wide text-subtle ml-1">
                                                 Email Address
                                             </label>
                                             <div className="w-full bg-surface-raised border border-border-solid rounded-none px-5 py-4 text-sm font-semibold text-muted cursor-not-allowed truncate">
@@ -175,11 +175,8 @@ export default function ContactPage() {
 
                                     {/* Phone */}
                                     <div className="space-y-2">
-                                        <label className="text-[11px] font-black uppercase tracking-widest text-subtle ml-1">
+                                        <label className="text-[11px] font-bold uppercase tracking-wide text-subtle ml-1">
                                             Phone Number{' '}
-                                            <span className="normal-case tracking-normal text-subtle/60 font-medium">
-                                                (Whatsapp preferred)
-                                            </span>
                                         </label>
                                         <div className="relative flex items-center">
                                             <div className="absolute left-0 flex items-center h-full px-5 border-r border-border-solid">
@@ -208,7 +205,7 @@ export default function ContactPage() {
 
                                     {/* Message */}
                                     <div className="space-y-2">
-                                        <label className="text-[11px] font-black uppercase tracking-widest text-subtle ml-1">
+                                        <label className="text-[11px] font-bold uppercase tracking-wide text-subtle ml-1">
                                             Your Feedback
                                             <span className="text-primary ml-1">*</span>
                                         </label>
@@ -247,8 +244,8 @@ export default function ContactPage() {
                                     {/* Submit */}
                                     <button
                                         type="button"
-                                        // onClick={handleSubmit} // to be changed after creating the API
-                                        onClick={() => setIsSuccess(true)}
+                                        onClick={handleSubmit} // to be changed after creating the API
+                                        // onClick={() => setIsSuccess(true)}
                                         disabled={isSubmitting}
                                         className="w-full bg-primary hover:bg-primary-hover text-white py-5 rounded-none font-bold text-sm uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-md disabled:opacity-60 active:scale-[0.98] cursor-pointer"
                                     >

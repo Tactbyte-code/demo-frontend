@@ -14,6 +14,7 @@ import {
 
 const workflowSteps = [
     {
+        id: 1,
         title: "Collect Data",
         description: "Define your market focus. We tap into the global digital conversation to gather raw, unfiltered feedback from your potential users.",
         icon: Target,
@@ -21,6 +22,7 @@ const workflowSteps = [
         features: ["Market Mapping", "Global Data Sync"]
     },
     {
+        id: 2,
         title: "AI Analysis",
         description: "Our proprietary intelligence engine deciphers the emotional weight behind every interaction, identifying patterns you'd otherwise miss.",
         icon: Sparkles,
@@ -28,6 +30,7 @@ const workflowSteps = [
         features: ["Sentiment Scoring", "Pattern Detection"]
     },
     {
+        id: 3,
         title: "Actionable Insights",
         description: "Receive a prioritized roadmap of real user pain points. Move from raw data to strategic decisions in a single click.",
         icon: BarChart3,
@@ -87,7 +90,7 @@ export default function SolutionSection() {
                         <>
                             {/* Card */}
                             <motion.div
-                                key={index}
+                                key={step?.id}
                                 initial={{ opacity: 0, y: 30 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
