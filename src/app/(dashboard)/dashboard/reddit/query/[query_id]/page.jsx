@@ -41,12 +41,14 @@ export default function QueryResultPage() {
     const [autoSearchFired, setAutoSearchFired] = useState(false);
     const [autoSummarizeFired, setAutoSummarizeFired] = useState(false);
     const [isSummarized, setIsSummarized] = useState(false);
-    const [enabled, setEnabled] = useState(false);
     const [isRequerying, setIsRequerying] = useState(false);
 
     const user_id = localStorage.getItem('user').firebase_uid;
 
     const queryClient = useQueryClient();
+
+    const { data: summData } = useGetSummary(query_id);
+    console.log('summ data: ', summData);
 
     // ── fetch helpers ──────────────────────────────────────────────────────────
     const fetchPosts = useCallback(async () => {
@@ -343,7 +345,8 @@ export default function QueryResultPage() {
 
             {status === "COMPLETED" && isSummarized && !isRequerying && (
                 <>
-                    <SummaryResult data={summary} sources={sources} approvedCount={approvedCount} onToggleSource={handleToggleApproval} />
+                    <SummaryResult data={summary} sources={sources} approvedCount={10} onToggleSource={handleToggleApproval} />
+                    {/* <SummaryResult data={summary} sources={sources} approvedCount={approvedCount} onToggleSource={handleToggleApproval} /> */}
                 </>
             )}
         </PageShell>

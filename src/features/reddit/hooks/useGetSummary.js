@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { getSummary } from "../api/getSummary";
 
-export const useGetSummary = (queryId, enabled = false) => {
+export const useGetSummary = (queryId) => {
     return useQuery({
         queryKey: ["summary", queryId],
-        enabled,
+        // enabled,
         queryFn: () => getSummary(queryId),
     });
 };

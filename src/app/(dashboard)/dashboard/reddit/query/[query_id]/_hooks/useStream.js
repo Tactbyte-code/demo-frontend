@@ -2,7 +2,7 @@ import { FAILURE_MESSAGES } from "./constants";
 import { getToken } from "@/utils/getToken";
 
 export function useStreamLabel(sources) {
-    console.log('stream sources: ', sources);
+    // console.log('stream sources: ', sources);
 
     return (chunk) => {
         const count = sources?.length;
@@ -32,7 +32,7 @@ export async function streamRequest({
     onFetchPosts,
     onChunk,
 }) {
-    console.log('onStatus: ', onStatus);
+    // console.log('onStatus: ', onStatus);
 
     const token = await getToken();
     const response = await fetch(

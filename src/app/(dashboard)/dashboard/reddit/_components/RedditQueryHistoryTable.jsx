@@ -108,7 +108,7 @@ function ActionLink({ query }) {
     }
     return (
         <Link
-            href={`/dashboard/reddit/query/${query.id}`}
+            href={`/dashboard/reddit/summary/${query.id}`}
             className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider transition-colors duration-100 hover:underline"
             style={{ color: "var(--primary)" }}
         >
@@ -193,7 +193,7 @@ export default function RedditQueryHistoryTable() {
         refetch,
     } = useGetQueries(userId);
 
-    console.log('queries data: ', data);
+    // console.log('queries data: ', data);
 
     const totalPages = Math.ceil(data?.length / ROWS_PER_PAGE);
     const paginatedQueries = data?.slice((page - 1) * ROWS_PER_PAGE, page * ROWS_PER_PAGE);

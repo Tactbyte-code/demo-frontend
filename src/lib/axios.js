@@ -29,7 +29,7 @@ api.interceptors.response.use(
         const status = error.response?.status;
         const message = error.response?.data?.detail || error.message;
 
-        console.log('axios lib: ', { status, message });
+        console.log('axios lib: ', error);
 
         if (status === 401) console.error("Unauthorized:", message);
         if (status === 404) console.error("Not found:", message);

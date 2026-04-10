@@ -451,18 +451,19 @@ const MetaTab = ({ data }) => {
 const SourcesTab = ({ sources = [], approvedCount = 0, maxApproved = 10, onToggle }) => {
     if (!sources.length) return (
         <p className="text-sm text-muted py-8 text-center">No sources found.</p>
-    )
+    );
 
     return (
         <div className="space-y-3">
             {/* Header meta */}
             <div className="flex items-center justify-between">
                 <p className="text-[10px] uppercase tracking-widest text-subtle">
-                    {sources.length} posts
+                    Total: {sources.length} posts
                 </p>
                 {approvedCount > 0 && (
                     <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-info-bg text-primary">
                         {approvedCount}/{maxApproved} selected
+                        {/* 10/{maxApproved} selected */}
                     </span>
                 )}
             </div>
@@ -540,8 +541,8 @@ const SourcesTab = ({ sources = [], approvedCount = 0, maxApproved = 10, onToggl
 };
 
 // ── Main Component ────────────────────────────────────────
-export const SummaryResult = ({ data, sources = [], approvedCount = 0, maxApproved = 10, onToggleSource }) => {
-    console.log('summary data: ', data);
+export const SummaryResult = ({ data, sources = [], approvedCount = 0, maxApproved = 10, onToggleSource = null }) => {
+    // console.log('summary data: ', data);
 
     const [activeTab, setActiveTab] = useState('overview');
 

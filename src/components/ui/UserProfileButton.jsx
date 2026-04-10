@@ -22,7 +22,7 @@ export default function UserProfileButton() {
     const loadUser = () => {
         const stored = localStorage.getItem("user");
         if (stored) {
-            console.log('user: ', user);
+            // console.log('user: ', user);
             setUser(JSON.parse(stored));
         } else {
             setUser(null);

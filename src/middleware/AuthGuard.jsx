@@ -22,7 +22,7 @@ export default function AuthGuard({ children }) {
                     : pathname === route || pathname.startsWith(route + "/")
             );
 
-            console.log('auth guard: ', firebaseUser);
+            // console.log('auth guard: ', firebaseUser);
 
             if (!firebaseUser) {
                 if (!isPublic) router.replace("/login");
@@ -31,7 +31,7 @@ export default function AuthGuard({ children }) {
             };
 
             const storedUser = localStorage.getItem("user");
-            console.log('auth guard stored user: ', storedUser);
+            // console.log('auth guard stored user: ', storedUser);
 
             if (!storedUser) {
                 if (!isPublic) router.replace("/login");
@@ -40,7 +40,7 @@ export default function AuthGuard({ children }) {
             }
 
             const user = JSON.parse(storedUser);
-            console.log('auth guard user: ', user);
+            // console.log('auth guard user: ', user);
 
             if (!user.is_onboarded && pathname !== "/onboarding") {
                 router.replace("/onboarding");

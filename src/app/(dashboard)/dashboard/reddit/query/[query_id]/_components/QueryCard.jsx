@@ -10,7 +10,7 @@ import { createQuery } from "@/lib/api/reddit";
 import QueryProcessingLoader from "../../../_components/QueryProcessingLoader";
 import { useQueryClient } from "@tanstack/react-query";
 
-export function QueryCard({ query, isCompleted, onRequeryStart }) {
+export function QueryCard({ query, isCompleted, onRequeryStart = null }) {
 
     const [editing, setEditing] = useState(false);
     const [value, setValue] = useState(query || null);
@@ -76,12 +76,6 @@ export function QueryCard({ query, isCompleted, onRequeryStart }) {
             setLoading(false);
         }
     };
-
-    // const handleSave = () => {
-    //     if (!value.trim()) return;
-    //     router.replace(`/dashboard/reddit/processing?query=${encodeURIComponent(value.trim())}`);
-    //     setEditing(false);
-    // };
 
     const handleCancel = () => {
         setValue(query ?? "");
