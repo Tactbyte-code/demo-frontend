@@ -19,6 +19,7 @@ import { Pipeline } from "./_components/Pipeline";
 import { AnswerCard } from "./_components/AnswerCard";
 import { SourcesList } from "./_components/SourcesList";
 import { SummaryResult } from "./_components/SummaryResult";
+import { useQueryClient } from "@tanstack/react-query";
 
 const POSTS_STATUSES = ["SEARCH_COMPLETE", "SUMMARIZING", "COMPLETED"];
 
@@ -44,6 +45,10 @@ export default function QueryResultPage() {
     const [isSummarized, setIsSummarized] = useState(false);
 
     const [isRequerying, setIsRequerying] = useState(false);
+
+    const user_id = localStorage.getItem('user').firebase_uid;
+
+    const queryClient = useQueryClient();
 
     // ── fetch helpers ──────────────────────────────────────────────────────────
     const fetchPosts = useCallback(async () => {
@@ -168,7 +173,10 @@ export default function QueryResultPage() {
         setFailureReason(null);
         setFailedAtStep(null);
         try {
-            await api.post(`/reddit/query/${query_id}/search`);
+            const response = await api.post(`/reddit/query/${query_id}/search`);
+            console.log('handle trigger search: ', response); // WEB_SEARCHING
+            if (response) queryClient.invalidateQueries({ queryKey: ["queries", user_id] });
+
             setStatus("WEB_SEARCHING");
             setIsPolling(true);
         } catch (e) {
@@ -192,12 +200,16 @@ export default function QueryResultPage() {
         if (!skipApprovalCheck && approvedCount === 0) {
             setApprovalError("Please select at least 1 post before summarizing.");
             return;
-        }
+        };
+
         setActionLoading(true);
         setFailureReason(null);
         setFailedAtStep(null);
+
         try {
-            await runStream("summarize");
+            const response = await runStream("summarize");
+            console.log('run stream: ', response);
+
             setStatus((prev) => {
                 if (prev === "SUMMARIZING") setIsPolling(true);
                 return prev;
@@ -227,7 +239,9 @@ export default function QueryResultPage() {
     const handleRetrySearch = async () => {
         setActionLoading(true);
         try {
-            await api.post(`/reddit/query/${query_id}/retry-search`);
+            const response = await api.post(`/reddit/query/${query_id}/retry-search`);
+            console.log('handle retry search: ', response);
+
             setStatus("CLARIFIED");
             setFailureReason(null);
             setFailedAtStep(null);
