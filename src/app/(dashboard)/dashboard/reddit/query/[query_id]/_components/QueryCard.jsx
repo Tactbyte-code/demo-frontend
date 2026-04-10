@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { createQuery } from "@/lib/api/reddit";
 import QueryProcessingLoader from "../../../_components/QueryProcessingLoader";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function QueryCard({ query, isCompleted, onRequeryStart }) {
 
@@ -21,6 +22,9 @@ export function QueryCard({ query, isCompleted, onRequeryStart }) {
     const [status, setStatus] = useState(null);
     const [queryId, setQueryId] = useState(null);
     const [navigating, setNavigating] = useState(false);
+
+    const user_id = localStorage.getItem('user').firebase_uid;
+    const queryClient = useQueryClient();
 
     useEffect(() => {
         if (editing) {
@@ -37,12 +41,12 @@ export function QueryCard({ query, isCompleted, onRequeryStart }) {
         setError(null);
         setStatus(null);
 
-
         try {
             console.log('function entered ...');
             console.log('edited query: ', value);
 
             const response = await createQuery(value);
+            console.log('query card create response: ', response);
 
             if (response) {
                 setQueryId(response?.id);
@@ -50,6 +54,7 @@ export function QueryCard({ query, isCompleted, onRequeryStart }) {
             };
 
             if (response.status === "CLARIFYING") {
+                console.log('calrifying entered');
                 setNavigating(true);
                 router.push(`/dashboard/reddit/query/${response.id}/clarify`);
             }

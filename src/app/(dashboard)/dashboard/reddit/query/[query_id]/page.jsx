@@ -4,15 +4,12 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
-
 import { getQuery, getQueryResult, getQueryPosts } from "@/lib/api/reddit";
 import api from "@/lib/axios";
-
 import { useQueryStatus } from "./_hooks/useQueryStatus";
 import { usePostApproval } from "./_hooks/usePostApproval";
 import { useStreamLabel, streamRequest } from "./_hooks/useStream";
 import { usePolling } from "./_hooks/usePolling";
-
 import { PageShell, LoadingSkeleton } from "./_components/Layout";
 import { QueryCard } from "./_components/QueryCard";
 import { Pipeline } from "./_components/Pipeline";
@@ -20,6 +17,7 @@ import { AnswerCard } from "./_components/AnswerCard";
 import { SourcesList } from "./_components/SourcesList";
 import { SummaryResult } from "./_components/SummaryResult";
 import { useQueryClient } from "@tanstack/react-query";
+import { useGetSummary } from "@/features/reddit/hooks/useGetSummary";
 
 const POSTS_STATUSES = ["SEARCH_COMPLETE", "SUMMARIZING", "COMPLETED"];
 
@@ -43,7 +41,7 @@ export default function QueryResultPage() {
     const [autoSearchFired, setAutoSearchFired] = useState(false);
     const [autoSummarizeFired, setAutoSummarizeFired] = useState(false);
     const [isSummarized, setIsSummarized] = useState(false);
-
+    const [enabled, setEnabled] = useState(false);
     const [isRequerying, setIsRequerying] = useState(false);
 
     const user_id = localStorage.getItem('user').firebase_uid;
@@ -98,6 +96,7 @@ export default function QueryResultPage() {
 
                 if (POSTS_STATUSES?.includes(data.status)) await fetchPosts();
                 if (data?.status === "COMPLETED") await fetchResult();
+                // if (data?.status === "COMPLETED") handleFetch();
             } catch (e) {
                 console.error(e);
             } finally {
@@ -110,6 +109,7 @@ export default function QueryResultPage() {
             cancelled = true;
         };
     }, [query_id, fetchPosts, fetchResult]);
+    // }, [query_id, fetchPosts]);
 
     // ── polling ────────────────────────────────────────────────────────────────
     usePolling({
@@ -275,6 +275,7 @@ export default function QueryResultPage() {
     // console.log('parent page status: ', status);
     const isCompleted = status === "COMPLETED";
 
+    // loading
     if (loading) {
         return (
             <PageShell>
