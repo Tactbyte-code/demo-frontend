@@ -184,7 +184,7 @@ export default function RedditQueryHistoryTable() {
 
     const [page, setPage] = useState(1);
 
-    const userId = localStorage.getItem('user').firebase_uid;
+    const userId = localStorage?.getItem('user')?.firebase_uid;
 
     const {
         data,
