@@ -72,6 +72,18 @@ export default function Navbar() {
                 <div className="w-[93%] flex rounded-sm justify-between items-center border border-navbar-border backdrop-blur-xl bg-black/40 px-4 py-3 shadow-2xl transition-all duration-300 relative">
                     {/* Left: Navigation */}
                     <div className="flex gap-1 text-[13px] font-medium">
+
+                        {navItems.map((item) => (
+                            <Link
+                                key={item.name}
+                                href={item.href}
+                                className="flex items-center rounded-xs gap-1.5 px-2.5 py-1.5 text-white/90 hover:bg-white/10 hover:text-white transition-all duration-300"
+                            >
+                                <item.icon className="w-3.5 h-3.5 opacity-70" />
+                                <span>{item.name}</span>
+                            </Link>
+                        ))}
+
                         <button
                             onMouseEnter={handleMouseEnter}
                             onMouseLeave={handleMouseLeave}
@@ -84,17 +96,6 @@ export default function Navbar() {
                             <span>Features</span>
                             <ChevronDown className={`w-3 h-3 transition-transform duration-500 ${isFeaturesOpen ? 'rotate-180' : ''}`} />
                         </button>
-
-                        {navItems.map((item) => (
-                            <Link
-                                key={item.name}
-                                href={item.href}
-                                className="flex items-center rounded-xs gap-1.5 px-2.5 py-1.5 text-white/90 hover:bg-white/10 hover:text-white transition-all duration-300"
-                            >
-                                <item.icon className="w-3.5 h-3.5 opacity-70" />
-                                <span>{item.name}</span>
-                            </Link>
-                        ))}
                     </div>
 
                     {/* Center: Logo */}

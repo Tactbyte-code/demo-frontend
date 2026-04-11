@@ -10,7 +10,7 @@ import { createQuery } from "@/lib/api/reddit";
 import QueryProcessingLoader from "../../../_components/QueryProcessingLoader";
 import { useQueryClient } from "@tanstack/react-query";
 
-export function QueryCard({ query, isCompleted, onRequeryStart = null }) {
+export function QueryCard({ query, isCompleted, onRequeryStart }) {
 
     const [editing, setEditing] = useState(false);
     const [value, setValue] = useState(query || null);
@@ -91,6 +91,7 @@ export function QueryCard({ query, isCompleted, onRequeryStart = null }) {
 
     return (
         <div className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out">
+            {/* Card Header */}
             <CardHeader className="px-0 pt-5 pb-0">
                 <SectionLabel
                     icon={<Sparkles className="w-3.5 h-3.5 text-white" />}
@@ -100,7 +101,6 @@ export function QueryCard({ query, isCompleted, onRequeryStart = null }) {
 
             {/* Main row — no rounded edges */}
             <div className="flex border border-border-solid h-16" style={{ backgroundColor: "var(--surface)" }}>
-
                 {/* Query content */}
                 <div className="flex-1 px-5 py-4">
                     {editing ? (

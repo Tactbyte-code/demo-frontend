@@ -106,6 +106,17 @@ function ActionLink({ query }) {
             </span>
         );
     }
+    if (query.status === ("SEARCH_COMPLETE" || "WEB_SEARCHING")) {
+        return (
+            <Link
+                href={`/dashboard/reddit/query/${query.id}`}
+                className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider transition-colors duration-100 hover:underline"
+                style={{ color: "var(--warning)" }}
+            >
+                View <ArrowRight className="w-3 h-3" />
+            </Link>
+        );
+    }
     return (
         <Link
             href={`/dashboard/reddit/summary/${query.id}`}
