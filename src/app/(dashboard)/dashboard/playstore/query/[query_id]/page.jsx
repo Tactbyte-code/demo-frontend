@@ -191,7 +191,7 @@ export default function PlaystoreQueryDetailPage() {
         }
     };
 
-    // ── render ───────────────────────────────────────────────────────────────────
+    // ── loading ───────────────────────────────────────────────────────────────────
     if (loading) {
         return (
             <PageShell>
@@ -199,6 +199,8 @@ export default function PlaystoreQueryDetailPage() {
             </PageShell>
         );
     };
+
+    const isCompleted = qs?.isCompleted;
 
     return (
         <PageShell>
@@ -215,40 +217,44 @@ export default function PlaystoreQueryDetailPage() {
                 <ArrowLeft className="w-3.5 h-3.5" /> Back
             </motion.button>
 
-            {/* Query metadata */}
-            <QueryCard query={query} />
+            {/* Query metadata. have to be edited for requering*/}
+            {!isCompleted && (
+                <QueryCard query={query} />
+            )}
 
             {/* Pipeline progress + action buttons */}
-            <Pipeline
-                showPipeline={qs.showPipeline}
-                status={status}
-                progressPercent={qs.progressPercent}
-                isProcessing={qs.isProcessing}
-                isCheckpoint={qs.isCheckpoint}
-                isFetchComplete={qs.isFetchComplete}
-                isCompleted={qs.isCompleted}
-                isFailed={qs.isFailed}
-                isCreated={qs.isCreated}
-                isTerminal={qs.isTerminal}
-                canRetryFetch={qs.canRetryFetch}
-                canRetrySummarize={qs.canRetrySummarize}
-                actionLoading={actionLoading}
-                getStatusLabel={qs.getStatusLabel}
-                getStatusColor={qs.getStatusColor}
-                getProgressColor={qs.getProgressColor}
-                getTerminalMessage={qs.getTerminalMessage}
-                onFetch={handleFetch}
-                onSummarize={handleSummarize}
-                onRetryFetch={handleRetryFetch}
-                onRetrySummarize={handleRetrySummarize}
-            />
+            {!isCompleted && (
+                <Pipeline
+                    showPipeline={qs.showPipeline}
+                    status={status}
+                    progressPercent={qs.progressPercent}
+                    isProcessing={qs.isProcessing}
+                    isCheckpoint={qs.isCheckpoint}
+                    isFetchComplete={qs.isFetchComplete}
+                    isCompleted={qs.isCompleted}
+                    isFailed={qs.isFailed}
+                    isCreated={qs.isCreated}
+                    isTerminal={qs.isTerminal}
+                    canRetryFetch={qs.canRetryFetch}
+                    canRetrySummarize={qs.canRetrySummarize}
+                    actionLoading={actionLoading}
+                    getStatusLabel={qs.getStatusLabel}
+                    getStatusColor={qs.getStatusColor}
+                    getProgressColor={qs.getProgressColor}
+                    getTerminalMessage={qs.getTerminalMessage}
+                    onFetch={handleFetch}
+                    onSummarize={handleSummarize}
+                    onRetryFetch={handleRetryFetch}
+                    onRetrySummarize={handleRetrySummarize}
+                />
+            )}
 
             {/* Analysis results */}
             {status === "COMPLETED" && summary && (
                 <>
-                    <SummaryResult data={summary} />
+                    <SummaryResult data={summary} reviews={reviews} reviewsLoaded={reviewsLoaded} showReviews={qs.showReviews} />
                     {/* Raw reviews */}
-                    <ReviewsList reviewsLoaded={reviewsLoaded} showReviews={qs.showReviews} reviews={reviews} />
+                    {/* <ReviewsList reviewsLoaded={reviewsLoaded} showReviews={qs.showReviews} reviews={reviews} /> */}
                 </>
             )}
         </PageShell>

@@ -128,8 +128,6 @@ export function Pipeline({
                     </div>
 
                     {/* ── Stream Log ─────────────────────────────────────────── */}
-                    {/* {streamChunks.length > 0 && ( */}
-                    {/* <> */}
                     <div
                         className="h-px mx-6 opacity-40"
                         style={{ background: "var(--border-solid)" }}
@@ -143,8 +141,6 @@ export function Pipeline({
                             status={status}
                         />
                     </div>
-                    {/* </> */}
-                    {/* )} */}
                 </motion.div>
             )}
         </AnimatePresence>

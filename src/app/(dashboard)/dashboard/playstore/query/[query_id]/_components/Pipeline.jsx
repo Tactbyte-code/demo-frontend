@@ -1,12 +1,14 @@
 "use client";
+
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, XCircle, Loader2, Play, RefreshCw, AlertTriangle } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, AlertTriangle } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 const STEPS = [
-    { key: "CREATED", label: "Created" },
+    // { key: "CREATED", label: "Created" },
     { key: "FETCHING", label: "Fetch Reviews" },
     { key: "FETCH_COMPLETE", label: "Reviews Ready" },
-    { key: "SUMMARIZING", label: "Analyze" },
+    { key: "SUMMARIZING", label: "Analyze Reviews" },
     { key: "COMPLETED", label: "Done" },
 ];
 
@@ -35,6 +37,98 @@ export function Pipeline({
     onRetryFetch,
     onRetrySummarize,
 }) {
+    const hasTriggeredRef = useRef({});
+
+    const [displayProgress, setDisplayProgress] = useState(0);
+    const progressRef = useRef(0);
+
+    useEffect(() => {
+        if (!showPipeline) return;
+
+        let interval;
+
+        const tick = () => {
+            let current = progressRef.current ?? 0;
+            let next = current;
+
+            // ─── STAGE-WISE LOGIC ─────────────────────────────
+
+            if (status === "CREATED" || status === "FETCHING") {
+                // 0 → 30 (steady)
+                if (current < 30) {
+                    next = current + 0.6;
+                }
+            }
+
+            else if (status === "FETCH_COMPLETE") {
+                // 30 → 55 (fast jump)
+                if (current < 55) {
+                    next = current + 2;
+                }
+            }
+
+            else if (status === "SUMMARIZING") {
+                // 55 → 99 (slow crawl)
+                if (current < 99) {
+                    next = current + 0.15;
+                }
+            }
+
+            // Prevent overflow
+            next = Math.min(next, 99);
+
+            progressRef.current = next;
+            setDisplayProgress(Math.floor(next));
+        };
+
+        interval = setInterval(tick, 50);
+
+        return () => clearInterval(interval);
+    }, [status, showPipeline]);
+    // ─── AUTO PIPELINE LOGIC ─────────────────────────────────────────────
+    useEffect(() => {
+        if (!showPipeline) return;
+
+        if (isCreated && !hasTriggeredRef.current.fetch) {
+            hasTriggeredRef.current.fetch = true;
+            onFetch?.();
+            return;
+        }
+
+        if (isFetchComplete && !hasTriggeredRef.current.summarize) {
+            hasTriggeredRef.current.summarize = true;
+            onSummarize?.();
+            return;
+        }
+
+        if (canRetryFetch && !hasTriggeredRef.current.retryFetch) {
+            hasTriggeredRef.current.retryFetch = true;
+            onRetryFetch?.();
+            return;
+        }
+
+        if (canRetrySummarize && !hasTriggeredRef.current.retrySummarize) {
+            hasTriggeredRef.current.retrySummarize = true;
+            onRetrySummarize?.();
+            return;
+        }
+
+    }, [
+        showPipeline,
+        status,
+        isCreated,
+        isFetchComplete,
+        canRetryFetch,
+        canRetrySummarize,
+    ]);
+
+    useEffect(() => {
+        if (status === "COMPLETED") {
+            progressRef.current = 100;
+            setDisplayProgress(100);
+        }
+    }, [status]);
+
     if (!showPipeline) return null;
 
     const currentIdx = STEP_INDEX[status] ?? (isFailed ? -1 : 0);
@@ -68,44 +162,12 @@ export function Pipeline({
                     </span>
                 </div>
 
-                {/* Action buttons */}
-                <div className="flex gap-2">
-                    {isCreated && (
-                        <ActionButton
-                            icon={Play}
-                            label="Start Fetch"
-                            loading={actionLoading}
-                            onClick={onFetch}
-                            variant="primary"
-                        />
-                    )}
-                    {isFetchComplete && (
-                        <ActionButton
-                            icon={Play}
-                            label="Run Analysis"
-                            loading={actionLoading}
-                            onClick={onSummarize}
-                            variant="primary"
-                        />
-                    )}
-                    {canRetryFetch && (
-                        <ActionButton
-                            icon={RefreshCw}
-                            label="Retry Fetch"
-                            loading={actionLoading}
-                            onClick={onRetryFetch}
-                            variant="warning"
-                        />
-                    )}
-                    {canRetrySummarize && (
-                        <ActionButton
-                            icon={RefreshCw}
-                            label="Retry Analysis"
-                            loading={actionLoading}
-                            onClick={onRetrySummarize}
-                            variant="warning"
-                        />
-                    )}
+                {/* ✅ Percentage */}
+                <div
+                    className="text-xs font-semibold tabular-nums"
+                    style={{ color: "var(--text-subtle)" }}
+                >
+                    {Number.isFinite(displayProgress) ? (displayProgress-2) : 0}%
                 </div>
             </div>
 
@@ -115,12 +177,12 @@ export function Pipeline({
                     className="absolute left-0 top-0 h-full"
                     style={{ backgroundColor: getProgressColor(status) }}
                     initial={{ width: 0 }}
-                    animate={{ width: `${progressPercent}%` }}
+                    animate={{ width: `${displayProgress}%` }}
                     transition={{ duration: 0.6, ease: "easeOut" }}
                 />
             </div>
 
-            {/* Step chips */}
+            {/* Steps */}
             <div className="flex gap-2 flex-wrap">
                 {STEPS.map((step, idx) => {
                     const isDone = !isFailed && idx < currentIdx;
@@ -142,10 +204,14 @@ export function Pipeline({
                                             : isCurrent
                                                 ? "color-mix(in srgb, var(--accent) 12%, var(--surface))"
                                                 : "color-mix(in srgb, var(--border-solid) 50%, var(--surface))",
-                                border: `1px solid ${isDone ? "color-mix(in srgb, var(--success) 25%, transparent)"
-                                    : isCurrent && isProcessing ? "color-mix(in srgb, var(--primary) 25%, transparent)"
-                                        : isFailedStep ? "color-mix(in srgb, var(--destructive) 25%, transparent)"
-                                            : isCurrent ? "color-mix(in srgb, var(--accent) 25%, transparent)"
+                                border: `1px solid ${isDone
+                                    ? "color-mix(in srgb, var(--success) 25%, transparent)"
+                                    : isCurrent && isProcessing
+                                        ? "color-mix(in srgb, var(--primary) 25%, transparent)"
+                                        : isFailedStep
+                                            ? "color-mix(in srgb, var(--destructive) 25%, transparent)"
+                                            : isCurrent
+                                                ? "color-mix(in srgb, var(--accent) 25%, transparent)"
                                                 : "var(--border-solid)"
                                     }`,
                                 color: isDone
@@ -189,36 +255,5 @@ export function Pipeline({
                 )}
             </AnimatePresence>
         </motion.div>
-    );
-}
-
-// ─── ActionButton ──────────────────────────────────────────────────────────────
-function ActionButton({ icon: Icon, label, loading, onClick, variant = "primary" }) {
-    const colors = {
-        primary: {
-            bg: "color-mix(in srgb, var(--primary) 12%, var(--surface))",
-            border: "color-mix(in srgb, var(--primary) 30%, transparent)",
-            color: "var(--primary)",
-        },
-        warning: {
-            bg: "color-mix(in srgb, var(--warning, #f59e0b) 12%, var(--surface))",
-            border: "color-mix(in srgb, var(--warning, #f59e0b) 30%, transparent)",
-            color: "var(--warning, #f59e0b)",
-        },
-    }[variant];
-
-    return (
-        <button
-            onClick={onClick}
-            disabled={loading}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ backgroundColor: colors.bg, border: `1px solid ${colors.border}`, color: colors.color }}
-        >
-            {loading
-                ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                : <Icon className="w-3.5 h-3.5" />
-            }
-            {label}
-        </button>
     );
 }

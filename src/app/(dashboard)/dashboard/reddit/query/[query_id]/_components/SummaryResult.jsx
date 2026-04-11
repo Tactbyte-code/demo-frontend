@@ -66,6 +66,43 @@ const TABS = [
     { id: 'meta', label: 'Meta' },
 ];
 
+// ── Tab: Overview ─────────────────────────────────────────
+const OverviewTab = ({ data }) => (
+    <div className="space-y-5">
+        {/* Stats row */}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {[
+                { label: 'Total Signals', value: data.total_signals },
+                { label: 'Themes', value: data.themes?.length ?? 0 },
+                { label: 'Posts', value: data.meta?.total_posts },
+                { label: 'Comments', value: data.meta?.total_comments },
+            ].map(({ label, value }) => (
+                <div key={label} className="border border-border-solid bg-surface p-4">
+                    <p className="text-2xl font-semibold text-foreground">{value ?? '—'}</p>
+                    <p className="mt-0.5 text-xs text-muted">{label}</p>
+                </div>
+            ))}
+        </div>
+
+        {/* Direct answer */}
+        {data.direct_answer && (
+            <div className="border border-border-solid bg-surface p-5">
+                <p className="text-[12px] uppercase tracking-widest text-muted mb-2">Direct Answer</p>
+                <p className="text-sm leading-relaxed text-foreground">{data.direct_answer}</p>
+            </div>
+        )}
+
+        {/* Executive summary */}
+        {data.executive_summary && (
+            <div className="border border-border-solid bg-surface p-5">
+                <p className="text-[12px] uppercase tracking-widest text-muted mb-2">Executive Summary</p>
+                <p className="text-sm leading-relaxed text-foreground">{data.executive_summary}</p>
+            </div>
+        )}
+    </div>
+);
+
+// pain point 
 const PainPointRow = ({ pp }) => {
     const [open, setOpen] = useState(false);
     const ic = impactBg[pp.impact] ?? "bg-warning-bg text-warning";
@@ -211,42 +248,6 @@ const PainPointRow = ({ pp }) => {
     );
 };
 
-// ── Tab: Overview ─────────────────────────────────────────
-const OverviewTab = ({ data }) => (
-    <div className="space-y-5">
-        {/* Stats row */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {[
-                { label: 'Total Signals', value: data.total_signals },
-                { label: 'Themes', value: data.themes?.length ?? 0 },
-                { label: 'Posts', value: data.meta?.total_posts },
-                { label: 'Comments', value: data.meta?.total_comments },
-            ].map(({ label, value }) => (
-                <div key={label} className="border border-border-solid bg-surface p-4">
-                    <p className="text-2xl font-semibold text-foreground">{value ?? '—'}</p>
-                    <p className="mt-0.5 text-xs text-muted">{label}</p>
-                </div>
-            ))}
-        </div>
-
-        {/* Direct answer */}
-        {data.direct_answer && (
-            <div className="border border-border-solid bg-surface p-5">
-                <p className="text-[12px] uppercase tracking-widest text-muted mb-2">Direct Answer</p>
-                <p className="text-sm leading-relaxed text-foreground">{data.direct_answer}</p>
-            </div>
-        )}
-
-        {/* Executive summary */}
-        {data.executive_summary && (
-            <div className="border border-border-solid bg-surface p-5">
-                <p className="text-[12px] uppercase tracking-widest text-muted mb-2">Executive Summary</p>
-                <p className="text-sm leading-relaxed text-foreground">{data.executive_summary}</p>
-            </div>
-        )}
-    </div>
-);
-
 // ── Tab: Themes ───────────────────────────────────────────
 const ThemesTab = ({ data }) => {
     const [activeTheme, setActiveTheme] = useState(data.themes?.[0]?.id ?? null)
@@ -329,65 +330,6 @@ const ThemesTab = ({ data }) => {
         </div>
     )
 };
-
-// // ── Tab: Actions ──────────────────────────────────────────
-// const ActionsTab = ({ data }) => {
-//     const steps = [...(data.actionable_next_steps ?? [])].sort((a, b) => a.priority - b.priority)
-
-//     if (!steps.length) return (
-//         <p className="text-sm text-muted py-8 text-center">No actions found.</p>
-//     )
-
-//     return (
-//         <div className="space-y-3">
-//             {steps.map((item, i) => (
-//                 <div key={i} className="rounded-xl border border-border-solid bg-surface p-4">
-//                     <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
-//                         <div className="flex items-center gap-2">
-//                             <span className="font-mono text-[10px] font-black px-2 py-0.5 rounded-full bg-info-bg text-primary">
-//                                 #{item.priority}
-//                             </span>
-//                             <p className="text-sm font-semibold text-foreground">{item.step}</p>
-//                         </div>
-//                         <div className="flex items-center gap-1.5">
-//                             {item.quick_win && (
-//                                 <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-success-bg text-success">
-//                                     Quick Win
-//                                 </span>
-//                             )}
-//                             <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full bg-surface-raised text-muted">
-//                                 {item.effort}
-//                             </span>
-//                         </div>
-//                     </div>
-
-//                     <p className="text-xs text-muted leading-relaxed mb-3">{item.rationale}</p>
-
-//                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-border-solid pt-3">
-//                         <div>
-//                             <p className="text-[10px] uppercase tracking-widest text-subtle mb-1">How</p>
-//                             <p className="text-xs text-foreground leading-relaxed">{item.how}</p>
-//                         </div>
-//                         <div>
-//                             <p className="text-[10px] uppercase tracking-widest text-subtle mb-1">Impact</p>
-//                             <p className="text-xs text-foreground leading-relaxed">{item.impact}</p>
-//                         </div>
-//                     </div>
-
-//                     {item.addresses_themes?.length > 0 && (
-//                         <div className="mt-3 flex flex-wrap gap-1.5">
-//                             {item.addresses_themes.map(t => (
-//                                 <span key={t} className="text-[10px] font-medium px-2 py-0.5 rounded-full border border-border-solid text-muted">
-//                                     {t}
-//                                 </span>
-//                             ))}
-//                         </div>
-//                     )}
-//                 </div>
-//             ))}
-//         </div>
-//     )
-// };
 
 // ── Tab: Signals ──────────────────────────────────────────
 const SignalsTab = ({ data }) => {
