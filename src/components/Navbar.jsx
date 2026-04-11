@@ -112,7 +112,7 @@ export default function Navbar() {
                         href="/"
                         className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 flex items-center justify-center transition-all"
                     >
-                        <div className="relative h-7 w-28 md:h-9 md:w-36 lg:h-10 lg:w-44">
+                        <div className="relative h-45 w-45 md:h-9 md:w-36 lg:h-10 lg:w-44">
                             <Image
                                 src="/images/logo_with_text_2.png"
                                 alt="Logo"

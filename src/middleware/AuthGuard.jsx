@@ -10,6 +10,7 @@ import { auth } from "@/lib/firebase";
 const PUBLIC_ROUTES = ["/", "/login", "/signup", "/onboarding", "/pricing", "/how-it-works", "/use-cases", "/resources", "/features"];
 
 export default function AuthGuard({ children }) {
+
     const router = useRouter();
     const pathname = usePathname();
     const [checking, setChecking] = useState(true);
@@ -22,7 +23,7 @@ export default function AuthGuard({ children }) {
                     : pathname === route || pathname.startsWith(route + "/")
             );
 
-            // console.log('auth guard: ', firebaseUser);
+            console.log('auth guard: ', firebaseUser);
 
             if (!firebaseUser) {
                 if (!isPublic) router.replace("/login");

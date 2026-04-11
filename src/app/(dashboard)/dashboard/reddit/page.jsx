@@ -47,8 +47,7 @@ export default function RedditIntelligencePage() {
     const canSubmit = query.trim() && !loading && !isOnCooldown;
     const router = useRouter();
 
-    const user_id = localStorage.getItem('user').firebase_uid;
-
+    const user_id = localStorage?.getItem('user')?.firebase_uid;
     const queryClient = useQueryClient();
 
     const handleSubmitQuery = async (e) => {
