@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import {
     Zap, ArrowRight, ShieldCheck,
     Eye, EyeOff, AlertCircle, Loader2, Home,
-    Mail, CheckCircle2, KeyRound, Lock
+    Mail, CheckCircle2, KeyRound, Lock,
+    ArrowLeft
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
@@ -226,7 +227,7 @@ export default function LoginPage() {
                 style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border-solid)', color: 'var(--text-muted)', boxShadow: 'var(--shadow-sm)' }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.color = 'var(--primary)'; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-solid)'; e.currentTarget.style.color = 'var(--text-muted)'; }}>
-                <Home size={16} /><span>Go to Home</span>
+                <ArrowLeft size={16} />
             </Link>
 
             {/* Ambient orbs */}
