@@ -106,7 +106,7 @@ function ActionLink({ query }) {
             </span>
         );
     }
-    if (query.status === ("SEARCH_COMPLETE" || "WEB_SEARCHING")) {
+    if (query.status === ("SEARCH_COMPLETE" || "WEB_SEARCHING" || "CLARIFIED")) {
         return (
             <Link
                 href={`/dashboard/reddit/query/${query.id}`}
