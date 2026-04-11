@@ -58,7 +58,6 @@ export default function Navbar() {
 
     return (
         <>
-            {/* Desktop Background Blur Overlay */}
             <AnimatePresence>
                 {isFeaturesOpen && (
                     <motion.div
@@ -70,15 +69,14 @@ export default function Navbar() {
                 )}
             </AnimatePresence>
 
-            {/* Navbar Wrapper: py-3 and px-4 create the "Floating" space from screen edges */}
             <nav className="fixed top-0 left-0 w-full flex justify-center z-50 py-3 px-4 md:py-4">
-                <div className="w-full md:w-[93%] flex rounded-lg justify-between items-center border border-navbar-border backdrop-blur-xl bg-black/40 px-4 py-2.5 shadow-2xl relative transition-all duration-300">
-                    
-                    {/* Left: Hamburger (Mobile Only) / Nav Links (Desktop) */}
+                <div className="w-full lg:w-[93%] flex rounded-lg justify-between items-center border border-gray-200 lg:border-navbar-border backdrop-blur-xl bg-white lg:bg-black/40 px-4 py-2.5 shadow-2xl relative transition-all duration-300">
+
+                    {/* Left: Hamburger (Mobile) / Nav Links (Desktop) */}
                     <div className="flex items-center">
-                        <button 
+                        <button
                             onClick={() => setIsMobileMenuOpen(true)}
-                            className="lg:hidden text-white p-2 hover:bg-white/10 rounded-md transition-colors"
+                            className="lg:hidden text-slate-900 p-2 hover:bg-slate-100 rounded-md transition-colors"
                         >
                             <Menu size={20} />
                         </button>
@@ -109,30 +107,32 @@ export default function Navbar() {
                         </div>
                     </div>
 
-                    {/* Center: Logo (Centered Badge on Mobile, Transparent on Desktop) */}
-                    <Link 
-                        href="/" 
-                        className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 flex items-center justify-center bg-white px-3 py-1 rounded-md lg:bg-transparent lg:px-0 lg:rounded-none transition-all shadow-md lg:shadow-none"
+                    {/* Center: Logo (Background Removed) */}
+                    <Link
+                        href="/"
+                        className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 flex items-center justify-center transition-all"
                     >
                         <div className="relative h-7 w-28 md:h-9 md:w-36 lg:h-10 lg:w-44">
-                            <Image 
-                                src="/images/logo_with_text_2.png" 
-                                alt="Logo" 
-                                fill 
-                                className="object-contain" 
-                                priority 
+                            <Image
+                                src="/images/logo_with_text_2.png"
+                                alt="Logo"
+                                fill
+                                className="object-contain"
+                                priority
                             />
                         </div>
                     </Link>
 
-                    {/* Right: Theme Toggle + Auth */}
+                    {/* Right: Auth */}
                     <div className="flex items-center gap-2">
                         {isLoggedIn ? (
-                            <UserProfileButton />
+                            <div className="text-slate-900 lg:text-white">
+                                <UserProfileButton />
+                            </div>
                         ) : (
                             <Link
                                 href="/login"
-                                className="bg-white/15 hover:bg-white/60 text-white hover:text-black px-4 py-2 text-[12px] md:text-[13px] font-bold flex items-center gap-2 border border-white/10 transition-all rounded-sm active:scale-95"
+                                className="bg-slate-900 lg:bg-white/15 hover:bg-slate-800 lg:hover:bg-white/60 text-white lg:hover:text-black px-4 py-2 text-[12px] md:text-[13px] font-bold flex items-center gap-2 border border-transparent lg:border-white/10 transition-all rounded-sm active:scale-95"
                             >
                                 <LogIn className="w-3.5 h-3.5" />
                                 <span className="hidden sm:inline">Login</span>
@@ -171,63 +171,83 @@ export default function Navbar() {
                 <AnimatePresence>
                     {isMobileMenuOpen && (
                         <>
-                            {/* Backdrop: Tapping outside closes menu */}
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
                                 onClick={() => setIsMobileMenuOpen(false)}
-                                className="fixed inset-0 bg-black/60 backdrop-blur-sm z- lg:hidden"
+                                className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z- lg:hidden"
                             />
 
-                            {/* Sidebar Drawer */}
                             <motion.div
                                 initial={{ x: '-100%' }}
                                 animate={{ x: 0 }}
                                 exit={{ x: '-100%' }}
                                 transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                                className="fixed inset-y-0 left-0 w-[85%] max-w-xs bg-black border-r border-white/10 z- p-6 flex flex-col lg:hidden shadow-2xl"
+                                className="fixed inset-y-0 left-0 w-[85%] max-w-xs bg-white border-r border-slate-100 z- p-6 flex flex-col lg:hidden shadow-2xl"
                             >
                                 <div className="flex justify-between items-center mb-8">
-                                    <p className="text-xs font-bold text-white/40 uppercase tracking-widest">Navigation</p>
-                                    <button onClick={() => setIsMobileMenuOpen(false)} className="text-white/70 hover:text-white p-1">
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Navigation</p>
+                                    <button
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className="text-slate-400 hover:text-slate-900 p-1 transition-colors"
+                                    >
                                         <X size={24} />
                                     </button>
                                 </div>
 
                                 <div className="flex flex-col gap-5">
                                     {navItems.map((item) => (
-                                        <Link 
-                                            key={item.name} 
-                                            href={item.href} 
+                                        <Link
+                                            key={item.name}
+                                            href={item.href}
                                             onClick={() => setIsMobileMenuOpen(false)}
-                                            className="flex items-center gap-4 text-lg font-medium text-white/80 active:text-white"
+                                            className="flex items-center gap-4 text-lg font-semibold text-slate-600 active:text-slate-900 transition-colors"
                                         >
-                                            <item.icon className="w-5 h-5 text-primary" />
+                                            <item.icon className="w-5 h-5 text-slate-400" />
                                             {item.name}
                                         </Link>
                                     ))}
-                                    
-                                    <div className="h-px bg-white/10 my-2" />
-                                    
-                                    <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Features</p>
-                                    <Link 
-                                        href="/dashboard/reddit" 
+
+                                    <div className="h-px bg-slate-100 my-2" />
+
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Features</p>
+
+                                    <Link
+                                        href="/dashboard/reddit"
                                         onClick={() => setIsMobileMenuOpen(false)}
-                                        className="flex items-center gap-3 p-3 bg-white/5 rounded-lg border border-white/5 text-white/90"
+                                        className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100 text-slate-700 active:bg-slate-100 transition-all"
                                     >
-                                        <Activity className="w-4 h-4 text-primary" />
-                                        <span className="text-sm">Reddit Analysis</span>
+                                        <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary">
+                                            <Activity className="w-4 h-4" />
+                                        </div>
+                                        <span className="text-sm font-bold">Reddit Analysis</span>
                                     </Link>
-                                    <Link 
-                                        href="/dashboard/playstore" 
+
+                                    <Link
+                                        href="/dashboard/playstore"
                                         onClick={() => setIsMobileMenuOpen(false)}
-                                        className="flex items-center gap-3 p-3 bg-white/5 rounded-lg border border-white/5 text-white/90"
+                                        className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100 text-slate-700 active:bg-slate-100 transition-all"
                                     >
-                                        <LayoutGrid className="w-4 h-4 text-primary" />
-                                        <span className="text-sm">Playstore Analysis</span>
+                                        <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary">
+                                            <LayoutGrid className="w-4 h-4" />
+                                        </div>
+                                        <span className="text-sm font-bold">Playstore Analysis</span>
                                     </Link>
                                 </div>
+
+                                {!isLoggedIn && (
+                                    <div className="mt-auto pt-6">
+                                        <Link
+                                            href="/login"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            className="w-full bg-slate-900 text-white py-4 rounded-lg font-bold flex items-center justify-center gap-2 shadow-lg shadow-slate-200"
+                                        >
+                                            <LogIn size={18} />
+                                            Login to Dashboard
+                                        </Link>
+                                    </div>
+                                )}
                             </motion.div>
                         </>
                     )}
@@ -237,7 +257,7 @@ export default function Navbar() {
     );
 }
 
-// Sub-components for cleaner Desktop Mega Menu
+// Sub-components
 function FeatureItem({ icon: Icon, title, desc }) {
     return (
         <div className="p-3 hover:bg-primary/10 transition-all cursor-pointer group rounded-sm">
