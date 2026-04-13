@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import JobRow from "@/components/ui/JobRow";
 import { getToken } from "@/utils/getToken";
 import RedditQueryHistoryTable from "./reddit/_components/RedditQueryHistoryTable";
+import PlaystoreQueryHistoryTable from "./playstore/_components/PlaystoreQueryHistoryTable"
 
 const formatDate = (iso) => new Date(iso).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
 
@@ -278,7 +279,7 @@ export default function DashboardPage() {
     return (
         <div className="min-h-screen bg-background text-foreground">
             {/* HEADER */}
-            <header className="sticky top-0 z-20 px-8 h-[52px] flex items-center justify-between bg-surface border-b border-border-solid">
+            <header className="sticky top-0 z-20 px-8 h-13 flex items-center justify-between bg-surface border-b border-border-solid">
                 <div className="flex items-center gap-3">
                     <h1 className="text-sm font-bold text-foreground">Overview</h1>
                     <span className="text-border-solid">·</span>
@@ -286,15 +287,6 @@ export default function DashboardPage() {
                         {total} {total === 1 ? "job" : "jobs"} total
                     </span>
                 </div>
-                {/* <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-                        <span className="text-[9px] font-mono text-subtle">LIVE POLLING</span>
-                    </div>
-                    <button onClick={() => fetchJobs()} className="p-1.5 rounded-full border border-border-solid bg-surface-card hover:border-primary/40 transition-all">
-                        <RefreshCcw className={`w-3 h-3 text-muted ${loading ? "animate-spin" : ""}`} />
-                    </button>
-                </div> */}
             </header>
 
             <div className="px-8 py-8 flex flex-col gap-8">
@@ -338,7 +330,8 @@ export default function DashboardPage() {
                                 <RedditQueryHistoryTable />
                             ) : (
                                 <motion.div key="playstore" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.2 }}>
-                                    <PlaystoreComingSoon />
+                                    {/* <PlaystoreComingSoon /> */}
+                                    <PlaystoreQueryHistoryTable />
                                 </motion.div>
                             )}
                         </AnimatePresence>

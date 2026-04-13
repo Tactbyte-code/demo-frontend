@@ -250,30 +250,41 @@ const PainPointRow = ({ pp }) => {
 
 // ── Tab: Themes ───────────────────────────────────────────
 const ThemesTab = ({ data }) => {
-    const [activeTheme, setActiveTheme] = useState(data.themes?.[0]?.id ?? null)
+    const [activeTheme, setActiveTheme] = useState(data.themes?.id ?? null)
     const theme = data.themes?.find(t => t.id === activeTheme)
 
     return (
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
-            {/* Theme list */}
-            <div className="flex shrink-0 flex-col gap-1 lg:w-60">
+        /* lg:flex-row handles the sidebar on desktop, flex-col stacks on mobile */
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+
+            {/* Theme list: Horizontal scroll on mobile, Vertical sidebar on desktop */}
+            <div className="
+                flex shrink-0 gap-2 
+                overflow-x-auto pb-2 scrollbar-hide /* Mobile horizontal scroll */
+                lg:flex-col lg:w-60 lg:overflow-visible lg:pb-0 /* Desktop sidebar */
+            ">
                 {data.themes?.map(t => (
                     <button
                         key={t.id}
                         onClick={() => setActiveTheme(t.id)}
-                        className={`flex w-full cursor-pointer flex-col items-start border px-3 py-2.5 text-left transition-all ${activeTheme === t.id
-                            ? 'border-primary bg-info-bg'
-                            : 'border-border-solid bg-surface hover:bg-surface-card'
-                            }`}
+                        className={`
+                            flex flex-col items-start border px-3 py-2.5 text-left transition-all shrink-0
+                            /* Fixed width on mobile to ensure visibility, full width on desktop */
+                            w-[180px] lg:w-full cursor-pointer
+                            ${activeTheme === t.id
+                                ? 'border-primary bg-info-bg shadow-sm'
+                                : 'border-border-solid bg-surface hover:bg-surface-card'
+                            }
+                        `}
                     >
-                        <span className={`text-xs font-medium leading-snug ${activeTheme === t.id ? 'text-primary' : 'text-foreground'}`}>
+                        <span className={`text-xs font-medium leading-snug truncate w-full ${activeTheme === t.id ? 'text-primary' : 'text-foreground'}`}>
                             {t.title}
                         </span>
                         <div className="mt-1 flex flex-wrap gap-x-2">
                             <span className="font-mono text-[10px] text-muted">{t.signal_count} signals</span>
                             <span className="font-mono text-[10px] text-muted">{t.relevance_score}%</span>
                         </div>
-                        <div className="mt-1.5">
+                        <div className="mt-2">
                             <SentimentBadge sentiment={t.sentiment} small />
                         </div>
                     </button>
@@ -282,47 +293,56 @@ const ThemesTab = ({ data }) => {
 
             {/* Theme detail */}
             {theme && (
-                <div className="min-w-0 flex-1 space-y-4">
-                    <div className="border border-border-solid bg-surface p-5">
-                        <div className="flex items-start justify-between gap-3 mb-3">
+                <div className="min-w-0 flex-1 space-y-4 animate-in fade-in slide-in-from-right-2 duration-300">
+                    <div className="border border-border-solid bg-surface p-4 md:p-6">
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4">
                             <div>
-                                <h2 className="text-sm font-semibold text-foreground">{theme.title}</h2>
-                                <p className="font-mono text-[10px] text-subtle mt-0.5">
+                                <h2 className="text-sm md:text-base font-semibold text-foreground">{theme.title}</h2>
+                                <p className="font-mono text-[10px] text-subtle mt-1">
                                     {theme.signal_count} signals · {theme.relevance_score}% relevance
                                 </p>
                             </div>
-                            <SentimentBadge sentiment={theme.sentiment} small />
+                            {/* Force Badge to stay top-right on desktop, or inline on mobile */}
+                            <div className="shrink-0 self-start">
+                                <SentimentBadge sentiment={theme.sentiment} small />
+                            </div>
                         </div>
+
                         <p className="text-sm leading-relaxed text-muted">{theme.summary}</p>
 
-                        {theme.brands_mentioned?.length > 0 && (
-                            <div className="mt-4 rounded-none">
-                                <p className="text-[10px] uppercase tracking-widest text-subtle mb-2">Brands</p>
-                                <div className="flex flex-wrap gap-1.5">
-                                    {theme.brands_mentioned.map(b => <Pill key={b} label={b} />)}
+                        {/* Metadata Grid (Brands & Demographics) */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+                            {theme.brands_mentioned?.length > 0 && (
+                                <div className="rounded-none">
+                                    <p className="text-[10px] uppercase tracking-widest text-subtle mb-2.5">Brands</p>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {theme.brands_mentioned.map(b => <Pill key={b} label={b} />)}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
 
-                        {theme.demographic_signals?.length > 0 && (
-                            <div className="mt-3">
-                                <p className="text-[10px] uppercase tracking-widest text-subtle mb-2">Demographics</p>
-                                <div className="flex flex-wrap gap-1.5">
-                                    {theme.demographic_signals.map(d => <Pill key={d} label={d} muted />)}
+                            {theme.demographic_signals?.length > 0 && (
+                                <div className="">
+                                    <p className="text-[10px] uppercase tracking-widest text-subtle mb-2.5">Demographics</p>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {theme.demographic_signals.map(d => <Pill key={d} label={d} muted />)}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
 
                     {/* Pain points for this theme */}
                     {theme.pain_points?.length > 0 && (
                         <div className="border border-border-solid bg-surface overflow-hidden">
-                            <div className="px-4 py-3 border-b border-border-solid">
+                            <div className="px-4 py-3 border-b border-border-solid bg-surface-raised/50">
                                 <p className="text-[10px] uppercase tracking-widest text-subtle">
                                     Pain Points ({theme.pain_points.length})
                                 </p>
                             </div>
-                            {theme.pain_points.map((pp, i) => <PainPointRow key={i} pp={pp} />)}
+                            <div className="divide-y divide-border-solid">
+                                {theme.pain_points.map((pp, i) => <PainPointRow key={i} pp={pp} />)}
+                            </div>
                         </div>
                     )}
                 </div>
@@ -510,38 +530,56 @@ export const SummaryResult = ({ data, sources = [], approvedCount = 0, maxApprov
             </div>
 
             {/* ── Tab bar ── */}
-            <div className="flex items-center gap-0.5 border-b border-border-solid">
-                {TABS.map(tab => {
-                    const count = tab.id === 'themes' ? (data.themes?.length ?? 0)
-                        : tab.id === 'actions' ? (data.actionable_next_steps?.length ?? 0)
-                            : tab.id === 'sources' ? (sources?.length ?? 0)  // ← ADD THIS
-                                : null
+            <div className="relative w-full border-b border-border-solid">
+                {/* 1. overflow-x-auto: Allows horizontal scrolling on small screens.
+        2. scrollbar-hide: Keeps it clean (requires a CSS utility or plugin).
+        3. flex-nowrap: Prevents tabs from wrapping to a second line.
+    */}
+                <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-hide flex-nowrap">
+                    {TABS.map(tab => {
+                        const count = tab.id === 'themes' ? (data.themes?.length ?? 0)
+                            : tab.id === 'actions' ? (data.actionable_next_steps?.length ?? 0)
+                                : tab.id === 'sources' ? (sources?.length ?? 0)
+                                    : null
 
-                    return (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`relative flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${activeTab === tab.id
-                                ? 'text-primary'
-                                : 'text-muted hover:text-foreground'
-                                }`}
-                        >
-                            {tab.label}
-                            {count != null && count > 0 && (
-                                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full font-mono ${activeTab === tab.id ? 'bg-info-bg text-primary' : 'bg-surface-raised text-subtle'
-                                    }`}>
-                                    {count}
-                                </span>
-                            )}
-                            {/* Active indicator */}
-                            {activeTab === tab.id && (
-                                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />
-                            )}
-                        </button>
-                    )
-                })}
+                        return (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`
+                        relative flex items-center gap-1.5 
+                        /* Increased padding for better touch targets on mobile */
+                        px-4 py-3 md:py-2.5 
+                        text-xs font-medium transition-colors cursor-pointer whitespace-nowrap 
+                        ${activeTab === tab.id
+                                        ? 'text-primary'
+                                        : 'text-muted hover:text-foreground'
+                                    }
+                    `}
+                            >
+                                {tab.label}
+
+                                {count != null && count > 0 && (
+                                    <span className={`
+                            text-[9px] font-bold px-1.5 py-0.5 rounded-full font-mono 
+                            ${activeTab === tab.id
+                                            ? 'bg-info-bg text-primary'
+                                            : 'bg-surface-raised text-subtle'
+                                        }
+                        `}>
+                                        {count}
+                                    </span>
+                                )}
+
+                                {/* Active indicator */}
+                                {activeTab === tab.id && (
+                                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />
+                                )}
+                            </button>
+                        )
+                    })}
+                </div>
             </div>
-
             {/* ── Tab content ── */}
             <div>
                 {activeTab === 'overview' && <OverviewTab data={data} />}

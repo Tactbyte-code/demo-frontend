@@ -176,7 +176,7 @@ export default function QueryResultPage() {
         setFailedAtStep(null);
         try {
             const response = await api.post(`/reddit/query/${query_id}/search`);
-            console.log('handle trigger search: ', response); // WEB_SEARCHING
+            console.log('handle trigger search: ', response);
             if (response) queryClient.invalidateQueries({ queryKey: ["queries", user_id] });
 
             setStatus("WEB_SEARCHING");

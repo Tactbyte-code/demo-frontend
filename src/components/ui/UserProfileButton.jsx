@@ -82,7 +82,7 @@ export default function UserProfileButton() {
                 
                 {/* Text Color Adjusted: Slate-900 for mobile white nav, text-main for desktop */}
                 <span className="hidden sm:inline-block text-slate-900 md:text-main text-[13px] font-semibold md:font-medium pr-1">
-                    {user.full_name?.split(" ") || "Account"}
+                    {user?.full_name?.split(" ")?.[0] || "Account"}
                 </span>
                 
                 <ChevronDown
@@ -133,7 +133,7 @@ export default function UserProfileButton() {
 
                         {/* Theme toggle row */}
                         <div className="flex items-center justify-between px-3 py-2 md:py-1">
-                            <span className="text-[13px] md:text-xs font-bold text-main">
+                            <span className="text-[13px] md:text-sm font-semibold text-muted">
                                 Appearance
                             </span>
                             <ThemeToggle />

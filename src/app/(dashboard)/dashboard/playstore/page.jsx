@@ -7,27 +7,24 @@ import { createQuery } from "@/lib/api/playstore";
 import PlaystoreQueryHistoryTable from "./_components/PlaystoreQueryHistoryTable";
 import { useRouter } from "next/navigation";
 import AILoader from "@/components/shared/AiLoader";
+import { useQueryClient } from "@tanstack/react-query";
 
-// ─── Main Page ─────────────────────────────────────────────────────────────────
 export default function AppAnalysisPage() {
-
     const [appUrl, setAppUrl] = useState("");
     const [error, setError] = useState(null);
     const [submitLoading, setSubmitLoading] = useState(false);
     const router = useRouter();
 
+    const user_id = typeof window !== 'undefined' ? localStorage?.getItem('user')?.firebase_uid : null;
+    const queryClient = useQueryClient();
+
     function getQueryParameter(urlString, paramName) {
         try {
-            // Create a URL object to parse the input URL string
             const url = new URL(urlString);
-
-            // Use the searchParams property to get the value of the specific parameter
-            const value = url.searchParams.get(paramName);
-
-            return value;
+            return url.searchParams.get(paramName);
         } catch (error) {
             console.error("Invalid URL:", error);
-            return null; // Handle cases where the input string is not a valid URL
+            return null;
         }
     };
 
@@ -47,12 +44,12 @@ export default function AppAnalysisPage() {
             }
 
             const body = {
-                app_id: getQueryParameter(appUrl, "id"),
+                app_id: appId,
                 max_review: 500
-            }
+            };
 
             const response = await createQuery(body);
-            console.log('playstore response: ', response);
+            if (response) queryClient.invalidateQueries({ queryKey: ["play-queries", user_id] });
 
             if (response?.status === "CREATED") {
                 router.push(`/dashboard/playstore/query/${response.id}`);
@@ -60,25 +57,13 @@ export default function AppAnalysisPage() {
 
             if (response?.status === "FAILED") {
                 setError(response.failure_reason || "Something went wrong");
+                setSubmitLoading(false);
             }
-
-            // ⛔ Only reset loading if NOT navigating
-            setSubmitLoading(false);
 
         } catch (err) {
-            console.log(err);
-
-            let message = "Something went wrong";
-
-            if (err?.response?.data?.detail) {
-                message = err.response.data.detail;
-            } else if (err?.message) {
-                message = err.message;
-            }
-
-            setError(String(message)); // force string (important)
-        } finally {
-            // setSubmitLoading(false);
+            let message = err?.response?.data?.detail || err?.message || "Something went wrong";
+            setError(String(message));
+            setSubmitLoading(false);
         }
     };
 
@@ -90,39 +75,46 @@ export default function AppAnalysisPage() {
         )
     };
 
-    // ── Render ─────────────────────────────────────────────────────────────────
     return (
         <div className="min-h-screen font-sans" style={{ backgroundColor: "var(--background)", color: "var(--text-main)" }}>
-            <div className="max-w-7xl mx-auto px-8 py-10 flex flex-col gap-6">
-                <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center pt-16 pb-16 gap-5">
+            {/* Reduced px-8 to px-4 on mobile for more room */}
+            <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-10 flex flex-col gap-6">
+                
+                <motion.div 
+                    initial={{ opacity: 0, y: 16 }} 
+                    animate={{ opacity: 1, y: 0 }} 
+                    className="flex flex-col items-center pt-8 md:pt-16 pb-12 md:pb-16 gap-5"
+                >
                     <div className="flex flex-col items-center gap-6">
                         <div className="relative">
+                            {/* Responsive icon size */}
                             <div
-                                className="w-24 h-24 rounded-full flex items-center justify-center"
+                                className="w-20 h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center"
                                 style={{
                                     background: "linear-gradient(135deg, color-mix(in srgb, var(--primary) 15%, var(--surface)), color-mix(in srgb, var(--accent) 10%, var(--surface)))",
                                     border: "1px solid var(--glass-border)",
                                     boxShadow: "0 0 40px color-mix(in srgb, var(--primary) 15%, transparent), var(--shadow-md)",
                                 }}
                             >
-                                <Cpu className="w-11 h-11" style={{ color: "var(--primary)" }} />
+                                <Cpu className="w-9 h-9 md:w-11 md:h-11" style={{ color: "var(--primary)" }} />
                             </div>
                             <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center" style={{ backgroundColor: "var(--accent)", boxShadow: "0 0 10px var(--accent)" }}>
                                 <Zap className="w-2.5 h-2.5" style={{ color: "#080f14" }} />
                             </div>
                         </div>
-                        <div className="text-center">
-                            <h2 className="text-3xl font-bold tracking-tight mb-3" style={{ color: "var(--text-main)" }}>
+                        
+                        <div className="text-center px-2">
+                            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-2 md:mb-3" style={{ color: "var(--text-main)" }}>
                                 PlayStore Analyzer
                             </h2>
-                            <p className="text-base" style={{ color: "var(--text-muted)" }}>
+                            <p className="text-sm md:text-base" style={{ color: "var(--text-muted)" }}>
                                 Get a full app analysis under 5 minutes
                             </p>
                         </div>
                     </div>
 
-                    <form onSubmit={submitPlaystoreQuery} className="w-full mt-5 max-w-3xl mx-auto flex gap-3">
-                        {/* App ID input */}
+                    {/* Responsive Form: Stacks on mobile, row on desktop */}
+                    <form onSubmit={submitPlaystoreQuery} className="w-full mt-5 max-w-3xl mx-auto flex flex-col md:flex-row gap-3">
                         <motion.div
                             transition={{ duration: 0.2 }}
                             className="relative flex items-center overflow-hidden flex-1"
@@ -131,7 +123,7 @@ export default function AppAnalysisPage() {
                                 border: "1px solid var(--border-solid)",
                             }}
                         >
-                            <div className="pl-5 pr-3 flex items-center gap-3 shrink-0">
+                            <div className="pl-4 md:pl-5 pr-3 flex items-center gap-3 shrink-0">
                                 <Search className="w-4 h-4" />
                                 <div className="w-px h-5 shrink-0" style={{ backgroundColor: "var(--border-solid)" }} />
                             </div>
@@ -140,8 +132,8 @@ export default function AppAnalysisPage() {
                                 type="text"
                                 value={appUrl}
                                 onChange={(e) => setAppUrl(e.target.value)}
-                                placeholder="Paste your app's playstore url"
-                                className="flex-1 py-4 bg-transparent outline-none text-sm font-medium mr-5"
+                                placeholder="Paste playstore url"
+                                className="flex-1 py-3.5 md:py-4 bg-transparent outline-none text-sm font-medium mr-5"
                                 style={{ color: "var(--text-main)" }}
                                 onFocus={(e) => {
                                     e.target.parentElement.style.border = "1px solid var(--primary)";
@@ -152,11 +144,10 @@ export default function AppAnalysisPage() {
                             />
                         </motion.div>
 
-                        {/* Analyze Button */}
                         <button
                             type="submit"
                             disabled={submitLoading}
-                            className="px-6 py-4 text-sm font-semibold flex items-center justify-center gap-2"
+                            className="w-full md:w-auto px-8 py-3.5 md:py-4 text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
                             style={{
                                 backgroundColor: "var(--primary)",
                                 color: "#fff",
@@ -174,16 +165,23 @@ export default function AppAnalysisPage() {
                         <motion.div
                             initial={{ opacity: 0, y: -8 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="flex items-center w-3xl max-w-4xl gap-2.5 px-3 py-3 text-xs font-semibold"
-                            style={{ backgroundColor: "var(--destructive-bg)", border: "1px solid color-mix(in srgb, var(--destructive) 25%, transparent)", color: "var(--destructive)" }}
+                            className="flex items-center w-full max-w-3xl gap-2.5 px-4 py-3 text-xs font-semibold"
+                            style={{ 
+                                backgroundColor: "var(--destructive-bg)", 
+                                border: "1px solid color-mix(in srgb, var(--destructive) 25%, transparent)", 
+                                color: "var(--destructive)" 
+                            }}
                         >
                             <AlertCircle className="w-4 h-4 shrink-0" />
-                            {error}
+                            <span className="break-words">{error}</span>
                         </motion.div>
                     )}
                 </motion.div>
 
-                <PlaystoreQueryHistoryTable />
+                {/* Wrapper for the table to handle overflow if the table isn't internally responsive */}
+                <div className="overflow-x-auto">
+                    <PlaystoreQueryHistoryTable />
+                </div>
             </div>
         </div>
     );

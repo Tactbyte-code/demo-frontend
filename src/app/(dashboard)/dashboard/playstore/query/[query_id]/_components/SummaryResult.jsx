@@ -50,7 +50,7 @@ const SENTIMENT_MAP = {
 // ─── Tiny primitives ──────────────────────────────────────────────────────────
 function SectionLabel({ children }) {
     return (
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--primary)] mb-1.5">
+        <p className="text-[clamp(10px,2vw,12px)] font-semibold uppercase tracking-widest text-[var(--primary)] mb-1.5">
             {children}
         </p>
     );

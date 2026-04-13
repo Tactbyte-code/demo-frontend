@@ -121,7 +121,7 @@ export default function DashboardLayout({ children }) {
                     >
                         <div className="w-[260px] flex flex-col h-full">
                             {/* Brand & Mobile Close */}
-                            <div className="px-6 pt-7 pb-5">
+                            <div className="px-4 pt-7 pb-5">
                                 <div className="flex items-center justify-between mb-8">
                                     <Link href="/" className="flex items-center no-underline group">
                                         <div className="relative h-10 w-40">
@@ -136,7 +136,7 @@ export default function DashboardLayout({ children }) {
                                     </Link>
                                     <button 
                                         onClick={() => setSidebarOpen(false)} 
-                                        className="lg:hidden p-2 text-muted hover:bg-sidebar-hover rounded-md transition-colors"
+                                        className="lg:hidden p-1 text-muted border border-border hover:bg-sidebar-hover transition-colors"
                                     >
                                         <X size={20} />
                                     </button>
