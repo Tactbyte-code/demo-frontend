@@ -31,6 +31,9 @@ export default function ClarifyPage({ params }) {
 
     const [originalQuery, setOriginalQuery] = useState("");
     const [question, setQuestion] = useState("");
+    const [options, setOptions] = useState([]);                    // NEW
+    const [selectedOption, setSelectedOption] = useState(null);    // NEW
+    const [showCustomInput, setShowCustomInput] = useState(false); // NEW
     const [answer, setAnswer] = useState("");
     const [clarificationCount, setClarificationCount] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -38,7 +41,12 @@ export default function ClarifyPage({ params }) {
     const [error, setError] = useState(null);
 
     const textareaRef = useRef(null);
-    const canSubmit = answer.trim() && !submitting;
+
+    // NEW: canSubmit accounts for options
+    const canSubmit = !submitting && (
+        (selectedOption && selectedOption !== "others") ||
+        (selectedOption === "others" && answer.trim())
+    );
 
     const { setSidebarOpen } = useSidebarStore();
 
@@ -70,7 +78,10 @@ export default function ClarifyPage({ params }) {
 
                 const history = data.conversation_history || [];
                 const lastAssistant = [...history].reverse().find((m) => m.role === "assistant");
-                if (lastAssistant) setQuestion(lastAssistant.content);
+                if (lastAssistant) {
+                    setQuestion(lastAssistant.content);
+                    setOptions(lastAssistant.options || []); // NEW
+                }
             } catch (err) {
                 setError("Failed to load query. Please try again.");
             } finally {
@@ -80,9 +91,18 @@ export default function ClarifyPage({ params }) {
         fetchQuery();
     }, [query_id]);
 
+    // NEW: focus textarea only when Others is selected
     useEffect(() => {
-        if (!loading && textareaRef.current) textareaRef.current.focus();
-    }, [loading, question]);
+        if (showCustomInput && textareaRef.current) textareaRef.current.focus();
+    }, [showCustomInput]);
+
+    // NEW: handle option selection
+    const handleOptionSelect = (opt) => {
+        const isOthers = opt === "Others";
+        setSelectedOption(isOthers ? "others" : opt);
+        setShowCustomInput(isOthers);
+        if (!isOthers) setAnswer("");
+    };
 
     // submit clarification answer
     const handleSubmit = async (e) => {
@@ -90,13 +110,19 @@ export default function ClarifyPage({ params }) {
         if (!canSubmit) return;
         setSubmitting(true);
         setError(null);
+
+        const finalAnswer = selectedOption === "others" ? answer.trim() : selectedOption; // NEW
+
         try {
-            const response = await submitClarification(query_id, answer);
+            const response = await submitClarification(query_id, finalAnswer); // CHANGED: answer → finalAnswer
 
             if (response) queryClient.invalidateQueries({ queryKey: ["queries", user_id] });
 
             if (response.status === "CLARIFYING") {
                 setQuestion(response.question);
+                setOptions(response.options || []); // NEW
+                setSelectedOption(null);            // NEW
+                setShowCustomInput(false);          // NEW
                 setClarificationCount(response.clarification_count);
                 setAnswer("");
                 return;
@@ -111,7 +137,7 @@ export default function ClarifyPage({ params }) {
         }
     };
 
-    // on pressing Enter
+    // on pressing Enter (only relevant in Others textarea)
     const handleKeyDown = (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
@@ -211,18 +237,6 @@ export default function ClarifyPage({ params }) {
                                     </p>
                                 </div>
                             </div>
-
-                            {/* <Badge
-                                variant="outline"
-                                className="text-[10px] px-2 py-0.5 shrink-0"
-                                style={{
-                                    backgroundColor: "var(--info-bg)",
-                                    color: "var(--primary)",
-                                    borderColor: "color-mix(in srgb, var(--primary) 20%, transparent)",
-                                }}
-                            >
-                                AI generated
-                            </Badge> */}
                         </div>
 
                         <Separator style={{ backgroundColor: "var(--border-solid)", opacity: 0.4 }} />
@@ -234,34 +248,75 @@ export default function ClarifyPage({ params }) {
                         >
                             {question}
                         </p>
+
+                        {/* NEW: Options list with hardcoded Others at the end */}
+                        {options.length > 0 && (
+                            <div className="space-y-2">
+                                {[...options, "Others"].map((opt) => {
+                                    const isOthers = opt === "Others";
+                                    const isSelected = selectedOption === (isOthers ? "others" : opt);
+                                    return (
+                                        <button
+                                            key={opt}
+                                            type="button"
+                                            onClick={() => handleOptionSelect(opt)}
+                                            className={`w-full flex items-center gap-3 px-4 py-2.5 border text-sm text-left rounded-none transition-colors ${
+                                                isSelected
+                                                    ? "border-primary bg-primary/5 text-primary font-medium"
+                                                    : "border-border hover:bg-muted/20 text-foreground"
+                                            }`}
+                                        >
+                                            <span
+                                                className={`w-4 h-4 rounded-full border flex-shrink-0 flex items-center justify-center transition-colors ${
+                                                    isSelected ? "border-primary bg-primary" : "border-muted-foreground"
+                                                }`}
+                                            >
+                                                {isSelected && (
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                                                )}
+                                            </span>
+                                            {opt}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
+
+                        {/* NEW: Others free-text input */}
+                        {showCustomInput && (
+                            <div className="space-y-2 pt-1">
+                                <Separator style={{ backgroundColor: "var(--border-solid)", opacity: 0.3 }} />
+                                <p className="text-xs text-muted-foreground">Describe what you're looking for</p>
+                                <Textarea
+                                    ref={textareaRef}
+                                    value={answer}
+                                    onChange={(e) => setAnswer(e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                    placeholder="Type your answer..."
+                                    style={{ minHeight: "100px" }}
+                                />
+                            </div>
+                        )}
+
+                        {/* Submit row — moved inside question card */}
+                        <div className="flex justify-between items-center pt-1">
+                            <span className="text-xs text-muted-foreground">
+                                {selectedOption && selectedOption !== "others"
+                                    ? `"${selectedOption}" selected`
+                                    : selectedOption === "others" && answer.trim()
+                                    ? `${answer.length} chars`
+                                    : "Select an option above"}
+                            </span>
+                            <Button disabled={!canSubmit} onClick={handleSubmit} className="text-white">
+                                {submitting ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <ArrowRight className="w-4 h-4" />
+                                )}
+                            </Button>
+                        </div>
                     </CardContent>
                 </CardContent>
-
-                {/* Input */}
-                <form onSubmit={handleSubmit} className="space-y-3">
-                    <Textarea
-                        ref={textareaRef}
-                        value={answer}
-                        onChange={(e) => setAnswer(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        placeholder="Type your answer..."
-                        style={{ minHeight: "140px" }}
-                    />
-
-                    <div className="flex justify-between items-center">
-                        <span className="text-xs text-muted-foreground">
-                            {answer.length} chars
-                        </span>
-
-                        <Button disabled={!canSubmit} type="submit" className={'text-white'}>
-                            {submitting ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                                <ArrowRight className="w-4 h-4" />
-                            )}
-                        </Button>
-                    </div>
-                </form>
 
                 {/* Error */}
                 {error && (
