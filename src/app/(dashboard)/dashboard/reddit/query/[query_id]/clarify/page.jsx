@@ -27,6 +27,9 @@ export default function ClarifyPage({ params }) {
 
     const [originalQuery, setOriginalQuery] = useState("");
     const [question, setQuestion] = useState("");
+    const [options, setOptions] = useState([]);
+    const [selectedOption, setSelectedOption] = useState(null);
+    const [showCustomInput, setShowCustomInput] = useState(false);
     const [answer, setAnswer] = useState("");
     const [clarificationCount, setClarificationCount] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -34,7 +37,11 @@ export default function ClarifyPage({ params }) {
     const [error, setError] = useState(null);
 
     const textareaRef = useRef(null);
-    const canSubmit = answer.trim() && !submitting;
+
+    const canSubmit = !submitting && (
+        (selectedOption && selectedOption !== "others") ||
+        (selectedOption === "others" && answer.trim())
+    );
 
     const { setSidebarOpen } = useSidebarStore();
     const user_id = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user'))?.firebase_uid : null;
@@ -57,7 +64,10 @@ export default function ClarifyPage({ params }) {
                 setClarificationCount(data.clarification_count);
                 const history = data.conversation_history || [];
                 const lastAssistant = [...history].reverse().find((m) => m.role === "assistant");
-                if (lastAssistant) setQuestion(lastAssistant.content);
+                if (lastAssistant) {
+                    setQuestion(lastAssistant.content);
+                    setOptions(lastAssistant.options || []);
+                }
             } catch (err) {
                 setError("Failed to load query. Please try again.");
             } finally {
@@ -67,10 +77,9 @@ export default function ClarifyPage({ params }) {
         fetchQuery();
     }, [query_id, router]);
 
-    // NEW: focus textarea only when Others is selected
     useEffect(() => {
-        if (!loading && textareaRef.current) textareaRef.current.focus();
-    }, [loading, question]);
+        if (showCustomInput && textareaRef.current) textareaRef.current.focus();
+    }, [showCustomInput]);
 
     const handleOptionSelect = (opt) => {
         const isOthers = opt === "Others";
@@ -84,13 +93,18 @@ export default function ClarifyPage({ params }) {
         if (!canSubmit) return;
         setSubmitting(true);
         setError(null);
-        try {
-            const response = await submitClarification(query_id, answer);
 
+        const finalAnswer = selectedOption === "others" ? answer.trim() : selectedOption;
+
+        try {
+            const response = await submitClarification(query_id, finalAnswer);
             if (response) queryClient.invalidateQueries({ queryKey: ["queries", user_id] });
 
             if (response.status === "CLARIFYING") {
                 setQuestion(response.question);
+                setOptions(response.options || []);
+                setSelectedOption(null);
+                setShowCustomInput(false);
                 setClarificationCount(response.clarification_count);
                 setAnswer("");
                 return;
@@ -103,7 +117,6 @@ export default function ClarifyPage({ params }) {
         }
     };
 
-    // on pressing Enter
     const handleKeyDown = (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
@@ -187,56 +200,99 @@ export default function ClarifyPage({ params }) {
                                 </div>
                             </div>
 
-                            {/* <Badge
-                                variant="outline"
-                                className="text-[10px] px-2 py-0.5 shrink-0"
-                                style={{
-                                    backgroundColor: "var(--info-bg)",
-                                    color: "var(--primary)",
-                                    borderColor: "color-mix(in srgb, var(--primary) 20%, transparent)",
-                                }}
-                            >
-                                AI generated
-                            </Badge> */}
+                            {/* Label: Shown when question appears, hidden when arrow is clicked */}
+                            <AnimatePresence>
+                                {!submitting && (
+                                    <motion.div
+                                        initial={{ opacity: 0, x: 10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: 10 }}
+                                        className="flex items-center gap-2 mt-1"
+                                    >
+                                        <span className="relative flex h-2 w-2">
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-700 opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-700"></span>
+                                        </span>
+                                        <span className="text-xs font-semibold uppercase tracking-tighter text-green-700">
+                                            Awaiting user response
+                                        </span>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
 
                         <Separator style={{ backgroundColor: "var(--border-solid)", opacity: 0.4 }} />
 
-                        {/* Question text */}
-                        <p
-                            className="text-sm leading-relaxed font-medium mt-5"
-                            style={{ color: "var(--text-main)" }}
-                        >
-                            {question}
-                        </p>
+                        {/* Entire question body slides in fresh on each new question */}
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={clarificationCount}
+                                initial={{ opacity: 0, y: 18, filter: "blur(4px)" }}
+                                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                                exit={{ opacity: 0, y: -18, filter: "blur(4px)" }}
+                                transition={{ duration: 0.35, ease: "easeOut" }}
+                                className="space-y-4"
+                            >
+                                <p className="text-sm leading-relaxed font-medium mt-1" style={{ color: "var(--text-main)" }}>
+                                    {`${clarificationCount}. ${question}`}
+                                </p>
+
+                                {options.length > 0 && (
+                                    <div className="space-y-2">
+                                        {[...options, "Others"].map((opt, i) => {
+                                            const isOthers = opt === "Others";
+                                            const isSelected = selectedOption === (isOthers ? "others" : opt);
+                                            return (
+                                                <motion.button
+                                                    key={opt}
+                                                    initial={{ opacity: 0, x: -10 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    transition={{ delay: i * 0.06, duration: 0.25 }}
+                                                    type="button"
+                                                    onClick={() => handleOptionSelect(opt)}
+                                                    className={`w-full flex items-center gap-3 px-4 py-2.5 border text-sm text-left rounded-none transition-colors ${
+                                                        isSelected
+                                                            ? "border-primary bg-primary/5 text-primary font-medium"
+                                                            : "border-border hover:bg-muted/20 text-foreground"
+                                                    }`}
+                                                >
+                                                    <span className={`w-4 h-4 rounded-full border flex-shrink-0 flex items-center justify-center transition-colors ${isSelected ? "border-primary bg-primary" : "border-muted-foreground"}`}>
+                                                        {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                                    </span>
+                                                    {opt}
+                                                </motion.button>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+
+                                {showCustomInput && (
+                                    <div className="space-y-2 pt-1">
+                                        <Separator style={{ backgroundColor: "var(--border-solid)", opacity: 0.3 }} />
+                                        <p className="text-xs text-muted-foreground">Describe what you're looking for</p>
+                                        <Textarea
+                                            ref={textareaRef}
+                                            value={answer}
+                                            onChange={(e) => setAnswer(e.target.value)}
+                                            onKeyDown={handleKeyDown}
+                                            placeholder="Type your answer..."
+                                            className="rounded-none"
+                                            style={{ minHeight: "100px" }}
+                                        />
+                                    </div>
+                                )}
+                            </motion.div>
+                        </AnimatePresence>
+
+                        {/* Submit */}
+                        <div className="flex justify-end items-center pt-1">
+                            <Button disabled={!canSubmit} onClick={handleSubmit} className="text-white rounded-none">
+                                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
+                            </Button>
+                        </div>
+
                     </CardContent>
                 </CardContent>
-
-                {/* Input */}
-                <form onSubmit={handleSubmit} className="space-y-3">
-                    <Textarea
-                        ref={textareaRef}
-                        value={answer}
-                        onChange={(e) => setAnswer(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        placeholder="Type your answer..."
-                        style={{ minHeight: "140px" }}
-                    />
-
-                    <div className="flex justify-between items-center">
-                        <span className="text-xs text-muted-foreground">
-                            {answer.length} chars
-                        </span>
-
-                        <Button disabled={!canSubmit} type="submit" className={'text-white'}>
-                            {submitting ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                                <ArrowRight className="w-4 h-4" />
-                            )}
-                        </Button>
-                    </div>
-                </form>
 
                 {error && (
                     <Alert variant="destructive" className="rounded-none">
