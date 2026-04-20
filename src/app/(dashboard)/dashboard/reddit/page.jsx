@@ -298,10 +298,6 @@ export default function RedditIntelligencePage() {
             {/* ─── DIVIDER ─── */}
             <div className="w-full max-w-5xl mt-15 mb-15 flex items-center gap-4">
                 <div className="h-px flex-1" style={{ backgroundColor: "var(--border-solid)" }} />
-                {/* <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-subtle)" }}>
-                    <Clock className="w-4 h-4" /> Syncing in {countdown}s
-                </div> */}
-                {/* <div className="h-px flex-1" style={{ backgroundColor: "var(--border-solid)" }} /> */}
             </div>
 
             <RedditQueryHistoryTable />

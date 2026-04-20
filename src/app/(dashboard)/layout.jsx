@@ -20,6 +20,7 @@ import { useSidebarStore } from '@/context/useSidebarStore';
 import Image from 'next/image';
 
 export default function DashboardLayout({ children }) {
+    
     const pathname = usePathname();
     const { sidebarOpen, setSidebarOpen, toggleSidebar } = useSidebarStore();
     const [userPlan, setUserPlan] = useState(null);
@@ -244,4 +245,4 @@ function NavGroup({ label, items, pathname }) {
             </nav>
         </div>
     );
-}
+};

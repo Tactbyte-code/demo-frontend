@@ -19,7 +19,7 @@ import { SummaryResult } from "./_components/SummaryResult";
 import { useQueryClient } from "@tanstack/react-query";
 import { useGetSummary } from "@/features/reddit/hooks/useGetSummary";
 
-const POSTS_STATUSES = ["SEARCH_COMPLETE", "SUMMARIZING", "COMPLETED"];
+const POSTS_STATUSES = ["SEARCH_COMPLETE", "SUMMARIZING", "COMPLETED", "WEB_SEARCHING"];
 
 export default function QueryResultPage() {
 
@@ -242,6 +242,8 @@ export default function QueryResultPage() {
         setActionLoading(true);
         try {
             const response = await api.post(`/reddit/query/${query_id}/retry-search`);
+            if (response) queryClient.invalidateQueries({ queryKey: ["queries", user_id] });
+
             console.log('handle retry search: ', response);
 
             setStatus("CLARIFIED");
@@ -261,7 +263,9 @@ export default function QueryResultPage() {
     const handleRetrySummarize = async () => {
         setActionLoading(true);
         try {
-            await api.post(`/reddit/query/${query_id}/retry-summarize`);
+            const response = await api.post(`/reddit/query/${query_id}/retry-summarize`);
+            if (response) queryClient.invalidateQueries({ queryKey: ["queries", user_id] });
+
             setStatus("SEARCH_COMPLETE");
             setFailureReason(null);
             setFailedAtStep(null);
@@ -346,7 +350,6 @@ export default function QueryResultPage() {
             {status === "COMPLETED" && isSummarized && !isRequerying && (
                 <>
                     <SummaryResult data={summary} sources={sources} approvedCount={10} onToggleSource={handleToggleApproval} />
-                    {/* <SummaryResult data={summary} sources={sources} approvedCount={approvedCount} onToggleSource={handleToggleApproval} /> */}
                 </>
             )}
         </PageShell>

@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef, use } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import {
     ArrowRight,
     ArrowLeft,
@@ -162,12 +161,11 @@ export default function ClarifyPage({ params }) {
 
             </div>
         );
-    }
+    };
 
     return (
         <div className="min-h-screen flex justify-center px-4 py-10">
             <div className="w-full max-w-2xl space-y-6">
-
                 {/* Top */}
                 <div className="flex justify-between items-center">
                     <Button
@@ -184,9 +182,6 @@ export default function ClarifyPage({ params }) {
                 </div>
 
                 {/* Progress */}
-                {/* <Progress value={(clarificationCount / 5) * 100} /> */}
-
-                {/* <CardContent className="rounded-none"> */}
                 <Card className="p-4 my-5 rounded-none gap-2">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wide font-semibold">
                         <MessageSquare className="w-5 h-5" />
@@ -324,7 +319,6 @@ export default function ClarifyPage({ params }) {
                         <AlertDescription>{error}</AlertDescription>
                     </Alert>
                 )}
-
             </div>
         </div>
     );

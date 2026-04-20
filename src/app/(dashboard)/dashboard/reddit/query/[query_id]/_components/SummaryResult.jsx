@@ -103,8 +103,8 @@ const OverviewTab = ({ data }) => (
 );
 
 // pain point 
-const PainPointRow = ({ pp }) => {
-    const [open, setOpen] = useState(false);
+const PainPointRow = ({ pp, initialOpen = false }) => {
+    const [open, setOpen] = useState(initialOpen);
     const ic = impactBg[pp.impact] ?? "bg-warning-bg text-warning";
 
     return (
@@ -250,7 +250,7 @@ const PainPointRow = ({ pp }) => {
 
 // ── Tab: Themes ───────────────────────────────────────────
 const ThemesTab = ({ data }) => {
-    const [activeTheme, setActiveTheme] = useState(data.themes?.id ?? null)
+    const [activeTheme, setActiveTheme] = useState(data.themes?.[0]?.id ?? null)
     const theme = data.themes?.find(t => t.id === activeTheme)
 
     return (
@@ -316,7 +316,7 @@ const ThemesTab = ({ data }) => {
                                 <div className="rounded-none">
                                     <p className="text-[10px] uppercase tracking-widest text-subtle mb-2.5">Brands</p>
                                     <div className="flex flex-wrap gap-1.5">
-                                        {theme.brands_mentioned.map(b => <Pill key={b} label={b} />)}
+                                        {theme.brands_mentioned.map((b, index) => <Pill key={index} label={b} />)}
                                     </div>
                                 </div>
                             )}
@@ -341,7 +341,7 @@ const ThemesTab = ({ data }) => {
                                 </p>
                             </div>
                             <div className="divide-y divide-border-solid">
-                                {theme.pain_points.map((pp, i) => <PainPointRow key={i} pp={pp} />)}
+                                {theme.pain_points.map((pp, i) => <PainPointRow key={i} pp={pp} initialOpen={i === 0} />)}
                             </div>
                         </div>
                     )}
