@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Star, MessageSquare, TrendingUp, BarChart2,
@@ -12,9 +13,20 @@ import { ReviewsList } from "./ReviewsList";
 
 // ─── Panel animation variants ─────────────────────────────────────────────────
 const panelVariants = {
-    hidden: { opacity: 0, y: 6 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.18 } },
-    exit: { opacity: 0, y: -4, transition: { duration: 0.1 } },
+    hidden: (direction) => ({
+        opacity: 0,
+        x: direction > 0 ? 40 : -40,
+    }),
+    visible: {
+        opacity: 1,
+        x: 0,
+        transition: { duration: 0.2 },
+    },
+    exit: (direction) => ({
+        opacity: 0,
+        x: direction > 0 ? -40 : 40,
+        transition: { duration: 0.15 },
+    }),
 };
 
 // ─── Tab definitions ──────────────────────────────────────────────────────────
@@ -318,9 +330,31 @@ function NextStep({ step, index }) {
 
 // ─── Tab bar ──────────────────────────────────────────────────────────────────
 function TabBar({ tabs, active, onChange }) {
+    const containerRef = useRef(null);
+    const tabRefs = useRef({});
+
+    useEffect(() => {
+        const activeEl = tabRefs.current[active];
+        if (activeEl && containerRef.current) {
+            activeEl.scrollIntoView({
+                behavior: "smooth",
+                inline: "center",
+                block: "nearest",
+            });
+        }
+    }, [active]);
+
     return (
         <div
-            className="relative flex border border-[var(--color-border-solid)] bg-[var(--color-surface-raised)] overflow-x-auto mb-4 rounded-none"
+            ref={containerRef}
+            className="
+                flex 
+                overflow-x-auto 
+                md:overflow-hidden 
+                border border-[var(--color-border-solid)] 
+                bg-[var(--color-surface-raised)] 
+                mb-4
+            "
         >
             {tabs.map((tab, i) => {
                 const isActive = active === tab.id;
@@ -329,24 +363,43 @@ function TabBar({ tabs, active, onChange }) {
                 return (
                     <button
                         key={tab.id}
+                        ref={(el) => (tabRefs.current[tab.id] = el)}
                         onClick={() => onChange(tab.id)}
-                        className={`relative flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-[12px] whitespace-nowrap transition-colors duration-200 rounded-none
-                            ${isActive ? "text-[var(--color-primary)] font-medium" : "text-[var(--color-subtle)]"}
-                            ${i < tabs.length - 1 ? "border-r border-[var(--color-border-solid)]" : ""}
+                        className={`
+                            relative
+                            flex items-center justify-center gap-1.5
+                            
+                            /* 📱 Mobile behavior */
+                            flex-shrink-0 px-3 py-2.5 text-[12px]
+                            
+                            /* 💻 Desktop behavior */
+                            md:flex-1 md:flex-shrink md:px-0 md:py-3
+                            
+                            whitespace-nowrap
+                            transition-colors duration-200
+                            
+                            ${isActive
+                                ? "text-[var(--color-primary)] font-medium"
+                                : "text-[var(--color-subtle)]"
+                            }
+                            
+                            ${i < tabs.length - 1
+                                ? "border-r border-[var(--color-border-solid)]"
+                                : ""
+                            }
                         `}
                     >
-                        {/* Sliding background indicator */}
+                        {/* Active indicator */}
                         {isActive && (
                             <motion.div
                                 layoutId="tab-indicator"
-                                className="absolute inset-0 z-0 border-b-2 border-[var(--color-primary)]"
+                                className="absolute inset-0 border-b-2 border-[var(--color-primary)]"
                                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
                             />
                         )}
 
-                        {/* Content */}
                         <div className="relative z-10 flex items-center gap-1.5">
-                            <Icon size={12} className="shrink-0" />
+                            <Icon size={12} />
                             <span>{tab.label}</span>
                         </div>
                     </button>
@@ -380,18 +433,118 @@ function SectionBody({ children, className = "" }) {
     return <div className={`p-4 ${className}`}>{children}</div>;
 }
 
+function StarRating({ score }) {
+    return (
+        <div className="flex gap-0.5">
+            {[1, 2, 3, 4, 5].map((s) => (
+                <Star
+                    key={s}
+                    className="w-3 h-3"
+                    fill={s <= score ? "var(--color-warning)" : "none"}
+                    style={{ color: s <= score ? "var(--color-warning)" : "var(--color-border-solid)" }}
+                />
+            ))}
+        </div>
+    );
+}
+
+function fmtDate(dateStr) {
+    if (!dateStr) return null;
+    return new Date(dateStr).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+    });
+}
+
+function InlineReviewCard({ review, index }) {
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.02 }} // slightly reduced delay for performance
+        >
+            <div className="border border-[var(--color-border-solid)] p-4 flex flex-col gap-2 rounded-none bg-[var(--color-surface)]">
+                <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div className="flex flex-col gap-1">
+                        <span className="text-xs font-semibold text-[var(--color-foreground)]">
+                            {review.username || "Anonymous"}
+                        </span>
+                        <StarRating score={review.score ?? 0} />
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        {review.thumbs_up > 0 && (
+                            <div className="flex items-center gap-1 text-[var(--color-subtle)]">
+                                <ThumbsUp className="w-3 h-3" />
+                                <span className="text-xs">{review.thumbs_up}</span>
+                            </div>
+                        )}
+
+                        {review.review_created && (
+                            <span className="text-xs text-[var(--color-subtle)]">
+                                {fmtDate(review.review_created)}
+                            </span>
+                        )}
+                    </div>
+                </div>
+
+                {review.content && (
+                    <p className="text-sm leading-relaxed text-[var(--color-muted)]">
+                        {review.content}
+                    </p>
+                )}
+
+                {review.reply_content && (
+                    <div
+                        className="mt-1 px-3 py-2 text-xs leading-relaxed border rounded-none"
+                        style={{
+                            backgroundColor: "var(--color-info-bg)",
+                            borderColor: "var(--color-info)",
+                            color: "var(--color-muted)",
+                        }}
+                    >
+                        <span className="font-semibold text-[var(--color-primary)]">
+                            Dev reply ·{" "}
+                        </span>
+                        {review.reply_content}
+                    </div>
+                )}
+            </div>
+        </motion.div>
+    );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 export function SummaryResult({ data, reviews, reviewsLoaded, showReviews }) {
     const [activeTab, setActiveTab] = useState("overview");
+    const [direction, setDirection] = useState(0);
 
     if (!data) return null;
+
+    const TAB_IDS = TABS.map(t => t.id);
+
+    const handleSwipe = (event, info) => {
+        const threshold = 50;
+        const currentIndex = TAB_IDS.indexOf(activeTab);
+
+        if (info.offset.x < -threshold && currentIndex < TAB_IDS.length - 1) {
+            setDirection(1);
+            setActiveTab(TAB_IDS[currentIndex + 1]);
+        }
+
+        if (info.offset.x > threshold && currentIndex > 0) {
+            setDirection(-1);
+            setActiveTab(TAB_IDS[currentIndex - 1]);
+        }
+    };
 
     const {
         app_name, app_id, analyzed_at,
         direct_answer, executive_summary,
         overall_sentiment, total_signals, average_rating,
         themes, market_signals, actionable_next_steps,
-        rating_breakdown, meta, // added reviews here
+        rating_breakdown,
     } = data;
 
     const formattedDate = analyzed_at
@@ -405,10 +558,42 @@ export function SummaryResult({ data, reviews, reviewsLoaded, showReviews }) {
         : [];
     const totalRatings = ratingEntries.reduce((s, r) => s + r.count, 0);
 
+    const INITIAL_COUNT = 20;
+    const LOAD_MORE_COUNT = 10;
+
+    const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+    const handleLoadMore = () => {
+        setIsLoadingMore(true);
+
+        // simulate slight delay (optional, feels smoother)
+        setTimeout(() => {
+            setVisibleCount((prev) =>
+                Math.min(prev + LOAD_MORE_COUNT, reviews.length)
+            );
+            setIsLoadingMore(false);
+        }, 300);
+    };
+
+    const handleScroll = (e) => {
+        const el = e.target;
+        const threshold = 100;
+
+        if (el.scrollTop + el.clientHeight >= el.scrollHeight - threshold) {
+            handleLoadMore();
+        }
+    };
+
+    useEffect(() => {
+        if (activeTab === "reviews") {
+            setVisibleCount(INITIAL_COUNT);
+        }
+    }, [activeTab]);
+
     return (
         <div className="font-[var(--font-poppins)]">
 
-            {/* App hero and Metrics grid same as before... */}
             <div className="flex items-start justify-between gap-3 mb-4 flex-wrap">
                 <div className="flex items-center gap-3">
                     <div className="w-11 h-11 shrink-0 bg-[var(--info-bg)] border border-[var(--primary)] flex items-center justify-center rounded-none">
@@ -432,75 +617,171 @@ export function SummaryResult({ data, reviews, reviewsLoaded, showReviews }) {
 
             <TabBar tabs={TABS} active={activeTab} onChange={setActiveTab} />
 
-            <AnimatePresence mode="wait">
-                {activeTab === "overview" && (
-                    <motion.div key="overview" variants={panelVariants} initial="hidden" animate="visible" exit="exit">
-                        {direct_answer && (
+            {/* 👇 SWIPE WRAPPER ADDED HERE */}
+            <motion.div
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.2}
+                onDragEnd={handleSwipe}
+            >
+                <AnimatePresence mode="wait">
+
+                    {activeTab === "overview" && (
+                        <motion.div
+                            key="overview"
+                            variants={panelVariants}
+                            custom={direction}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
+                        >
+                            {direct_answer && (
+                                <Section>
+                                    <SectionHead icon={Info} title="Direct answer" />
+                                    <SectionBody>
+                                        <div className="border-l-2 border-[var(--primary)] pl-3.5">
+                                            <p className="text-[13px] text-[var(--text-main)]">{direct_answer}</p>
+                                        </div>
+                                    </SectionBody>
+                                </Section>
+                            )}
+                            <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-3 mb-3">
+                                <Section className="mb-0">
+                                    <SectionHead icon={BarChart2} title="Executive summary" />
+                                    <SectionBody><p className="text-[13px] text-[var(--text-muted)]">{executive_summary}</p></SectionBody>
+                                </Section>
+                                <Section className="mb-0">
+                                    <SectionHead icon={Star} title="Rating breakdown" />
+                                    <SectionBody>
+                                        {ratingEntries.map(({ star, count }) => (
+                                            <RatingBar key={star} star={star} count={count} total={totalRatings} />
+                                        ))}
+                                    </SectionBody>
+                                </Section>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {activeTab === "themes" && (
+                        <motion.div
+                            key="themes"
+                            variants={panelVariants}
+                            custom={direction}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
+                        >
+                            <SectionBody>
+                                {Array.isArray(themes) && themes.map((t, i) => <ThemeCard key={i} theme={t} />)}
+                            </SectionBody>
+                        </motion.div>
+                    )}
+
+                    {activeTab === "signals" && (
+                        <motion.div
+                            key="signals"
+                            variants={panelVariants}
+                            custom={direction}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
+                        >
                             <Section>
-                                <SectionHead icon={Info} title="Direct answer" />
+                                <SectionHead icon={Zap} title="Market signals" />
                                 <SectionBody>
-                                    <div className="border-l-2 border-[var(--primary)] pl-3.5">
-                                        <p className="text-[13px] text-[var(--text-main)]">{direct_answer}</p>
+                                    <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-x-8">
+                                        <SignalGroup title="Features praised" items={market_signals?.features_praised} variant="praise" icon={ThumbsUp} iconColor="var(--success)" />
+                                        <SignalGroup title="Features requested" items={market_signals?.features_requested} variant="request" icon={Lightbulb} iconColor="var(--info)" />
+                                        <SignalGroup title="Bugs reported" items={market_signals?.bugs_reported} variant="bug" icon={Bug} iconColor="var(--destructive)" />
                                     </div>
                                 </SectionBody>
                             </Section>
-                        )}
-                        <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-3 mb-3">
-                            <Section className="mb-0">
-                                <SectionHead icon={BarChart2} title="Executive summary" />
-                                <SectionBody><p className="text-[13px] text-[var(--text-muted)]">{executive_summary}</p></SectionBody>
-                            </Section>
-                            <Section className="mb-0">
-                                <SectionHead icon={Star} title="Rating breakdown" />
+                        </motion.div>
+                    )}
+
+                    {activeTab === "reviews" && (
+                        <motion.div
+                            key="reviews"
+                            variants={panelVariants}
+                            custom={direction}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
+                        >
+                            <Section>
+                                <SectionHead icon={MessageSquare} title="Reviews" />
                                 <SectionBody>
-                                    {ratingEntries.map(({ star, count }) => (
-                                        <RatingBar key={star} star={star} count={count} total={totalRatings} />
-                                    ))}
+                                    {!showReviews ? null : !reviewsLoaded ? (
+                                        <div className="flex flex-col gap-3 animate-pulse">
+                                            {[...Array(4)].map((_, i) => (
+                                                <div
+                                                    key={i}
+                                                    className="h-20 border border-[var(--color-border-solid)]"
+                                                    style={{ backgroundColor: "var(--color-surface-raised)" }}
+                                                />
+                                            ))}
+                                        </div>
+                                    ) : reviews.length === 0 ? (
+                                        <p className="text-sm py-4 text-center text-[var(--color-subtle)]">
+                                            No reviews found.
+                                        </p>
+                                    ) : (
+                                        <div className="flex flex-col gap-3 max-h-[600px] overflow-y-auto pr-1">
+                                            {reviews.slice(0, visibleCount).map((r, i) => (
+                                                <InlineReviewCard
+                                                    key={r.id ?? r.review_id ?? i}
+                                                    review={r}
+                                                    index={i}
+                                                />
+                                            ))}
+
+                                            {/* ✅ Load More Button */}
+                                            {visibleCount < reviews.length && (
+                                                <div className="flex justify-center pt-2">
+                                                    <button
+                                                        onClick={handleLoadMore}
+                                                        disabled={isLoadingMore}
+                                                        className="text-xs px-3 py-1.5 border border-[var(--color-border-solid)] bg-[var(--color-surface-raised)] hover:bg-[var(--color-surface-hover)] transition-colors disabled:opacity-50"
+                                                    >
+                                                        {isLoadingMore ? "Loading..." : "Load more reviews"}
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {/* ✅ End indicator */}
+                                            {visibleCount >= reviews.length && (
+                                                <p className="text-xs text-center text-[var(--color-subtle)] pt-2">
+                                                    You’ve reached the end
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
                                 </SectionBody>
                             </Section>
-                        </div>
-                    </motion.div>
-                )}
+                        </motion.div>
+                    )}
 
-                {activeTab === "themes" && (
-                    <motion.div key="themes" variants={panelVariants} initial="hidden" animate="visible" exit="exit">
-                        <SectionBody>
-                            {Array.isArray(themes) && themes.map((t, i) => <ThemeCard key={i} theme={t} />)}
-                        </SectionBody>
-                    </motion.div>
-                )}
-
-                {activeTab === "signals" && (
-                    <motion.div key="signals" variants={panelVariants} initial="hidden" animate="visible" exit="exit">
-                        <Section>
-                            <SectionHead icon={Zap} title="Market signals" />
+                    {activeTab === "actions" && (
+                        <motion.div
+                            key="actions"
+                            variants={panelVariants}
+                            custom={direction}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
+                        >
                             <SectionBody>
-                                <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-x-8">
-                                    <SignalGroup title="Features praised" items={market_signals?.features_praised} variant="praise" icon={ThumbsUp} iconColor="var(--success)" />
-                                    <SignalGroup title="Features requested" items={market_signals?.features_requested} variant="request" icon={Lightbulb} iconColor="var(--info)" />
-                                    <SignalGroup title="Bugs reported" items={market_signals?.bugs_reported} variant="bug" icon={Bug} iconColor="var(--destructive)" />
+                                <div className="flex flex-col gap-2">
+                                    {Array.isArray(actionable_next_steps) && actionable_next_steps.map((s, i) => (
+                                        <NextStep key={i} step={s} index={i} />
+                                    ))}
                                 </div>
                             </SectionBody>
-                        </Section>
-                    </motion.div>
-                )}
+                        </motion.div>
+                    )}
 
-                {activeTab === "reviews" && (
-                    <ReviewsList reviewsLoaded={reviewsLoaded} showReviews={showReviews} reviews={reviews} />
-                )}
-
-                {activeTab === "actions" && (
-                    <motion.div key="actions" variants={panelVariants} initial="hidden" animate="visible" exit="exit">
-                        <SectionBody>
-                            <div className="flex flex-col gap-2">
-                                {Array.isArray(actionable_next_steps) && actionable_next_steps.map((s, i) => (
-                                    <NextStep key={i} step={s} index={i} />
-                                ))}
-                            </div>
-                        </SectionBody>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                </AnimatePresence>
+            </motion.div>
         </div>
     );
 }
