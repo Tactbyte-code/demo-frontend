@@ -73,6 +73,7 @@ export default function RedditIntelligencePage() {
                 setNavigating(true);
                 router.push(`/dashboard/reddit/query/${response.id}/clarify`);
             }
+
             if (response.status === "CLARIFIED") {
                 setNavigating(true);
                 router.push(`/dashboard/reddit/query/${response.id}`);
@@ -93,14 +94,11 @@ export default function RedditIntelligencePage() {
 
     const handleKeyDown = (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
-            // e.preventDefault();
             if (canSubmit) handleSubmitQuery(e);
         }
     };
 
     if (loading || navigating) return <QueryProcessingLoader />;
-
-    // if (intialLoading) return <AILoader />;
 
     return (
         <div className="min-h-screen flex flex-col items-center px-6 py-16 pb-14 relative overflow-hidden" style={{ backgroundColor: "var(--background)" }}>

@@ -4,14 +4,34 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Check } from "lucide-react";
+import { useRef, useState, useEffect } from "react";
+import { Progress } from "@/components/ui/progress";
 
 export const ActionsTab = ({ data }) => {
+    const scrollRef = useRef(null);
+    const [currentIndex, setCurrentIndex] = useState(0);
 
     const steps = [...(data?.actionable_next_steps ?? [])].sort(
         (a, b) => a.priority - b.priority
     );
 
-    if (!steps.length) {
+    // ✅ Hooks must always be called before any early return
+    useEffect(() => {
+        const container = scrollRef.current;
+        if (!container) return;
+
+        const handleScroll = () => {
+            const scrollLeft = container.scrollLeft;
+            const width = container.clientWidth;
+            const index = Math.round(scrollLeft / width);
+            setCurrentIndex(index);
+        };
+
+        container.addEventListener("scroll", handleScroll);
+        return () => container.removeEventListener("scroll", handleScroll);
+    }, []);
+
+    if (!steps?.length) {
         return (
             <p className="text-sm text-muted-foreground py-8 text-center">
                 No actions found.
@@ -19,121 +39,173 @@ export const ActionsTab = ({ data }) => {
         );
     }
 
+    const progressValue = steps.length <= 1
+        ? 100
+        : (currentIndex / (steps.length - 1)) * 100;
+
     return (
         <div className="space-y-3">
-            {steps.map((item, i) => (
-                <Card key={i} className="border-0 rounded-none shadow-none p-0">
-                    <CardContent className="p-0 border-0">
-                        <div className="grid grid-cols-12">
-                            {/* LEFT STRIP (priority + meta) */}
-                            <div className="col-span-12 sm:col-span-1 border-r border-border p-4 flex flex-col gap-3">
-                                <div className="flex items-center gap-2">
-                                    <span className="text-xs font-mono font-bold text-center w-full">#{item.priority}</span>
-                                </div>
-                            </div>
+            {/* ── MOBILE SWIPE VIEW ── */}
+            <div className="sm:hidden">
+                {/* ── Progress indicator ── */}
+                <div className="my-3 px-1 flex items-center gap-3">
+                    <Progress
+                        value={progressValue}
+                        className="h-1 flex-1 rounded-none bg-border/90"
+                    />
+                    <span className="text-[11px] font-mono text-muted-foreground shrink-0 tabular-nums">
+                        {currentIndex + 1} / {steps.length}
+                    </span>
+                </div>
 
-                            {/* MAIN CONTENT */}
-                            <div className="col-span-12 sm:col-span-11 p-4 flex flex-col gap-3 bg-surface">
-                                {/* Replace the step title div */}
-                                <div className="flex items-start justify-between gap-3">
-                                    <p className="text-sm font-semibold text-foreground leading-snug">
-                                        {item.step}
-                                    </p>
-                                    {item.quick_win && (
-                                        <Badge className="flex items-center gap-1 text-[10px] uppercase tracking-wide bg-green-100 text-green-700 rounded-none shrink-0 mt-0.5">
-                                            <Check size={14} strokeWidth={3} />
-                                            Quick Win
-                                        </Badge>
-                                    )}
-                                </div>
+                {/* Swipe cards */}
+                <div
+                    ref={scrollRef}
+                    className="overflow-x-auto flex gap-3 snap-x snap-mandatory scroll-smooth [-webkit-overflow-scrolling:touch]"
+                >
+                    {steps.map((item, i) => (
+                        <div key={i} className="min-w-full snap-start border border-border">
+                            <Card className="border-0 rounded-none shadow-none p-0">
+                                <CardContent className="p-0 border-0">
+                                    <div className="col-span-12 p-4 flex flex-col gap-3 bg-surface">
+                                        <div className="flex flex-row items-start justify-between gap-3 mb-4">
+                                            <div className="flex items-start gap-3">
+                                                <div className="text-xs font-mono font-semibold bg-surface-raised px-2 py-1 shrink-0 border border-solid">
+                                                    #{item.priority}
+                                                </div>
+                                                <p className="text-sm font-semibold text-foreground leading-snug">
+                                                    {item.step}
+                                                </p>
+                                            </div>
+                                        </div>
 
-                                <div>
-                                    <p className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">
-                                        Why this matters
-                                    </p>
-                                    <p className="text-xs text-muted-foreground leading-relaxed">
-                                        {item.rationale}
-                                    </p>
-                                </div>
+                                        <div>
+                                            <p className="text-[13px] uppercase tracking-wide text-muted-foreground mb-1">
+                                                Why this matters
+                                            </p>
+                                            <p className="text-xs text-muted-foreground leading-relaxed">
+                                                {item.rationale}
+                                            </p>
+                                        </div>
 
-                                <Separator />
+                                        <Separator />
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="border border-border-input p-3">
-                                        <p className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">
-                                            Execution Plan
-                                        </p>
-                                        <p className="text-xs text-foreground leading-relaxed">
-                                            {item.how}
-                                        </p>
+                                        <div className="grid grid-cols-1 gap-4">
+                                            <div className="border border-border-input p-3">
+                                                <div className="flex items-center gap-3 mb-3">
+                                                    <p className="text-[13px] uppercase tracking-wide text-muted-foreground">
+                                                        Execution Plan
+                                                    </p>
+                                                    {item.quick_win && (
+                                                        <Badge className="flex items-center gap-1 text-[10px] uppercase tracking-wide bg-green-100 text-green-700 rounded-none shrink-0">
+                                                            <Check size={14} strokeWidth={3} />
+                                                            Quick Win
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                                <p className="text-xs text-foreground leading-relaxed">
+                                                    {item.how}
+                                                </p>
+                                            </div>
+
+                                            <div className="border border-border-input p-3">
+                                                <p className="text-[13px] uppercase tracking-wide text-muted-foreground mb-1">
+                                                    Outcome
+                                                </p>
+                                                <p className="text-xs text-foreground leading-relaxed">
+                                                    {item.impact}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="border border-border-input p-3">
+                                            <p className="text-[13px] uppercase tracking-wide text-muted-foreground mb-1">
+                                                Estimated Effort
+                                            </p>
+                                            <p className="text-xs text-foreground leading-relaxed">
+                                                {item.effort}
+                                            </p>
+                                        </div>
                                     </div>
-
-                                    <div className="border border-border-input p-3">
-                                        <p className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">
-                                            Outcome
-                                        </p>
-                                        <p className="text-xs text-foreground leading-relaxed">
-                                            {item.impact}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* NEW EFFORT SECTION */}
-                                <div className="border border-border-input p-3">
-                                    <p className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">
-                                        Estimated Effort
-                                    </p>
-                                    <p className="text-xs text-foreground leading-relaxed">
-                                        {item.effort}
-                                    </p>
-                                </div>
-                            </div>
+                                </CardContent>
+                            </Card>
                         </div>
-                    </CardContent>
-                </Card>
-            ))}
+                    ))}
+                </div>
+            </div>
+
+            {/* ── DESKTOP VIEW ── */}
+            <div className="hidden sm:block space-y-3">
+                {steps.map((item, i) => (
+                    <Card key={i} className="border-0 rounded-none shadow-none p-0">
+                        <CardContent className="p-0 border-0">
+                            <div className="grid grid-cols-12">
+                                {/* LEFT STRIP */}
+                                <div className="col-span-12 sm:col-span-1 border-r border-border p-4 flex flex-col gap-3">
+                                    <span className="text-xs font-mono font-bold text-center w-full">
+                                        #{item.priority}
+                                    </span>
+                                </div>
+
+                                {/* MAIN CONTENT */}
+                                <div className="col-span-12 sm:col-span-11 p-4 flex flex-col gap-3 bg-surface">
+                                    <div className="flex items-start justify-between gap-3">
+                                        <p className="text-sm font-semibold text-foreground leading-snug">
+                                            {item.step}
+                                        </p>
+                                        {item.quick_win && (
+                                            <Badge className="flex items-center gap-1 text-[10px] uppercase tracking-wide bg-green-100 text-green-700 rounded-none shrink-0 mt-0.5">
+                                                <Check size={14} strokeWidth={3} />
+                                                Quick Win
+                                            </Badge>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <p className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">
+                                            Why this matters
+                                        </p>
+                                        <p className="text-xs text-muted-foreground leading-relaxed">
+                                            {item.rationale}
+                                        </p>
+                                    </div>
+
+                                    <Separator />
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="border border-border-input p-3">
+                                            <p className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">
+                                                Execution Plan
+                                            </p>
+                                            <p className="text-xs text-foreground leading-relaxed">
+                                                {item.how}
+                                            </p>
+                                        </div>
+
+                                        <div className="border border-border-input p-3">
+                                            <p className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">
+                                                Outcome
+                                            </p>
+                                            <p className="text-xs text-foreground leading-relaxed">
+                                                {item.impact}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="border border-border-input p-3">
+                                        <p className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">
+                                            Estimated Effort
+                                        </p>
+                                        <p className="text-xs text-foreground leading-relaxed">
+                                            {item.effort}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
         </div>
     );
 };
-
-// ---------------- INSTALL COMMANDS ----------------
-// npx shadcn-ui@latest add card
-// npx shadcn-ui@latest add badge
-// npx shadcn-ui@latest add separator
-
-// ---------------- CHANGES ----------------
-// - Removed effort from left strip
-// - Added a dedicated "Estimated Effort" section at bottom
-// - Makes effort clearer + more readable (not just a badge anymore)
-// - Keeps visual flow: Why → How → Outcome → Effort
-
-
-
-
-// ---------------- INSTALL COMMANDS ----------------
-// npx shadcn-ui@latest add card
-// npx shadcn-ui@latest add badge
-// npx shadcn-ui@latest add separator
-
-// ---------------- WHAT CHANGED ----------------
-// - Switched from card blocks → structured list with vertical separation
-// - Added LEFT STRIP for priority + meta (scannable like a dashboard)
-// - Renamed sections to be more intuitive:
-//   "Why this matters" instead of rationale
-//   "Execution Plan" instead of how
-//   "Outcome" instead of impact
-// - Boxed execution + outcome for clearer separation
-// - Removed visual clutter → flatter, more product-like UI
-
-
-
-
-{/* {item.addresses_themes?.length > 0 && (
-    <div className="mt-3 flex flex-wrap gap-1.5">
-        {item.addresses_themes.map(t => (
-            <span key={t} className="text-[10px] font-medium px-2 py-0.5 rounded-full border border-border-solid text-muted">
-                {t}
-            </span>
-        ))}
-    </div>
-)} */}
