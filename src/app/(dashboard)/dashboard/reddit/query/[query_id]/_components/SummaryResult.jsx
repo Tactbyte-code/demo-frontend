@@ -1,9 +1,27 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { CheckCircle, CheckCircle2, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ActionsTab } from './summary/ActionsTab';
+
+// panel variants
+const panelVariants = {
+    hidden: (direction) => ({
+        opacity: 0,
+        x: direction > 0 ? 40 : -40,
+    }),
+    visible: {
+        opacity: 1,
+        x: 0,
+        transition: { duration: 0.2 },
+    },
+    exit: (direction) => ({
+        opacity: 0,
+        x: direction > 0 ? -40 : 40,
+        transition: { duration: 0.15 },
+    }),
+};
 
 // ── Config maps ───────────────────────────────────────────
 const sentimentConfig = {
@@ -506,11 +524,46 @@ const SourcesTab = ({ sources = [], approvedCount = 0, maxApproved = 10, onToggl
 export const SummaryResult = ({ data, sources = [], approvedCount = 0, maxApproved = 10, onToggleSource = null }) => {
     // console.log('summary data: ', data);
 
+    const tabContainerRef = useRef(null);
+    const tabRefs = useRef({});
+
     const [activeTab, setActiveTab] = useState('overview');
+    const [direction, setDirection] = useState(0);
 
     if (!data) return null;
 
+    useEffect(() => {
+        const activeEl = tabRefs.current[activeTab];
+        const container = tabContainerRef.current;
+
+        if (activeEl && container) {
+            const elLeft = activeEl.offsetLeft;
+            const elWidth = activeEl.offsetWidth;
+            const containerWidth = container.offsetWidth;
+
+            container.scrollTo({
+                left: elLeft - containerWidth / 2 + elWidth / 2,
+                behavior: "smooth",
+            });
+        }
+    }, [activeTab]);
+
     const painPointCount = data?.themes?.reduce((acc, t) => acc + (t.pain_points?.length ?? 0), 0) ?? 0;
+
+    const handleSwipe = (e, info) => {
+        const threshold = 50;
+        const currentIndex = TABS.findIndex(t => t.id === activeTab);
+
+        if (info.offset.x < -threshold && currentIndex < TABS.length - 1) {
+            setDirection(1);
+            setActiveTab(TABS[currentIndex + 1].id);
+        }
+
+        if (info.offset.x > threshold && currentIndex > 0) {
+            setDirection(-1);
+            setActiveTab(TABS[currentIndex - 1].id);
+        }
+    };
 
     return (
         <div className="py-4 space-y-4">
@@ -530,72 +583,174 @@ export const SummaryResult = ({ data, sources = [], approvedCount = 0, maxApprov
             </div>
 
             {/* ── Tab bar ── */}
-            <div className="relative w-full border-b border-border-solid">
-                {/* 1. overflow-x-auto: Allows horizontal scrolling on small screens.
-        2. scrollbar-hide: Keeps it clean (requires a CSS utility or plugin).
-        3. flex-nowrap: Prevents tabs from wrapping to a second line.
-    */}
-                <div className="flex items-center gap-0.5 overflow-x-auto scrollbar-hide flex-nowrap">
-                    {TABS.map(tab => {
-                        const count = tab.id === 'themes' ? (data.themes?.length ?? 0)
-                            : tab.id === 'actions' ? (data.actionable_next_steps?.length ?? 0)
-                                : tab.id === 'sources' ? (sources?.length ?? 0)
-                                    : null
+            <div ref={tabContainerRef} className="flex overflow-x-auto md:overflow-hidden border border-border-solid bg-surface-raised">
+                {TABS.map((tab, i) => {
+                    const count =
+                        tab.id === "themes" ? (data.themes?.length ?? 0)
+                            : tab.id === "actions" ? (data.actionable_next_steps?.length ?? 0)
+                                : tab.id === "sources" ? (sources?.length ?? 0)
+                                    : null;
 
-                        return (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`
-                        relative flex items-center gap-1.5 
-                        /* Increased padding for better touch targets on mobile */
-                        px-4 py-3 md:py-2.5 
-                        text-xs font-medium transition-colors cursor-pointer whitespace-nowrap 
-                        ${activeTab === tab.id
-                                        ? 'text-primary'
-                                        : 'text-muted hover:text-foreground'
-                                    }
-                    `}
-                            >
-                                {tab.label}
+                    const isActive = activeTab === tab.id;
+
+                    return (
+                        <button
+                            key={tab.id}
+                            ref={(el) => (tabRefs.current[tab.id] = el)}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`
+                                relative
+                                flex items-center justify-center gap-1.5
+                                
+                                /* 📱 Mobile */
+                                shrink-0 px-3 py-2.5 text-[12px]
+                                
+                                /* 💻 Desktop */
+                                md:flex-1 md:shrink md:px-0 md:py-3
+                                
+                                whitespace-nowrap
+                                transition-colors duration-200
+                                cursor-pointer
+                                
+                                ${isActive
+                                    ? "text-primary font-medium"
+                                    : "text-foreground hover:text-foreground"
+                                }
+                                
+                                ${i < TABS.length - 1
+                                    ? "border-r border-border-solid"
+                                    : ""
+                                }
+                            `}
+                        >
+                            {/* Active bottom indicator */}
+                            {isActive && (
+                                <motion.div
+                                    layoutId="tab-indicator"
+                                    className="absolute inset-0 border-b-2 border-secondary"
+                                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                />
+                            )}
+
+                            <div className="relative z-10 flex items-center gap-1.5">
+                                <span>{tab.label}</span>
 
                                 {count != null && count > 0 && (
                                     <span className={`
-                            text-[9px] font-bold px-1.5 py-0.5 rounded-full font-mono 
-                            ${activeTab === tab.id
-                                            ? 'bg-info-bg text-primary'
-                                            : 'bg-surface-raised text-subtle'
+                            text-[9px] font-bold px-1.5 py-0.5 rounded-full font-mono
+                            ${isActive
+                                            ? "bg-primary text-light"
+                                            : "bg-accent text-light"
                                         }
                         `}>
                                         {count}
                                     </span>
                                 )}
+                            </div>
+                        </button>
+                    );
+                })}
+            </div>
 
-                                {/* Active indicator */}
-                                {activeTab === tab.id && (
-                                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full" />
-                                )}
-                            </button>
-                        )
-                    })}
-                </div>
-            </div>
             {/* ── Tab content ── */}
-            <div>
-                {activeTab === 'overview' && <OverviewTab data={data} />}
-                {activeTab === 'themes' && <ThemesTab data={data} />}
-                {activeTab === 'actions' && <ActionsTab data={data} />}
-                {activeTab === 'signals' && <SignalsTab data={data} />}
-                {activeTab === 'meta' && <MetaTab data={data} />}
-                {activeTab === 'sources' && (
-                    <SourcesTab
-                        sources={sources}
-                        approvedCount={approvedCount}
-                        maxApproved={maxApproved}
-                        onToggle={onToggleSource}
-                    />
-                )}
-            </div>
+            <motion.div
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={0.2}
+                onDragEnd={handleSwipe}
+                className="touch-pan-y"
+            >
+                <AnimatePresence mode="wait">
+
+                    {activeTab === 'overview' && (
+                        <motion.div
+                            key="overview"
+                            variants={panelVariants}
+                            custom={direction}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
+                        >
+                            <OverviewTab data={data} />
+                        </motion.div>
+                    )}
+
+                    {activeTab === 'themes' && (
+                        <motion.div
+                            key="themes"
+                            variants={panelVariants}
+                            custom={direction}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
+                        >
+                            <ThemesTab data={data} />
+                        </motion.div>
+                    )}
+
+                    {activeTab === 'actions' && (
+                        <motion.div
+                            key="actions"
+                            variants={panelVariants}
+                            custom={direction}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
+                        >
+                            <ActionsTab
+                                data={data}
+                                onReachEndSwipe={() => handleSwipe(null, { offset: { x: -100 } })}
+                                onReachStartSwipe={() => handleSwipe(null, { offset: { x: 100 } })}
+                            />
+                        </motion.div>
+                    )}
+
+                    {activeTab === 'signals' && (
+                        <motion.div
+                            key="signals"
+                            variants={panelVariants}
+                            custom={direction}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
+                        >
+                            <SignalsTab data={data} />
+                        </motion.div>
+                    )}
+
+                    {activeTab === 'meta' && (
+                        <motion.div
+                            key="meta"
+                            variants={panelVariants}
+                            custom={direction}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
+                        >
+                            <MetaTab data={data} />
+                        </motion.div>
+                    )}
+
+                    {activeTab === 'sources' && (
+                        <motion.div
+                            key="sources"
+                            variants={panelVariants}
+                            custom={direction}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
+                        >
+                            <SourcesTab
+                                sources={sources}
+                                approvedCount={approvedCount}
+                                maxApproved={maxApproved}
+                                onToggle={onToggleSource}
+                            />
+                        </motion.div>
+                    )}
+
+                </AnimatePresence>
+            </motion.div>
         </div>
     )
 };

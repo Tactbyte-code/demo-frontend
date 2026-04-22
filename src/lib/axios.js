@@ -16,7 +16,7 @@ api.interceptors.request.use(
                 config.headers.Authorization = `Bearer ${token}`;
             }
         } catch (error) {
-            console.log("Failed to get token:", error);
+            console.log("Failed to get token: ", error);
         }
         return config;
     },
@@ -31,9 +31,9 @@ api.interceptors.response.use(
 
         console.log('axios lib: ', error);
 
-        if (status === 401) console.error("Unauthorized:", message);
-        if (status === 404) console.error("Not found:", message);
-        if (status === 500) console.error("Server error:", message);
+        if (status === 401) console.error("Unauthorized: ", message);
+        if (status === 404) console.error("Not found: ", message);
+        if (status === 500) console.error("Server error: ", message);
 
         return Promise.reject(error);
     }

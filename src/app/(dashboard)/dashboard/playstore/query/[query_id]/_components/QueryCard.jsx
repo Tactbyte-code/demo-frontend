@@ -36,13 +36,13 @@ export function QueryCard({ query }) {
                 {/* Header */}
                 <div className="flex items-center gap-3">
                     <div
-                        className="w-9 h-9 flex items-center justify-center shrink-0"
+                        className="w-9 h-9 flex items-center justify-center shrink-0 rounded-full"
                         style={{
                             backgroundColor: "var(--surface-raised)",
                             border: "1px solid var(--border-solid)",
                         }}
                     >
-                        <Cpu className="w-4 h-4" style={{ color: "var(--primary)" }} />
+                        <Cpu className="w-5 h-5" style={{ color: "var(--primary)" }} />
                     </div>
 
                     <div>

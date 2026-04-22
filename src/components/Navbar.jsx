@@ -133,7 +133,7 @@ export default function Navbar() {
 
             <div className="hidden lg:flex gap-1 text-[13px] font-medium">
               {navItems.map((item) =>
-                item.name === "How It Works" ? (
+                item?.name === "How It Works" ? (
                   <a
                     key={item.name}
                     href={item.href}
@@ -145,12 +145,12 @@ export default function Navbar() {
                   </a>
                 ) : (
                   <Link
-                    key={item.name}
-                    href={item.href}
+                    key={item?.name}
+                    href={item?.href}
                     className="flex items-center gap-1.5 px-2.5 py-1.5 text-white/90 hover:bg-white/10 hover:text-white transition-all"
                   >
                     <item.icon className="w-3.5 h-3.5 opacity-70" />
-                    <span>{item.name}</span>
+                    <span>{item?.name}</span>
                   </Link>
                 ),
               )}
@@ -263,10 +263,11 @@ export default function Navbar() {
                   </button>
                 </div>
 
-                <div className="flex flex-col gap-0.1 p-6">
-                  <p className="text-sm font-semibold text-muted uppercase tracking-wide px-1 mb-2">
+                <div className="flex flex-col gap-1 p-6">
+                  <p className="text-xs font-semibold text-muted uppercase tracking-wide px-1 mb-2">
                     Main Menu
                   </p>
+
                   {navItems.map((item) =>
                     item.name === "How It Works" ? (
                       <a
@@ -276,10 +277,10 @@ export default function Navbar() {
                           handleHowItWorksClick(e);
                           setIsMobileMenuOpen(false);
                         }}
-                        className="flex items-center gap-3 p-3 text-foreground font-semibold hover:bg-surface-card transition-colors group"
+                        className="flex items-center gap-3 text-[16px] py-1.5 px-3 text-foreground font-medium hover:bg-surface-card transition-colors group"
                       >
-                        <div className="p-2 bg-surface-raised group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                          <item.icon className="w-5 h-5" />
+                        <div className="p-2 bg-surface-raised rounded-full group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                          <item.icon className="w-4 h-4" />
                         </div>
                         {item.name}
                       </a>
@@ -288,19 +289,20 @@ export default function Navbar() {
                         key={item.name}
                         href={item.href}
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-3 p-3 text-foreground font-semibold hover:bg-surface-card transition-colors group"
+                        className="flex items-center gap-3 px-3 py-1.5 text-foreground text-[16px] font-medium hover:bg-surface-card transition-colors group"
                       >
-                        <div className="p-2 bg-surface-raised group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                          <item.icon className="w-5 h-5" />
+                        <div className="p-2 bg-surface-raised rounded-full group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                          <item.icon className="w-4 h-4" />
                         </div>
                         {item.name}
                       </Link>
                     )
                   )}
-                  <div className="h-px bg-border-solid/30 my-6" />
 
-                  <p className="text-sm font-semibold text-muted uppercase tracking-wide px-2 mb-4">
-                    Our Coere Features
+                  <div className="h-px my-4" />
+
+                  <p className="text-xs font-semibold text-muted uppercase tracking-wide px-1 mb-2">
+                    Our Core Features
                   </p>
 
                   <Link
@@ -309,9 +311,9 @@ export default function Navbar() {
                     className="flex items-center justify-between p-4 bg-surface-card border border-border-solid/20 group active:scale-[0.98] transition-all mb-2"
                   >
                     <div className="flex items-center gap-3">
-                      <Activity className="w-5 h-5 text-primary" />
-                      <span className="text-sm font-bold text-foreground">
-                        Reddit Analysis
+                      <Activity className="w-4 h-4 text-primary" />
+                      <span className="text-[16px] font-medium text-foreground">
+                        Reddit Scan
                       </span>
                     </div>
                     <ArrowRight className="w-4 h-4 text-muted group-hover:translate-x-1 transition-transform" />
@@ -322,8 +324,8 @@ export default function Navbar() {
                     className="flex items-center justify-between p-4 bg-surface-card border border-border-solid/20 group active:scale-[0.98] transition-all mb-2"
                   >
                     <div className="flex items-center gap-3">
-                      <LayoutGrid className="w-5 h-5 text-primary" />
-                      <span className="text-sm font-bold text-foreground">
+                      <LayoutGrid className="w-4 h-4 text-primary" />
+                      <span className="text-[16px] font-medium text-foreground">
                         Playstore Analysis
                       </span>
                     </div>

@@ -370,10 +370,10 @@ function TabBar({ tabs, active, onChange }) {
                             flex items-center justify-center gap-1.5
                             
                             /* 📱 Mobile behavior */
-                            flex-shrink-0 px-3 py-2.5 text-[12px]
+                            shrink-0 px-3 py-2.5 text-[12px]
                             
                             /* 💻 Desktop behavior */
-                            md:flex-1 md:flex-shrink md:px-0 md:py-3
+                            md:flex-1 md:shrink md:px-0 md:py-3
                             
                             whitespace-nowrap
                             transition-colors duration-200
@@ -516,7 +516,7 @@ function InlineReviewCard({ review, index }) {
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
-export function SummaryResult({ data, reviews, reviewsLoaded, showReviews }) {
+export function SummaryResult({ data, reviews, reviewsLoaded=true, showReviews=true }) {
     const [activeTab, setActiveTab] = useState("overview");
     const [direction, setDirection] = useState(0);
 
@@ -711,23 +711,13 @@ export function SummaryResult({ data, reviews, reviewsLoaded, showReviews }) {
                             <Section>
                                 <SectionHead icon={MessageSquare} title="Reviews" />
                                 <SectionBody>
-                                    {!showReviews ? null : !reviewsLoaded ? (
-                                        <div className="flex flex-col gap-3 animate-pulse">
-                                            {[...Array(4)].map((_, i) => (
-                                                <div
-                                                    key={i}
-                                                    className="h-20 border border-[var(--color-border-solid)]"
-                                                    style={{ backgroundColor: "var(--color-surface-raised)" }}
-                                                />
-                                            ))}
-                                        </div>
-                                    ) : reviews.length === 0 ? (
+                                    {reviews.length === 0 ? (
                                         <p className="text-sm py-4 text-center text-[var(--color-subtle)]">
                                             No reviews found.
                                         </p>
                                     ) : (
-                                        <div className="flex flex-col gap-3 max-h-[600px] overflow-y-auto pr-1">
-                                            {reviews.slice(0, visibleCount).map((r, i) => (
+                                        <div className="flex flex-col gap-3 max-h-150 overflow-y-auto pr-1">
+                                            {reviews?.slice(0, visibleCount).map((r, i) => (
                                                 <InlineReviewCard
                                                     key={r.id ?? r.review_id ?? i}
                                                     review={r}

@@ -13,7 +13,7 @@ const poppins = Poppins({
 });
 
 export const metadata = {
-  title: "Demo AI App",
+  title: "Problem Pulse",
   description: "Problem Discovery System",
 };
 

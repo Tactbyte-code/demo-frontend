@@ -64,7 +64,7 @@ export default function RedditIntelligencePage() {
 
             if (response) {
                 setQueryId(response.id);
-                queryClient.invalidateQueries({ queryKey: ["queries", user_id] });
+                queryClient.removeQueries({ queryKey: ["queries", user_id] });
             };
 
             // console.log('status from reddit page: ', response?.status);

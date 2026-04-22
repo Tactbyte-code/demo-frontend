@@ -5,12 +5,13 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function RedditQueryHistoryTable() {
+
     const [userId, setUserId] = useState(null);
     const router = useRouter();
 
     useEffect(() => {
         if (typeof window !== "undefined") {
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const user = JSON.parse(localStorage?.getItem('user') || '{}');
             setUserId(user?.firebase_uid);
         }
     }, []);
@@ -18,16 +19,18 @@ export default function RedditQueryHistoryTable() {
     const {
         data: queries,
         isLoading,
-        isError,
+        isError, 
         isFetching,
         refetch
     } = useGetPlaystoreQueries(userId);
 
     const handleRowClick = (query) => {
-        if (query.status === "FAILED") return;
+        if (query?.status === "FAILED") return;
 
-        if (query.status === "CLARIFYING") {
+        if (query?.status === "CLARIFYING") {
             router.push(`/dashboard/playstore/query/${query.id}/clarify`);
+        } else if (query?.status === "COMPLETED") {
+            router.push(`/dashboard/playstore/summary/${query.id}`);
         } else {
             router.push(`/dashboard/playstore/query/${query.id}`);
         }
@@ -66,7 +69,7 @@ export default function RedditQueryHistoryTable() {
                         </thead>
 
                         <tbody className="divide-y" style={{ borderColor: "var(--border-solid)" }}>
-                            {(isLoading || isFetching) && (
+                            {isLoading && (
                                 <tr>
                                     <td colSpan={3} className="px-6 py-10 text-center text-xs" style={{ color: "var(--text-subtle)" }}>
                                         Loading your queries...
@@ -112,11 +115,10 @@ export default function RedditQueryHistoryTable() {
                                     <tr
                                         key={query.id}
                                         onClick={() => handleRowClick(query)}
-                                        className={`transition ${
-                                            isDisabled
+                                        className={`transition ${isDisabled
                                                 ? "cursor-not-allowed opacity-60"
                                                 : "cursor-pointer hover:bg-[var(--surface-card)]"
-                                        }`}
+                                            }`}
                                     >
                                         <td className="px-6 py-4 text-sm whitespace-nowrap" style={{ color: "var(--text)" }}>
                                             {query.app_id}

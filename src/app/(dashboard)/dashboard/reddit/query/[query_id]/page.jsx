@@ -43,12 +43,14 @@ export default function QueryResultPage() {
     const [isSummarized, setIsSummarized] = useState(false);
     const [isRequerying, setIsRequerying] = useState(false);
 
-    const user_id = localStorage.getItem('user').firebase_uid;
+    const user_id = typeof window !== 'undefined'
+        ? JSON.parse(localStorage?.getItem('user') || '{}')?.firebase_uid
+        : null; console.log('user id: ', user_id);
 
     const queryClient = useQueryClient();
 
     const { data: summData } = useGetSummary(query_id);
-    console.log('summ data: ', summData);
+    // console.log('summ data: ', summData);
 
     // ── fetch helpers ──────────────────────────────────────────────────────────
     const fetchPosts = useCallback(async () => {
@@ -177,7 +179,7 @@ export default function QueryResultPage() {
         try {
             const response = await api.post(`/reddit/query/${query_id}/search`);
             console.log('handle trigger search: ', response);
-            if (response) queryClient.invalidateQueries({ queryKey: ["queries", user_id] });
+            if (response) queryClient.removeQueries({ queryKey: ["queries", user_id] });
 
             setStatus("WEB_SEARCHING");
             setIsPolling(true);
@@ -210,6 +212,8 @@ export default function QueryResultPage() {
 
         try {
             const response = await runStream("summarize");
+            if (response) queryClient.removeQueries({ queryKey: ["queries", user_id] });
+
             console.log('run stream: ', response);
 
             setStatus((prev) => {
@@ -242,7 +246,7 @@ export default function QueryResultPage() {
         setActionLoading(true);
         try {
             const response = await api.post(`/reddit/query/${query_id}/retry-search`);
-            if (response) queryClient.invalidateQueries({ queryKey: ["queries", user_id] });
+            if (response) queryClient.removeQueries({ queryKey: ["queries", user_id] });
 
             console.log('handle retry search: ', response);
 
@@ -264,7 +268,7 @@ export default function QueryResultPage() {
         setActionLoading(true);
         try {
             const response = await api.post(`/reddit/query/${query_id}/retry-summarize`);
-            if (response) queryClient.invalidateQueries({ queryKey: ["queries", user_id] });
+            if (response) queryClient.removeQueries({ queryKey: ["queries", user_id] });
 
             setStatus("SEARCH_COMPLETE");
             setFailureReason(null);

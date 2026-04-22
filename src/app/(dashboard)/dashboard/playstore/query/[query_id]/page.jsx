@@ -16,6 +16,7 @@ import { Pipeline } from "./_components/Pipeline";
 import { SummaryResult } from "./_components/SummaryResult";
 import { ReviewsList } from "./_components/ReviewsList";
 import { useQueryClient } from "@tanstack/react-query";
+import { getReviews } from "@/features/playstore/api/getReviews";
 
 // Statuses that have reviews available
 const REVIEWS_STATUSES = ["FETCH_COMPLETE", "SUMMARIZING", "COMPLETED"];
@@ -35,14 +36,17 @@ export default function PlaystoreQueryDetailPage() {
     const [actionLoading, setActionLoading] = useState(false);
     const [isPolling, setIsPolling] = useState(false);
 
-    const user_id = localStorage?.getItem('user')?.firebase_uid;
+    const user_id = typeof window !== 'undefined'
+        ? JSON.parse(localStorage?.getItem('user') || '{}')?.firebase_uid
+        : null; console.log('user id: ', user_id);
+
     const queryClient = useQueryClient();
 
     // ── fetch helpers ────────────────────────────────────────────────────────────
     const fetchReviews = useCallback(async () => {
         try {
-            const data = await getQueryReviews(query_id);
-            setReviews(data.reviews ?? data ?? []);
+            const data = await getReviews(query_id);
+            setReviews(data?.reviews ?? data ?? []);
             setReviewsLoaded(true);
         } catch (e) {
             console.error("[fetchReviews]", e);
@@ -135,7 +139,7 @@ export default function PlaystoreQueryDetailPage() {
         setFailedAtStep(null);
         try {
             const response = await triggerFetch(query_id);
-            if (response) queryClient.invalidateQueries({ queryKey: ["play-queries", user_id] });
+            if (response) queryClient.removeQueries({ queryKey: ["play-queries", user_id] });
 
             setStatus("FETCHING");
             setIsPolling(true);
@@ -154,7 +158,7 @@ export default function PlaystoreQueryDetailPage() {
         setFailedAtStep(null);
         try {
             const response = await triggerSummarize(query_id);
-            if (response) queryClient.invalidateQueries({ queryKey: ["play-queries", user_id] });
+            if (response) queryClient.removeQueries({ queryKey: ["play-queries", user_id] });
 
             setStatus("SUMMARIZING");
             setIsPolling(true);
@@ -175,7 +179,7 @@ export default function PlaystoreQueryDetailPage() {
         setFailedAtStep(null);
         try {
             const response = await retryFetch(query_id);
-            if (response) queryClient.invalidateQueries({ queryKey: ["play-queries", user_id] });
+            if (response) queryClient.removeQueries({ queryKey: ["play-queries", user_id] });
 
             setStatus("FETCHING");
             setIsPolling(true);
@@ -192,7 +196,7 @@ export default function PlaystoreQueryDetailPage() {
         setFailedAtStep(null);
         try {
             const response = await retrySummarize(query_id);
-            if (response) queryClient.invalidateQueries({ queryKey: ["play-queries", user_id] });
+            if (response) queryClient.removeQueries({ queryKey: ["play-queries", user_id] });
 
             setStatus("SUMMARIZING");
             setIsPolling(true);
@@ -230,12 +234,12 @@ export default function PlaystoreQueryDetailPage() {
             </motion.button>
 
             {/* Query metadata. have to be edited for requering*/}
-            {!isCompleted && (
+            {!(isCompleted && summary) && (
                 <QueryCard query={query} />
             )}
 
             {/* Pipeline progress + action buttons */}
-            {!isCompleted && (
+            {!(isCompleted && summary) && (
                 <Pipeline
                     showPipeline={qs.showPipeline}
                     status={status}

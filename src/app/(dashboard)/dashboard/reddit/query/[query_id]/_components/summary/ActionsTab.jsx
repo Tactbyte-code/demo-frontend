@@ -7,7 +7,8 @@ import { Check } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
 import { Progress } from "@/components/ui/progress";
 
-export const ActionsTab = ({ data }) => {
+export const ActionsTab = ({ data, onReachEndSwipe, onReachStartSwipe }) => {
+
     const scrollRef = useRef(null);
     const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -61,6 +62,33 @@ export const ActionsTab = ({ data }) => {
                 {/* Swipe cards */}
                 <div
                     ref={scrollRef}
+                    onTouchStart={(e) => {
+                        const touch = e.touches[0];
+                        scrollRef.current._startX = touch.clientX;
+                    }}
+                    onTouchEnd={(e) => {
+                        const container = scrollRef.current;
+                        if (!container) return;
+
+                        const touch = e.changedTouches[0];
+                        const diffX = touch.clientX - container._startX;
+
+                        const atStart = container.scrollLeft <= 0;
+                        const atEnd =
+                            container.scrollLeft + container.clientWidth >= container.scrollWidth - 1;
+
+                        const SWIPE_THRESHOLD = 50;
+
+                        // 👉 Swipe RIGHT at first card → go to previous tab
+                        if (diffX > SWIPE_THRESHOLD && atStart) {
+                            onReachStartSwipe?.();
+                        }
+
+                        // 👉 Swipe LEFT at last card → go to next tab
+                        if (diffX < -SWIPE_THRESHOLD && atEnd) {
+                            onReachEndSwipe?.();
+                        }
+                    }}
                     className="overflow-x-auto flex gap-3 snap-x snap-mandatory scroll-smooth [-webkit-overflow-scrolling:touch]"
                 >
                     {steps.map((item, i) => (

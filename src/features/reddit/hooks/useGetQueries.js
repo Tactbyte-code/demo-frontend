@@ -4,7 +4,7 @@ import { getQueries } from "../api/getQueries";
 export const useGetQueries = (userId) => {
     return useQuery({
         queryKey: ["queries", userId],
-        // enabled: !!userId, // 🔥 important (wait until user exists)
         queryFn: getQueries,
+        staleTime: 60 * 1000, //1min
     });
 };

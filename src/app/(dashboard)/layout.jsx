@@ -10,6 +10,7 @@ import {
     PanelLeftClose,
     PanelLeftOpen,
     X,
+    Search,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -86,6 +87,11 @@ export default function DashboardLayout({ children }) {
         { name: 'Reddit Analysis', icon: Database, href: '/dashboard/reddit' },
     ];
 
+    const leadGenerationItems = [
+        { name: 'Keyword search', icon: Search, href: '/dashboard/lead' },
+        // { name: 'Reddit Analysis', icon: Database, href: '/dashboard/reddit' },
+    ];
+
     return (
         <div
             className="flex h-screen overflow-hidden font-sans relative"
@@ -144,8 +150,13 @@ export default function DashboardLayout({ children }) {
                                 </div>
 
                                 <NavGroup label="General" items={mainItems} pathname={pathname} />
+
                                 <div className="mt-7">
                                     <NavGroup label="Intelligence Engines" items={engineItems} pathname={pathname} />
+                                </div>
+
+                                <div className="mt-7">
+                                    <NavGroup label="Lead Generation" items={leadGenerationItems} pathname={pathname} />
                                 </div>
                             </div>
 
