@@ -57,6 +57,7 @@ const STATUS_CONFIG = {
 };
 
 function StatusBadge({ status }) {
+
     const cfg = STATUS_CONFIG[status] ?? {
         label: status,
         icon: AlertCircle,
@@ -64,6 +65,7 @@ function StatusBadge({ status }) {
         bg: "var(--surface-card)",
         border: "var(--border-solid)",
     };
+
     const Icon = cfg.icon;
     const isSpinning = status === "PROCESSING";
 
@@ -80,7 +82,7 @@ function StatusBadge({ status }) {
             {cfg.label}
         </span>
     );
-}
+};
 
 // ── Route resolver ─────────────────────────────────────────────────────────────
 const getQueryRoute = (query) => {
@@ -137,7 +139,7 @@ function Pagination({ page, totalPages, onPage }) {
             </div>
         </div>
     );
-}
+};
 
 // ── Main component ─────────────────────────────────────────────────────────────
 export default function RedditQueryHistoryTable() {
@@ -180,8 +182,8 @@ export default function RedditQueryHistoryTable() {
                 <Table>
                     <TableHeader style={{ backgroundColor: "var(--surface-card)" }}>
                         <TableRow className="border-b border-border hover:bg-transparent">
-                            {["Query", "Created", "Status"].map((h) => (
-                                <TableHead key={h} className="px-6 py-4 text-[12px] font-bold uppercase tracking-[0.15em] text-muted">
+                            {["Query", "Status", "Created At"].map((h) => (
+                                <TableHead key={h} className="px-6 py-4 text-[12px] font-bold uppercase tracking-wider text-muted">
                                     {h}
                                 </TableHead>
                             ))}
@@ -220,23 +222,25 @@ export default function RedditQueryHistoryTable() {
                                         : "cursor-pointer hover:bg-[var(--surface-card)]"
                                         }`}
                                 >
-                                    <TableCell className="px-6 py-4 max-w-xs">
-                                        <p className="text-sm font-medium truncate" title={query.query}>
+                                    <TableCell className="px-4 md:px-6 py-3 md:py-4">
+                                        <p
+                                            className="text-sm font-medium truncate max-w-[50vw] md:max-w-xs"
+                                            title={query.query}
+                                        >
                                             {query.query}
                                         </p>
                                     </TableCell>
 
-                                    <TableCell className="px-6 py-4">
+                                    <TableCell className="px-6 py-3 md:py-4">
+                                        <StatusBadge status={query.status} />
+                                    </TableCell>
+
+                                    <TableCell className="px-6 py-3 md:py-4">
                                         <div className="flex items-center gap-1.5">
-                                            <Clock className="w-3 h-3 opacity-50" />
-                                            <span className="text-xs tabular-nums">
+                                            <span className="text- tabular-nums">
                                                 {new Date(query.created_at).toLocaleDateString("en-IN")}
                                             </span>
                                         </div>
-                                    </TableCell>
-
-                                    <TableCell className="px-6 py-4">
-                                        <StatusBadge status={query.status} />
                                     </TableCell>
                                 </TableRow>
                             );

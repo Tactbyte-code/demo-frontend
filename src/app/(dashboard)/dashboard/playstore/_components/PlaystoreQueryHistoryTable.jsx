@@ -3,13 +3,62 @@
 import { useGetPlaystoreQueries } from "@/features/playstore/hooks/useGetPlaystoreQueries";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronFirst, ChevronLast, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronFirst, ChevronLast, ChevronLeft, ChevronRight, CheckCircle2, XCircle, HelpCircle } from "lucide-react";
 
 // shadcn
 import { Button } from "@/components/ui/button";
 
 // ── Pagination Config ─────────────────────────────────────────────
 const ROWS_PER_PAGE = 10;
+
+// ── Status Config ─────────────────────────────────────────────
+const STATUS_CONFIG = {
+    COMPLETED: {
+        label: "Completed",
+        icon: CheckCircle2,
+        color: "var(--success)",
+        bg: "var(--success-bg)",
+        border: "color-mix(in srgb, var(--success) 30%, transparent)",
+    },
+    FAILED: {
+        label: "Failed",
+        icon: XCircle,
+        color: "#991b1b",
+        bg: "var(--destructive-bg)",
+        border: "color-mix(in srgb, var(--destructive) 30%, transparent)",
+    },
+    DEFAULT: {
+        label: "Pending",
+        icon: HelpCircle,
+        color: "var(--warning)",
+        bg: "var(--warning-bg)",
+        border: "color-mix(in srgb, var(--warning) 30%, transparent)",
+    },
+};
+
+function StatusBadge({ status }) {
+    const cfg =
+        STATUS_CONFIG[status] || {
+            ...STATUS_CONFIG.DEFAULT,
+            label: status,
+        };
+
+    const Icon = cfg.icon;
+
+    return (
+        <span
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider border rounded-none whitespace-nowrap"
+            style={{
+                color: cfg.color,
+                backgroundColor: cfg.bg,
+                borderColor: cfg.border,
+            }}
+        >
+            <Icon className="w-3 h-3 shrink-0" />
+            {cfg.label}
+        </span>
+    );
+}
 
 function Pagination({ page, totalPages, onPage }) {
     const [jump, setJump] = useState("");
@@ -122,11 +171,14 @@ export default function PlaystoreQueryHistoryTable() {
             {/* Header */}
             <div className="flex items-end justify-between mb-5 mt-4">
                 <div>
-                    <h2 className="text-xl font-black tracking-tight" style={{ color: "var(--text-main)" }}>
-                        Recent Analysis
-                    </h2>
-                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                        Your analysis history and status
+                    <div className="flex items-center gap-2 mb-1">
+                        <div className="w-0.75 h-5" style={{ backgroundColor: "var(--primary)" }} />
+                        <h2 className="text-xl font-black tracking-tight" style={{ color: "var(--text-main)" }}>
+                            Recent Analysis
+                        </h2>
+                    </div>
+                    <p className="text-xs pl-2.75" style={{ color: "var(--text-muted)" }}>
+                        Your analysis history and current status
                     </p>
                 </div>
             </div>
@@ -143,7 +195,7 @@ export default function PlaystoreQueryHistoryTable() {
                     <table className="w-full text-left border-collapse min-w-[600px]">
                         <thead style={{ backgroundColor: "var(--surface-card)" }}>
                             <tr className="border-b border-border">
-                                {["App ID", "Created", "Status"].map((h) => (
+                                {["App Id", "Status", "Created At"].map((h) => (
                                     <th
                                         key={h}
                                         className="px-6 py-4 text-[12px] font-bold uppercase tracking-wide whitespace-nowrap"
@@ -198,20 +250,19 @@ export default function PlaystoreQueryHistoryTable() {
                                     <tr
                                         key={query.id}
                                         onClick={() => handleRowClick(query)}
-                                        className={`transition ${
-                                            isDisabled
-                                                ? "cursor-not-allowed opacity-60"
-                                                : "cursor-pointer hover:bg-[var(--surface-card)]"
-                                        }`}
+                                        className={`transition ${isDisabled
+                                            ? "cursor-not-allowed opacity-60"
+                                            : "cursor-pointer hover:bg-surface-card"
+                                            }`}
                                     >
-                                        <td className="px-6 py-4 text-sm whitespace-nowrap">
+                                        <td className="px-6 py-3 md:py-4 text-sm whitespace-nowrap truncate max-w-[45vw] md:max-w-xs">
                                             {query.app_id}
                                         </td>
-                                        <td className="px-6 py-4 text-sm whitespace-nowrap">
-                                            {new Date(query.created_at).toLocaleDateString("en-IN")}
+                                        <td className="px-6 py-3 md:py-4 whitespace-nowrap">
+                                            <StatusBadge status={query.status} />
                                         </td>
-                                        <td className="px-6 py-4 text-sm whitespace-nowrap">
-                                            {query.status}
+                                        <td className="px-6 py-3 md:py-4 text-sm whitespace-nowrap">
+                                            {new Date(query.created_at).toLocaleDateString("en-IN")}
                                         </td>
                                     </tr>
                                 );

@@ -11,7 +11,10 @@ import {
     PanelLeftOpen,
     X,
     Search,
+    Sparkles
 } from 'lucide-react';
+import { FaReddit } from "react-icons/fa";
+import { FaGooglePlay } from "react-icons/fa";
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -29,25 +32,19 @@ export default function DashboardLayout({ children }) {
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-    // --- RESPONSIVE LOGIC ---
     useEffect(() => {
         const handleResize = () => {
-            // Collapse sidebar by default on mobile/tablet (less than 1024px)
             if (window.innerWidth < 1024) {
                 setSidebarOpen(false);
             } else {
                 setSidebarOpen(true);
             }
         };
-
-        // Initialize on mount
         handleResize();
-
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, [setSidebarOpen]);
 
-    // Auto-close sidebar when navigating on mobile
     useEffect(() => {
         if (window.innerWidth < 1024) {
             setSidebarOpen(false);
@@ -83,12 +80,12 @@ export default function DashboardLayout({ children }) {
     ];
 
     const engineItems = [
-        { name: 'Playstore Analysis', icon: Globe, href: '/dashboard/playstore' },
-        { name: 'Reddit Analysis', icon: Database, href: '/dashboard/reddit' },
+        { name: 'Reddit Analysis', icon: FaReddit, href: '/dashboard/reddit' },
+        { name: 'Playstore Analysis', icon: FaGooglePlay, href: '/dashboard/playstore' },
     ];
 
     const leadGenerationItems = [
-        { name: 'Keyword search', icon: Search, beta: true },
+        { name: 'Keyword Search', icon: Search, beta: true },
     ];
 
     return (
@@ -125,11 +122,25 @@ export default function DashboardLayout({ children }) {
                             borderRight: '1px solid var(--sidebar-border)',
                         }}
                     >
-                        <div className="w-[260px] flex flex-col h-full">
+                        <div className="w-65 flex flex-col h-full">
                             {/* Brand & Mobile Close */}
                             <div className="px-4 pt-7 pb-5">
-                                <div className="flex items-center justify-between mb-8">
-                                    <Link href="/" className="flex items-center no-underline group">
+                                {/* Mobile Close Button Row */}
+                                <div className="flex justify-end mb-4 lg:hidden">
+                                    <button
+                                        onClick={() => setSidebarOpen(false)}
+                                        className="p-1 text-muted border border-border hover:bg-sidebar-hover transition-colors"
+                                    >
+                                        <X size={20} />
+                                    </button>
+                                </div>
+
+                                {/* Logo Row */}
+                                <div className="mb-8">
+                                    <Link
+                                        href="/"
+                                        className="flex flex-row items-center no-underline group gap-2"
+                                    >
                                         <div className="relative h-10 w-40">
                                             <Image
                                                 src="/images/logo_with_text_2.png"
@@ -139,13 +150,19 @@ export default function DashboardLayout({ children }) {
                                                 priority
                                             />
                                         </div>
+
+                                        <span
+                                            className="mt-1 sm:mt-0 shrink-0 flex items-center gap-1 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] rounded-full"
+                                            style={{
+                                                background: "linear-gradient(135deg, #16a34a, #22c55e)",
+                                                color: "white",
+                                                boxShadow: "0 2px 8px rgba(34, 197, 94, 0.25)",
+                                            }}
+                                        >
+                                            <Sparkles className="w-3 h-3" />
+                                            Beta
+                                        </span>
                                     </Link>
-                                    <button
-                                        onClick={() => setSidebarOpen(false)}
-                                        className="lg:hidden p-1 text-muted border border-border hover:bg-sidebar-hover transition-colors"
-                                    >
-                                        <X size={20} />
-                                    </button>
                                 </div>
 
                                 <NavGroup label="General" items={mainItems} pathname={pathname} />
@@ -226,36 +243,38 @@ function NavGroup({ label, items, pathname }) {
                 {items.map(item => {
                     const isActive = pathname === item.href;
 
-                    // 🔹 BETA ITEM (no routing)
+                    // 🔹 BETA / COMING SOON ITEM
                     if (item.beta) {
                         return (
                             <div
                                 key={item.name}
-                                className="flex mt-2 items-center justify-between px-3 py-2.5 text-sm font-semibold cursor-not-allowed select-none"
+                                className="flex items-center justify-between px-3 py-2.5 text-sm font-semibold cursor-not-allowed select-none rounded-md"
                                 style={{
-                                    backgroundColor: 'transparent',
-                                    color: 'var(--text-muted)',
-                                    border: '1px dashed var(--sidebar-border)',
-                                    opacity: 0.6,
+                                    backgroundColor: "transparent",
+                                    color: "var(--text-muted)",
+                                    border: "1px dashed var(--sidebar-border)",
+                                    opacity: 0.65,
                                 }}
                             >
-                                <div className="flex items-center gap-2.5">
+                                {/* Left: icon + name */}
+                                <div className="flex items-center gap-2.5 min-w-0">
                                     <item.icon
-                                        className="w-4 h-4"
-                                        style={{ color: 'var(--sidebar-main)' }}
+                                        className="w-4 h-4 shrink-0"
+                                        style={{ color: "var(--sidebar-main)" }}
                                     />
-                                    <span className="tracking-tight">{item.name}</span>
+                                    <span className="tracking-tight truncate">{item.name}</span>
                                 </div>
 
-                                {/* Beta badge */}
+                                {/* Right: Coming Soon badge */}
                                 <span
-                                    className="text-[9px] font-bold px-2 py-0.5 bg-yellow-300 text-black border border-black"
+                                    className="shrink-0 text-[8px] font-bold uppercase tracking-wide px-1.5 py-0.5 ml-2"
                                     style={{
-                                        // border: '1px solid var(--accent)',
-                                        letterSpacing: '0.05em',
+                                        backgroundColor: "color-mix(in srgb, #f59e0b 15%, transparent)",
+                                        color: "#f59e0b",
+                                        border: "1px solid color-mix(in srgb, #f59e0b 30%, transparent)",
                                     }}
                                 >
-                                    BETA
+                                    Soon
                                 </span>
                             </div>
                         );
@@ -277,11 +296,16 @@ function NavGroup({ label, items, pathname }) {
                         >
                             <div className="flex items-center gap-2.5">
                                 <item.icon
-                                    className="w-4 h-4"
+                                    className="w-5 h-5"
                                     style={{
-                                        color: isActive
-                                            ? 'var(--sidebar-item-active-text)'
-                                            : 'var(--sidebar-main)'
+                                        color:
+                                            item.name === "Reddit Analysis"
+                                                ? "#FF4500"
+                                                : item.name === "Playstore Analysis"
+                                                    ? "#4285F4"
+                                                    : isActive
+                                                        ? "var(--sidebar-item-active-text)"
+                                                        : "var(--sidebar-main)"
                                     }}
                                 />
                                 <span className="tracking-tight">{item.name}</span>

@@ -12,6 +12,8 @@ import {
     Activity,
     ChevronRight
 } from "lucide-react";
+import { FaReddit } from "react-icons/fa";
+import { FaGooglePlay } from "react-icons/fa";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { getToken } from "@/utils/getToken";
@@ -54,18 +56,16 @@ function StatCard({ label, value, icon: Icon, colorClass, bgClass, delay = 0 }) 
 function QuickActions({ isMobile = false }) {
     const actions = [
         {
-            label: "New Reddit Scan",
+            label: "Reddit Analyser",
             href: "/dashboard/reddit",
-            icon: MessageSquare,
-            color: "text-primary",
-            bg: "bg-info-bg"
+            icon: FaReddit,
+            color: "#FF4500"
         },
         {
-            label: "View App Analysis",
+            label: "Playstore Analyser",
             href: "/dashboard/playstore",
-            icon: Star,
-            color: "text-warning",
-            bg: "bg-warning-bg"
+            icon: FaGooglePlay,
+            color: "#4285F4"
         }
     ];
 
@@ -95,9 +95,10 @@ function QuickActions({ isMobile = false }) {
                             ${isMobile ? "flex-1 justify-center" : ""}
                         `}
                     >
-                        <div className={`w-7 h-7 rounded-full flex items-center justify-center ${bg}`}>
-                            <Icon className={`w-3.5 h-3.5 ${color}`} />
-                        </div>
+                        <Icon
+                            className="w-5 h-5 shrink-0"
+                            style={{ color }}
+                        />
 
                         <span className="text-[12px] font-semibold whitespace-nowrap">
                             {label}
