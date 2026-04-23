@@ -177,7 +177,7 @@ export default function Navbar() {
 
           <Link
             href="/"
-            className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2"
+            className="absolute left-[53%] -translate-x-1/2 top-1/2 -translate-y-1/2"
           >
             <div className="relative h-13 w-35 md:h-9 md:w-36 lg:h-10 lg:w-44">
               <Image
