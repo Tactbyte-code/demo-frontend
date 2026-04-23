@@ -84,6 +84,10 @@ export default function LoginPage() {
     const [confirmNewPassword, setConfirmNewPassword] = useState('');
     const [showNewPassword, setShowNewPassword] = useState(false);
 
+    const storedUser= localStorage.getItem("user");
+    const user = JSON.parse(storedUser);
+    console.log('user: ', user);
+
     // ── Helpers ───────────────────────────────────────────
     const saveUserAndRedirect = (data) => {
         localStorage.setItem("user", JSON.stringify({
@@ -218,9 +222,7 @@ export default function LoginPage() {
     const isLoading = loginMutation.isPending || googleMutation.isPending;
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-6 font-sans overflow-hidden relative"
-            style={{ backgroundColor: 'var(--background)' }}>
-
+        <div className="min-h-screen flex items-center justify-center p-6 font-sans overflow-hidden relative" style={{ backgroundColor: 'var(--background)' }}>
             {/* Back to home */}
             <Link href="/"
                 className="absolute top-8 left-8 z-20 flex items-center gap-2 px-4 py-2 text-sm font-bold transition-all duration-300"
@@ -231,10 +233,8 @@ export default function LoginPage() {
             </Link>
 
             {/* Ambient orbs */}
-            <div className="absolute top-[-20%] left-[-10%] w-150 h-150 blur-[130px] animate-pulse pointer-events-none"
-                style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 12%, transparent)' }} />
-            <div className="absolute bottom-[-10%] right-[-5%] w-125 h-125 blur-[110px] pointer-events-none"
-                style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 8%, transparent)' }} />
+            <div className="absolute top-[-20%] left-[-10%] w-150 h-150 blur-[130px] animate-pulse pointer-events-none" style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 12%, transparent)' }} />
+            <div className="absolute bottom-[-10%] right-[-5%] w-125 h-125 blur-[110px] pointer-events-none" style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 8%, transparent)' }} />
 
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}

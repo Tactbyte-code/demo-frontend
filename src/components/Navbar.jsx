@@ -17,6 +17,8 @@ import {
   Menu,
   X,
   ArrowRight,
+  Users,
+  AlertTriangle,
 } from "lucide-react";
 import {
   motion,
@@ -95,7 +97,8 @@ export default function Navbar() {
 
   const navItems = [
     { name: "How It Works", href: "/#how-it-works", icon: Briefcase },
-    { name: "Use Cases", href: "/use-cases", icon: LayoutGrid },
+    { name: "Market Friction", href: "#market-friction", icon: AlertTriangle },
+    { name: "Who Is It For", href: "#who-for", icon: Users },
     { name: "Pricing", href: "/pricing", icon: Tag },
     // { name: "Resources", href: "/resources", icon: Book },
   ];

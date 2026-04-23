@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { Loader2 } from "lucide-react";
@@ -13,7 +13,11 @@ export default function AuthGuard({ children }) {
 
     const router = useRouter();
     const pathname = usePathname();
+    console.log('pathname: ', pathname);
+
     const [checking, setChecking] = useState(true);
+
+    const isInitialLoad = useRef(true);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -23,41 +27,67 @@ export default function AuthGuard({ children }) {
                     : pathname === route || pathname.startsWith(route + "/")
             );
 
-            console.log('auth guard: ', firebaseUser);
+            const isAuthPage = ["/login", "/signup"].includes(pathname);
 
             if (!firebaseUser) {
-                if (!isPublic) router.replace("/login");
+                if (!isPublic) {
+                    router.replace("/login");
+                }
                 setChecking(false);
                 return;
-            };
+            }
 
             const storedUser = localStorage.getItem("user");
-            const user = JSON.parse(storedUser);
 
             if (!storedUser) {
-                if (!isPublic) router.replace("/login");
+                if (!isPublic) {
+                    router.replace("/login");
+                }
                 setChecking(false);
                 return;
             }
 
-            if(storedUser && user?.is_onboarded){
-                router.replace('/dashboard');
-            }
+            const user = JSON.parse(storedUser);
+            console.log('auth user: ', user);
 
+            // 🚨 NOT ONBOARDED → force onboarding always
             if (!user.is_onboarded && pathname !== "/onboarding") {
                 router.replace("/onboarding");
                 setChecking(false);
                 return;
-            };
-
-            // Redirect logged-in & onboarded users away from public pages
-            if (user.is_onboarded && isPublic && pathname !== "/") {
-                router.replace("/dashboard");
-                setChecking(false);
-                return;
             }
 
+            // ✅ ONBOARDED USERS
+            if (user.is_onboarded) {
+                const isAuthPage = ["/login", "/signup"].includes(pathname);
+
+                const isExternalEntry =
+                    typeof document !== "undefined" &&
+                    (!document.referrer ||
+                        !document.referrer.includes(window.location.origin));
+
+                if (user.is_onboarded) {
+                    // 🚫 Block auth pages ALWAYS
+                    if (isAuthPage) {
+                        router.replace("/dashboard");
+                        setChecking(false);
+                        return;
+                    }
+
+                    // 🚀 ONLY run this on FIRST LOAD
+                    if (isInitialLoad.current && isExternalEntry) {
+                        router.replace("/dashboard");
+                        setChecking(false);
+                        isInitialLoad.current = false;
+                        return;
+                    }
+                }
+            }
+
+            // ✅ allow everything else (including public routes)
             setChecking(false);
+
+            isInitialLoad.current = false;
         });
 
         return () => unsubscribe();

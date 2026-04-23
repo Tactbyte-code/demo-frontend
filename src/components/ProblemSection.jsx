@@ -35,7 +35,7 @@ const painPoints = [
 
 export default function ProblemSection() {
     return (
-        <section className="bg-background relative overflow-hidden pb-20 pt-16 md:pb-32 md:pt-20">
+        <section className="bg-background relative overflow-hidden pb-20 pt-5 md:pb-32 md:pt-20">
             {/* Background Accents */}
             <div className="absolute top-0 right-0 w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-primary/5 blur-[80px] md:blur-[120px] rounded-full -z-10" />
             <div className="absolute bottom-0 left-0 w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-rose-500/5 blur-[80px] md:blur-[120px] rounded-full -z-10" />

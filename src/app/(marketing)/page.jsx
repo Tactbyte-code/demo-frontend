@@ -16,14 +16,21 @@ const page = () => {
     <>
       <AuthVerificationHandler />
       <Hero />
-      <ProblemSection />
+
+      <section id="market-friction">
+        <ProblemSection />
+      </section>
 
       <section id="how-it-works">
         <SolutionSection />
       </section>
 
       <FeaturesSection />
-      <TargetAudience />
+
+      <section id="who-for">
+        <TargetAudience />
+      </section>
+
       <SampleInsights />
       <ComparisonSection />
       <Testimonials />

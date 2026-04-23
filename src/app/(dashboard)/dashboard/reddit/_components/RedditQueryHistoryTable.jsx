@@ -158,7 +158,7 @@ export default function RedditQueryHistoryTable() {
     return (
         <div className="w-full max-w-5xl">
             {/* Header */}
-            <div className="flex items-end justify-between mb-5">
+            <div className="flex items-end justify-between mb-5 mt-4">
                 <div>
                     <div className="flex items-center gap-2 mb-1">
                         <div className="w-0.75 h-5" style={{ backgroundColor: "var(--primary)" }} />
@@ -197,6 +197,14 @@ export default function RedditQueryHistoryTable() {
                             </TableRow>
                         ))}
 
+                        {!isLoading && (!data || data.length === 0) && (
+                            <tr>
+                                <td colSpan={3} className="px-6 py-10 text-center text-xs" style={{ color: "var(--text-subtle)" }}>
+                                    No queries yet. Submit your first query above.
+                                </td>
+                            </tr>
+                        )}
+
                         {!isLoading && paginatedQueries?.map((query) => {
                             const isDisabled = query.status === "FAILED";
 
@@ -207,11 +215,10 @@ export default function RedditQueryHistoryTable() {
                                         if (isDisabled) return;
                                         router.push(getQueryRoute(query));
                                     }}
-                                    className={`border-b transition-colors duration-75 ${
-                                        isDisabled
-                                            ? "cursor-not-allowed opacity-60"
-                                            : "cursor-pointer hover:bg-[var(--surface-card)]"
-                                    }`}
+                                    className={`border-b transition-colors duration-75 ${isDisabled
+                                        ? "cursor-not-allowed opacity-60"
+                                        : "cursor-pointer hover:bg-[var(--surface-card)]"
+                                        }`}
                                 >
                                     <TableCell className="px-6 py-4 max-w-xs">
                                         <p className="text-sm font-medium truncate" title={query.query}>

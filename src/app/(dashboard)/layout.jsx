@@ -21,7 +21,7 @@ import { useSidebarStore } from '@/context/useSidebarStore';
 import Image from 'next/image';
 
 export default function DashboardLayout({ children }) {
-    
+
     const pathname = usePathname();
     const { sidebarOpen, setSidebarOpen, toggleSidebar } = useSidebarStore();
     const [userPlan, setUserPlan] = useState(null);
@@ -88,8 +88,7 @@ export default function DashboardLayout({ children }) {
     ];
 
     const leadGenerationItems = [
-        { name: 'Keyword search', icon: Search, href: '/dashboard/lead' },
-        // { name: 'Reddit Analysis', icon: Database, href: '/dashboard/reddit' },
+        { name: 'Keyword search', icon: Search, beta: true },
     ];
 
     return (
@@ -132,17 +131,17 @@ export default function DashboardLayout({ children }) {
                                 <div className="flex items-center justify-between mb-8">
                                     <Link href="/" className="flex items-center no-underline group">
                                         <div className="relative h-10 w-40">
-                                            <Image 
-                                                src="/images/logo_with_text_2.png" 
-                                                alt="Logo" 
-                                                fill 
-                                                className="object-contain" 
-                                                priority 
+                                            <Image
+                                                src="/images/logo_with_text_2.png"
+                                                alt="Logo"
+                                                fill
+                                                className="object-contain"
+                                                priority
                                             />
                                         </div>
                                     </Link>
-                                    <button 
-                                        onClick={() => setSidebarOpen(false)} 
+                                    <button
+                                        onClick={() => setSidebarOpen(false)}
                                         className="lg:hidden p-1 text-muted border border-border hover:bg-sidebar-hover transition-colors"
                                     >
                                         <X size={20} />
@@ -179,7 +178,7 @@ export default function DashboardLayout({ children }) {
 
             {/* ── MAIN CONTENT AREA ── */}
             <div className="flex-1 flex flex-col overflow-hidden bg-surface">
-                
+
                 {/* Topbar */}
                 <div className="flex items-center justify-between h-16 md:h-17.5 px-4 md:px-5 shrink-0 bg-sidebar border-b border-sidebar-border">
 
@@ -192,9 +191,9 @@ export default function DashboardLayout({ children }) {
                         >
                             {sidebarOpen ? <PanelLeftClose className="w-4 h-4" /> : <PanelLeftOpen className="w-4 h-4" />}
                         </button>
-                        
+
                         <div className="w-px h-4 bg-border-solid hidden sm:block" />
-                        
+
                         <span className="text-[14px] md:text-[16px] font-bold text-muted truncate max-w-[140px] md:max-w-none">
                             {[...engineItems, ...mainItems].find(i => i.href === pathname)?.name || "Dashboard"}
                         </span>
@@ -226,11 +225,48 @@ function NavGroup({ label, items, pathname }) {
             <nav className="flex flex-col gap-2">
                 {items.map(item => {
                     const isActive = pathname === item.href;
+
+                    // 🔹 BETA ITEM (no routing)
+                    if (item.beta) {
+                        return (
+                            <div
+                                key={item.name}
+                                className="flex mt-2 items-center justify-between px-3 py-2.5 text-sm font-semibold cursor-not-allowed select-none"
+                                style={{
+                                    backgroundColor: 'transparent',
+                                    color: 'var(--text-muted)',
+                                    border: '1px dashed var(--sidebar-border)',
+                                    opacity: 0.6,
+                                }}
+                            >
+                                <div className="flex items-center gap-2.5">
+                                    <item.icon
+                                        className="w-4 h-4"
+                                        style={{ color: 'var(--sidebar-main)' }}
+                                    />
+                                    <span className="tracking-tight">{item.name}</span>
+                                </div>
+
+                                {/* Beta badge */}
+                                <span
+                                    className="text-[9px] font-bold px-2 py-0.5 bg-yellow-300 text-black border border-black"
+                                    style={{
+                                        // border: '1px solid var(--accent)',
+                                        letterSpacing: '0.05em',
+                                    }}
+                                >
+                                    BETA
+                                </span>
+                            </div>
+                        );
+                    }
+
+                    // 🔹 NORMAL LINK
                     return (
                         <Link
                             key={item.name}
                             href={item.href}
-                            className="flex items-center justify-between px-3 py-2.5 text-sm font-semibold transition-all no-underline group rounded-sm"
+                            className="flex items-center justify-between px-3 py-2.5 text-sm font-semibold transition-all no-underline group"
                             style={{
                                 backgroundColor: isActive ? 'var(--sidebar-item-active-bg)' : 'transparent',
                                 color: isActive ? 'var(--sidebar-item-active-text)' : 'var(--text-muted)',
@@ -240,20 +276,29 @@ function NavGroup({ label, items, pathname }) {
                             }}
                         >
                             <div className="flex items-center gap-2.5">
-                                <item.icon 
-                                    className="w-4 h-4" 
-                                    style={{ color: isActive ? 'var(--sidebar-item-active-text)' : 'var(--sidebar-main)' }} 
+                                <item.icon
+                                    className="w-4 h-4"
+                                    style={{
+                                        color: isActive
+                                            ? 'var(--sidebar-item-active-text)'
+                                            : 'var(--sidebar-main)'
+                                    }}
                                 />
                                 <span className="tracking-tight">{item.name}</span>
                             </div>
-                            {isActive
-                                ? <CircleDot className="w-3 h-3" style={{ color: 'var(--accent)' }} />
-                                : <ChevronRight className="w-3 h-3 -translate-x-1 group-hover:translate-x-0 transition-transform" style={{ color: 'var(--border-solid)' }} />
-                            }
+
+                            {isActive ? (
+                                <CircleDot className="w-3 h-3" style={{ color: 'var(--accent)' }} />
+                            ) : (
+                                <ChevronRight
+                                    className="w-3 h-3 -translate-x-1 group-hover:translate-x-0 transition-transform"
+                                    style={{ color: 'var(--border-solid)' }}
+                                />
+                            )}
                         </Link>
                     );
                 })}
             </nav>
         </div>
     );
-};
+}

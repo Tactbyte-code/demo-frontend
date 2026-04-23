@@ -1,18 +1,32 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
-import { TrendingUp, ArrowUpRight, RefreshCcw, MessageSquare, Star, Zap, CheckCircle2, Clock, XCircle, Activity, ChevronRight } from "lucide-react";
+import {
+    TrendingUp,
+    ArrowUpRight,
+    MessageSquare,
+    Star,
+    CheckCircle2,
+    Clock,
+    XCircle,
+    Activity,
+    ChevronRight
+} from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import JobRow from "@/components/ui/JobRow";
 import { getToken } from "@/utils/getToken";
 import RedditQueryHistoryTable from "./reddit/_components/RedditQueryHistoryTable";
-import PlaystoreQueryHistoryTable from "./playstore/_components/PlaystoreQueryHistoryTable"
+import PlaystoreQueryHistoryTable from "./playstore/_components/PlaystoreQueryHistoryTable";
 
-const formatDate = (iso) => new Date(iso).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+const formatDate = (iso) =>
+    new Date(iso).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric"
+    });
 
-// stat card
-function StatCard({ label, value, icon: Icon, colorClass, bgClass, delta, delay = 0 }) {
+/* ── STAT CARD ───────────────────────── */
+function StatCard({ label, value, icon: Icon, colorClass, bgClass, delay = 0 }) {
     return (
         <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -21,123 +35,85 @@ function StatCard({ label, value, icon: Icon, colorClass, bgClass, delta, delay 
             className="bg-surface border border-border p-5 flex flex-col gap-3 shadow-sm"
         >
             <div className="flex items-center justify-between">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] font-mono text-muted">{label}</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] font-mono text-muted">
+                    {label}
+                </span>
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center border border-border-input ${bgClass}`}>
                     <Icon className={`w-3.5 h-3.5 ${colorClass}`} />
                 </div>
             </div>
-            <div className="flex items-end justify-between">
-                <span className={`text-3xl font-black tracking-tight leading-none ${colorClass}`}>{value ?? "—"}</span>
-                {delta != null && (
-                    <span className={`text-[10px] font-bold font-mono px-1.5 py-0.5 rounded ${delta >= 0 ? "text-success bg-success-bg" : "text-destructive bg-destructive-bg"}`}>
-                        {delta >= 0 ? "+" : ""}
-                        {delta}%
-                    </span>
-                )}
-            </div>
+
+            <span className={`text-3xl font-black tracking-tight ${colorClass}`}>
+                {value ?? "—"}
+            </span>
         </motion.div>
-    );
-};
-
-// ── TABS ──────────────────────────────────────────────
-const TABS = [
-    { id: "reddit", label: "Reddit", icon: MessageSquare },
-    { id: "playstore", label: "Playstore Review", icon: Star },
-];
-
-// ── EMPTY STATE ───────────────────────────────────────
-function EmptyState({ href, cta }) {
-    return (
-        <tr>
-            <td colSpan={4}>
-                <div className="flex flex-col items-center justify-center py-18 gap-4 text-center">
-                    <div className="p-4 rounded-full border border-border-solid">
-                        <TrendingUp className="w-5 h-5 text-subtle" />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <p className="text-sm font-semibold text-foreground">No jobs yet</p>
-                        <p className="text-xs text-muted">Start by running your first query</p>
-                    </div>
-                    <Link
-                        href={href}
-                        className="mt-2 inline-flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider text-white bg-primary shadow-sm transition-all hover:opacity-90"
-                    >
-                        {cta} <ArrowUpRight className="w-3 h-3" />
-                    </Link>
-                </div>
-            </td>
-        </tr>
     );
 }
 
-// ── JOBS TABLE ────────────────────────────────────────
-function JobsTable({ jobs, loading }) {
+/* ── QUICK ACTIONS ───────────────────── */
+function QuickActions({ isMobile = false }) {
+    const actions = [
+        {
+            label: "New Reddit Scan",
+            href: "/dashboard/reddit",
+            icon: MessageSquare,
+            color: "text-primary",
+            bg: "bg-info-bg"
+        },
+        {
+            label: "View App Analysis",
+            href: "/dashboard/playstore",
+            icon: Star,
+            color: "text-warning",
+            bg: "bg-warning-bg"
+        }
+    ];
+
     return (
-        <div className="overflow-hidden rounded-none border border-border-solid bg-surface">
-            <table className="w-full text-sm">
-                <thead>
-                    <tr className="border-b border-border-solid">
-                        {["Query", "Date", "Status", "Action"].map((h) => (
-                            <th key={h} className="px-5 py-3.5 text-left text-[10px] font-black font-mono uppercase tracking-widest text-subtle">
-                                {h}
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {!loading &&
-                        jobs.map((job, i) => (
-                            <motion.tr
-                                key={job.id}
-                                initial={{ opacity: 0, y: 4 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: i * 0.04 }}
-                            // JobRow renders a <tr> — pass as component if needed, else keep as-is
-                            ></motion.tr>
-                        ))}
-                    {/* Render actual JobRows (tr elements) */}
-                    {!loading && jobs.map((job) => <JobRow key={job.id} job={job} />)}
+        <div className={isMobile ? "w-full px-4 py-3 bg-background/80 backdrop-blur" : "bg-surface border border-border p-5"}>
 
-                    {loading && jobs.length === 0 && (
-                        <tr>
-                            <td colSpan={4} className="p-10 text-center text-xs text-muted">
-                                <div className="flex items-center justify-center gap-2">
-                                    <div className="w-3 h-3 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-                                    Syncing engine data…
-                                </div>
-                            </td>
-                        </tr>
-                    )}
+            {/* ✅ Desktop Header */}
+            {!isMobile && (
+                <p className="text-xs font-black uppercase tracking-wider font-mono text-muted mb-3">
+                    Quick Actions
+                </p>
+            )}
 
-                    {!loading && jobs.length === 0 && <EmptyState href="/dashboard/reddit" cta="Start New Query" />}
-                </tbody>
-            </table>
+            <div
+                className={
+                    isMobile
+                        ? "flex w-full gap-2"
+                        : "flex flex-col gap-2"
+                }
+            >
+                {actions.map(({ label, href, icon: Icon, color, bg }) => (
+                    <Link
+                        key={label}
+                        href={href}
+                        className={`
+                            flex items-center gap-3 px-3 py-2.5 border border-border-input bg-surface hover:border-primary/40 hover:bg-info-bg transition-all group
+                            ${isMobile ? "flex-1 justify-center" : ""}
+                        `}
+                    >
+                        <div className={`w-7 h-7 rounded-full flex items-center justify-center ${bg}`}>
+                            <Icon className={`w-3.5 h-3.5 ${color}`} />
+                        </div>
+
+                        <span className="text-[12px] font-semibold whitespace-nowrap">
+                            {label}
+                        </span>
+
+                        {!isMobile && (
+                            <ChevronRight className="w-3.5 h-3.5 ml-auto text-subtle group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                        )}
+                    </Link>
+                ))}
+            </div>
         </div>
     );
 }
 
-// ── PLAYSTORE PLACEHOLDER ─────────────────────────────
-function PlaystoreComingSoon() {
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="rounded-none border border-border-solid bg-surface flex flex-col items-center justify-center py-20 gap-5"
-        >
-            <div className="w-14 h-14 rounded-none flex items-center justify-center bg-info-bg border border-primary/20">
-                <Star className="w-6 h-6 text-primary" />
-            </div>
-            <div className="text-center">
-                <p className="text-sm font-bold text-foreground mb-1">Playstore Review Analysis</p>
-                <p className="text-xs text-muted max-w-xs">App Store review intelligence is coming soon. You'll be able to track sentiment, ratings trends and user feedback from Google Play.</p>
-            </div>
-            <span className="text-[9px] font-black uppercase tracking-[0.25em] font-mono px-3 py-1.5 rounded-full bg-warning-bg text-warning border border-warning/20">Coming Soon</span>
-        </motion.div>
-    );
-}
-
-// ── ACTIVITY FEED ─────────────────────────────────────
+/* ── ACTIVITY FEED ───────────────────── */
 function ActivityFeed({ jobs }) {
     const recent = [...jobs].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 5);
 
@@ -182,48 +158,21 @@ function ActivityFeed({ jobs }) {
     );
 }
 
-// ── QUICK ACTIONS ─────────────────────────────────────
-function QuickActions() {
-    const actions = [
-        { label: "New Reddit Scan", href: "/dashboard/reddit", icon: MessageSquare, color: "text-primary", bg: "bg-info-bg/100" },
-        { label: "View App Analysis", href: "/dashboard/playstore", icon: Star, color: "text-warning", bg: "bg-warning-bg" },
-        // { label: 'Browse History', href: '/dashboard/history', icon: Clock, color: 'text-muted', bg: 'bg-surface-raised' },
-    ];
+/* ── TABS ───────────────────────────── */
+const TABS = [
+    { id: "reddit", label: "Reddit", icon: MessageSquare },
+    { id: "playstore", label: "Playstore Review", icon: Star }
+];
 
-    return (
-        <div className="bg-surface border border-border rounded-none p-5 flex flex-col gap-4">
-            <p className="text-xs font-black uppercase tracking-wider font-mono text-muted">Quick Actions</p>
-            <div className="flex flex-col gap-2">
-                {actions.map(({ label, href, icon: Icon, color, bg }) => (
-                    <Link
-                        key={label}
-                        href={href}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-none border border-border-input bg-surface-card hover:border-primary/40 hover:bg-info-bg transition-all group"
-                    >
-                        <div className={`w-7 h-7 rounded-full flex items-center justify-center ${bg}`}>
-                            <Icon className={`w-3.5 h-3.5 ${color}`} />
-                        </div>
-                        <span className="text-[12px] font-semibold text-foreground flex-1">{label}</span>
-                        <ChevronRight className="w-3.5 h-3.5 text-subtle group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
-                    </Link>
-                ))}
-            </div>
-        </div>
-    );
-}
-
-// ── MAIN DASHBOARD ─────────────────────────────────────
+/* ── MAIN ───────────────────────────── */
 export default function DashboardPage() {
-
     const [jobs, setJobs] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [userId, setUserId] = useState(null);
     const [activeTab, setActiveTab] = useState("reddit");
+    const [userId, setUserId] = useState(null);
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    const isFetchingRef = useRef(false);
     const jobsRef = useRef([]);
+    const isFetchingRef = useRef(false);
 
     useEffect(() => {
         jobsRef.current = jobs;
@@ -234,74 +183,63 @@ export default function DashboardPage() {
         if (stored) setUserId(JSON.parse(stored).id);
     }, []);
 
-    async function fetchJobs(isSilent = false) {
+    async function fetchJobs() {
         if (isFetchingRef.current) return;
         isFetchingRef.current = true;
-        if (!isSilent) setLoading(true);
+
         try {
             const token = await getToken();
-            console.log('dash token: ', token);
-
             const res = await fetch(`${apiUrl}/reddit/queries`, {
-                headers: { Authorization: `Bearer ${token}` },
+                headers: { Authorization: `Bearer ${token}` }
             });
 
-            console.log('das respose: ', res);
-
-            if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
             setJobs(await res.json());
         } catch (err) {
-            console.log('dash error: ', err);
-            setError(err.message);
+            console.log(err);
         } finally {
             isFetchingRef.current = false;
-            setLoading(false);
         }
-    };
+    }
 
     useEffect(() => {
         if (!userId) return;
         fetchJobs();
-        const interval = setInterval(() => {
-            const hasActive = jobsRef.current.some((j) => j.status === "PROCESSING" || j.status === "USER_PENDING");
-            if (!hasActive || document.hidden) return;
-            fetchJobs(true);
-        }, 30000);
-        return () => clearInterval(interval);
     }, [userId]);
 
-    // Derived stats
     const total = jobs.length;
     const completed = jobs.filter((j) => j.status === "COMPLETED").length;
-    const pending = jobs.filter((j) => j.status === "USER_PENDING" || j.status === "PROCESSING").length;
+    const pending = jobs.filter((j) => j.status !== "COMPLETED").length;
     const failed = jobs.filter((j) => j.status === "FAILED").length;
 
     return (
         <div className="min-h-screen bg-background text-foreground">
-            {/* HEADER */}
-            <header className="sticky top-0 z-20 px-8 h-13 flex items-center justify-between bg-surface border-b border-border-solid">
-                <div className="flex items-center gap-3">
-                    <h1 className="text-sm font-bold text-foreground">Overview</h1>
-                    <span className="text-border-solid">·</span>
-                    <span className="text-[10px] font-mono text-subtle">
-                        {total} {total === 1 ? "job" : "jobs"} total
-                    </span>
-                </div>
-            </header>
 
-            <div className="px-8 py-8 flex flex-col gap-8">
-                {/* STAT CARDS */}
+            {/* ✅ MOBILE STICKY HEADER */}
+            <div className="xl:hidden sticky top-0 z-20 bg-background border-b border-border">
+                <QuickActions isMobile />
+            </div>
+
+            {/* MAIN CONTENT */}
+            <div className="px-4 md:px-8 py-6 flex flex-col gap-6">
+
+                {/* STATS */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatCard label="Total Jobs" value={total} icon={Activity} colorClass="text-primary" bgClass="bg-info-bg" delay={0} />
-                    <StatCard label="Completed" value={completed} icon={CheckCircle2} colorClass="text-success" bgClass="bg-success-bg" delay={0.06} />
-                    <StatCard label="In Progress" value={pending} icon={Clock} colorClass="text-warning" bgClass="bg-warning-bg" delay={0.12} />
-                    <StatCard label="Failed" value={failed} icon={XCircle} colorClass="text-destructive" bgClass="bg-destructive-bg" delay={0.18} />
+                    <StatCard label="Total Jobs" value={total} icon={Activity} colorClass="text-primary" bgClass="bg-info-bg" />
+                    <StatCard label="Completed" value={completed} icon={CheckCircle2} colorClass="text-success" bgClass="bg-success-bg" />
+                    <StatCard label="In Progress" value={pending} icon={Clock} colorClass="text-warning" bgClass="bg-warning-bg" />
+                    <StatCard label="Failed" value={failed} icon={XCircle} colorClass="text-destructive" bgClass="bg-destructive-bg" />
                 </div>
 
-                {/* MAIN GRID */}
+                {/* GRID */}
                 <div className="grid grid-cols-1 xl:grid-cols-[1fr_280px] gap-6">
+
                     {/* LEFT — TABS + TABLE */}
                     <div className="flex flex-col gap-4">
+                        {/* 📱 MOBILE: Activity Feed */}
+                        <div className="xl:hidden">
+                            <ActivityFeed jobs={jobs} />
+                        </div>
+
                         {/* Sliding tab bar */}
                         <div className="flex items-center gap-1 p-1 rounded-none bg-surface-raised border border-border w-fit">
                             {TABS.map(({ id, label, icon: Icon }) => (
@@ -337,11 +275,11 @@ export default function DashboardPage() {
                         </AnimatePresence>
 
                         {/* Error banner */}
-                        {error && <div className="flex items-center gap-2.5 px-4 py-3 rounded-none text-xs font-semibold bg-destructive-bg border border-destructive/20 text-destructive">{error}</div>}
+                        {/* {error && <div className="flex items-center gap-2.5 px-4 py-3 rounded-none text-xs font-semibold bg-destructive-bg border border-destructive/20 text-destructive">{error}</div>} */}
                     </div>
 
                     {/* RIGHT SIDEBAR */}
-                    <div className="flex flex-col gap-4">
+                    <div className="hidden xl:flex flex-col gap-4">
                         <QuickActions />
                         <ActivityFeed jobs={jobs} />
                     </div>
