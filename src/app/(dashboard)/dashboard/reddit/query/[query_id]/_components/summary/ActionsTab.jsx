@@ -34,9 +34,38 @@ export const ActionsTab = ({ data, onReachEndSwipe, onReachStartSwipe }) => {
 
     if (!steps?.length) {
         return (
-            <p className="text-sm text-muted-foreground py-8 text-center">
-                No actions found.
-            </p>
+            <div className="">
+                <div
+                    onTouchStart={(e) => {
+                        const touch = e.touches[0];
+                        scrollRef.current = {
+                            ...scrollRef.current,
+                            _startX: touch.clientX,
+                        };
+                    }}
+                    onTouchEnd={(e) => {
+                        const touch = e.changedTouches[0];
+                        const diffX = touch.clientX - scrollRef.current?._startX;
+
+                        const SWIPE_THRESHOLD = 50;
+
+                        // Swipe right → previous tab
+                        if (diffX > SWIPE_THRESHOLD) {
+                            onReachStartSwipe?.();
+                        }
+
+                        // Swipe left → next tab
+                        if (diffX < -SWIPE_THRESHOLD) {
+                            onReachEndSwipe?.();
+                        }
+                    }}
+                    className="min-h-50 flex items-center bg-input-background justify-center border border-border"
+                >
+                    <p className="text-sm text-muted-foreground text-center px-4">
+                        No actions found.
+                    </p>
+                </div>
+            </div>
         );
     }
 

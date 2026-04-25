@@ -11,6 +11,7 @@ import {
     PanelLeftOpen,
     X,
     Search,
+    MessageSquare,
     Sparkles
 } from 'lucide-react';
 import { FaReddit } from "react-icons/fa";
@@ -22,6 +23,7 @@ import UserProfileButton from '@/components/ui/UserProfileButton';
 import { auth } from '@/lib/firebase';
 import { useSidebarStore } from '@/context/useSidebarStore';
 import Image from 'next/image';
+import FeedbackModal from '@/components/shared/FeedbackModal';
 
 export default function DashboardLayout({ children }) {
 
@@ -29,6 +31,7 @@ export default function DashboardLayout({ children }) {
     const { sidebarOpen, setSidebarOpen, toggleSidebar } = useSidebarStore();
     const [userPlan, setUserPlan] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [feedbackOpen, setFeedbackOpen] = useState(false);
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -152,7 +155,7 @@ export default function DashboardLayout({ children }) {
                                         </div>
 
                                         <span
-                                            className="mt-1 sm:mt-0 shrink-0 flex items-center gap-1 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] rounded-full"
+                                            className="mt-1 sm:mt-0 shrink-0 flex items-center gap-1 px-2 py-1 text-[10px] tracking-wide font-bold uppercase rounded-full"
                                             style={{
                                                 background: "linear-gradient(135deg, #16a34a, #22c55e)",
                                                 color: "white",
@@ -176,14 +179,46 @@ export default function DashboardLayout({ children }) {
                                 </div>
                             </div>
 
-                            {/* Bottom Identity */}
-                            <div className="mt-auto px-6 py-5" style={{ borderTop: '1px solid var(--sidebar-border)' }}>
+                            {/* Bottom Section */}
+                            <div
+                                className="mt-auto px-4 py-5 space-y-4"
+                                style={{ borderTop: "1px solid var(--sidebar-border)" }}
+                            >
+                                {/* Feedback Button */}
+                                <Link
+                                    href="/feedback"
+                                    className="flex items-center justify-center gap-2 w-full px-4 py-3 text-sm font-semibold transition-all no-underline group"
+                                    style={{
+                                        background:
+                                            "linear-gradient(135deg, color-mix(in srgb, var(--primary) 12%, transparent), color-mix(in srgb, var(--accent) 10%, transparent))",
+                                        border: "1px solid color-mix(in srgb, var(--primary) 25%, transparent)",
+                                        color: "var(--text-main)",
+                                    }}
+                                >
+                                    <Sparkles
+                                        className="w-5 h-5 group-hover:rotate-12 transition-transform"
+                                        style={{ color: "var(--primary)" }}
+                                    />
+                                    <span>Submit Feedback</span>
+                                </Link>
+
+                                {/* Made in India */}
                                 <div className="flex items-center gap-2 px-1">
                                     <span className="relative flex h-2 w-2">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60" style={{ backgroundColor: 'var(--success)' }} />
-                                        <span className="relative inline-flex h-2 w-2 rounded-full" style={{ backgroundColor: 'var(--success)' }} />
+                                        <span
+                                            className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60"
+                                            style={{ backgroundColor: "var(--success)" }}
+                                        />
+                                        <span
+                                            className="relative inline-flex h-2 w-2 rounded-full"
+                                            style={{ backgroundColor: "var(--success)" }}
+                                        />
                                     </span>
-                                    <span className="text-[9px] font-bold uppercase tracking-[0.18em] font-mono" style={{ color: 'var(--sidebar-muted)' }}>
+
+                                    <span
+                                        className="text-[9px] font-bold uppercase tracking-[0.18em] font-mono"
+                                        style={{ color: "var(--sidebar-muted)" }}
+                                    >
                                         Made in India with ❤️
                                     </span>
                                 </div>
@@ -229,6 +264,33 @@ export default function DashboardLayout({ children }) {
                     {children}
                 </main>
             </div>
+
+            {/* FLOATING FEEDBACK BUTTON */}
+            <>
+                {/* Floating Button */}
+                <motion.button
+                    onClick={() => setFeedbackOpen(true)}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="fixed bottom-6 right-6 z-[70] flex items-center gap-2 px-5 py-3 shadow-2xl cursor-pointer"
+                    style={{
+                        background:
+                            "linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 75%, white))",
+                        color: "white",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        borderRadius: "999px",
+                    }}
+                >
+                    <MessageSquare className="w-5 h-5" />
+                    <span className="text-sm font-semibold hidden sm:block">
+                        Submit Feedback
+                    </span>
+                </motion.button>
+
+                <FeedbackModal />
+            </>
         </div>
     );
 }

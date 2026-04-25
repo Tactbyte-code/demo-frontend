@@ -9,7 +9,6 @@ import {
     ChevronRight, User
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { ReviewsList } from "./ReviewsList";
 
 // ─── Panel animation variants ─────────────────────────────────────────────────
 const panelVariants = {
@@ -430,7 +429,7 @@ function SectionHead({ icon: Icon, title }) {
 }
 
 function SectionBody({ children, className = "" }) {
-    return <div className={`p-4 ${className}`}>{children}</div>;
+    return <div className={`${className}`}>{children}</div>;
 }
 
 function StarRating({ score }) {
@@ -516,7 +515,7 @@ function InlineReviewCard({ review, index }) {
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
-export function SummaryResult({ data, reviews, reviewsLoaded=true, showReviews=true }) {
+export function SummaryResult({ data, reviews, reviewsLoaded = true, showReviews = true }) {
     const [activeTab, setActiveTab] = useState("overview");
     const [direction, setDirection] = useState(0);
 
@@ -636,9 +635,9 @@ export function SummaryResult({ data, reviews, reviewsLoaded=true, showReviews=t
                             exit="exit"
                         >
                             {direct_answer && (
-                                <Section>
+                                <Section className="">
                                     <SectionHead icon={Info} title="Direct answer" />
-                                    <SectionBody>
+                                    <SectionBody className="p-4">
                                         <div className="border-l-2 border-[var(--primary)] pl-3.5">
                                             <p className="text-[13px] text-[var(--text-main)]">{direct_answer}</p>
                                         </div>
@@ -648,11 +647,11 @@ export function SummaryResult({ data, reviews, reviewsLoaded=true, showReviews=t
                             <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-3 mb-3">
                                 <Section className="mb-0">
                                     <SectionHead icon={BarChart2} title="Executive summary" />
-                                    <SectionBody><p className="text-[13px] text-[var(--text-muted)]">{executive_summary}</p></SectionBody>
+                                    <SectionBody className="p-4"><p className="text-[13px] text-[var(--text-muted)]">{executive_summary}</p></SectionBody>
                                 </Section>
                                 <Section className="mb-0">
                                     <SectionHead icon={Star} title="Rating breakdown" />
-                                    <SectionBody>
+                                    <SectionBody className="p-4">
                                         {ratingEntries.map(({ star, count }) => (
                                             <RatingBar key={star} star={star} count={count} total={totalRatings} />
                                         ))}
@@ -688,7 +687,7 @@ export function SummaryResult({ data, reviews, reviewsLoaded=true, showReviews=t
                         >
                             <Section>
                                 <SectionHead icon={Zap} title="Market signals" />
-                                <SectionBody>
+                                <SectionBody className="p-4">
                                     <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-x-8">
                                         <SignalGroup title="Features praised" items={market_signals?.features_praised} variant="praise" icon={ThumbsUp} iconColor="var(--success)" />
                                         <SignalGroup title="Features requested" items={market_signals?.features_requested} variant="request" icon={Lightbulb} iconColor="var(--info)" />
@@ -710,7 +709,7 @@ export function SummaryResult({ data, reviews, reviewsLoaded=true, showReviews=t
                         >
                             <Section>
                                 <SectionHead icon={MessageSquare} title="Reviews" />
-                                <SectionBody>
+                                <SectionBody className="p-4">
                                     {reviews.length === 0 ? (
                                         <p className="text-sm py-4 text-center text-[var(--color-subtle)]">
                                             No reviews found.
@@ -760,12 +759,21 @@ export function SummaryResult({ data, reviews, reviewsLoaded=true, showReviews=t
                             animate="visible"
                             exit="exit"
                         >
-                            <SectionBody>
-                                <div className="flex flex-col gap-2">
-                                    {Array.isArray(actionable_next_steps) && actionable_next_steps.map((s, i) => (
-                                        <NextStep key={i} step={s} index={i} />
-                                    ))}
-                                </div>
+                            <SectionBody className="p-0">
+                                {Array.isArray(actionable_next_steps) &&
+                                    actionable_next_steps.length > 0 ? (
+                                    <div className="flex flex-col gap-2">
+                                        {actionable_next_steps.map((s, i) => (
+                                            <NextStep key={i} step={s} index={i} />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-center h-[300px] border border-[var(--border-solid)] bg-[var(--surface)]">
+                                        <p className="text-sm text-[var(--text-subtle)]">
+                                            No actions found.
+                                        </p>
+                                    </div>
+                                )}
                             </SectionBody>
                         </motion.div>
                     )}

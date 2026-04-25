@@ -62,7 +62,7 @@ export default function ContactPage() {
             const token = await getToken();
             if (!token) { router.replace("/login"); return; }
 
-            const response = await fetch(`${apiUrl}/feedback`, {
+            const response = await fetch(`${apiUrl}/contact`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
