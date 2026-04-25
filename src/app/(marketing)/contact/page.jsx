@@ -25,6 +25,7 @@ export default function ContactPage() {
     const router = useRouter();
     const [phoneError, setPhoneError] = useState("");
     const [messageError, setMessageError] = useState("");
+    const [supportType, setSupportType] = useState("general");
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -48,8 +49,8 @@ export default function ContactPage() {
             setPhoneError("Phone number must be exactly 10 digits");
             return;
         }
-        if (formData.message.length < 20) {
-            setMessageError("Feedback must be at least 20 characters");
+        if (formData.message.length < 10) {
+            setMessageError("Feedback must be at least 10 characters");
             return;
         }
 
@@ -78,6 +79,7 @@ export default function ContactPage() {
 
             if (!response.ok) {
                 const errorData = await response.json();
+                console.log('error: ', errorData);
                 throw new Error(errorData?.detail || "Submission failed");
             }
             setIsSuccess(true);
@@ -126,11 +128,10 @@ export default function ContactPage() {
                                 {/* Header */}
                                 <div className="mb-10">
                                     <h1 className="text-3xl font-black text-foreground mb-3 italic">
-                                        Help us grow.
+                                        Contact Support
                                     </h1>
                                     <p className="text-sm font-medium text-muted leading-relaxed">
-                                        Your feedback drives our roadmap. Share your thoughts, bugs,
-                                        or feature requests below.
+                                        Need help or facing an issue? Tell us what’s going on and our team will get back to you within 24 hours.
                                     </p>
                                 </div>
 
@@ -145,7 +146,7 @@ export default function ContactPage() {
                                         >
                                             <div className="bg-destructive-bg border border-destructive/20 p-4 flex items-center gap-3 text-destructive">
                                                 <AlertCircle size={16} className="shrink-0" />
-                                                <p className="text-xs font-bold">{error}</p>
+                                                <p className="text-xs font-semibold">{error}</p>
                                             </div>
                                         </motion.div>
                                     )}
@@ -156,7 +157,7 @@ export default function ContactPage() {
                                     {/* Auto-filled user info */}
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                         <div className="space-y-2">
-                                            <label className="text-[11px] font-bold uppercase tracking-wide text-subtle ml-1">
+                                            <label className="text-[11px] font-semibold uppercase tracking-wide text-subtle ml-1">
                                                 Full Name
                                             </label>
                                             <div className="w-full bg-surface-raised border border-border-solid rounded-none px-5 py-4 text-sm font-semibold text-muted cursor-not-allowed">
@@ -164,7 +165,7 @@ export default function ContactPage() {
                                             </div>
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[11px] font-bold uppercase tracking-wide text-subtle ml-1">
+                                            <label className="text-[11px] font-semibold uppercase tracking-wide text-subtle ml-1">
                                                 Email Address
                                             </label>
                                             <div className="w-full bg-surface-raised border border-border-solid rounded-none px-5 py-4 text-sm font-semibold text-muted cursor-not-allowed truncate">
@@ -175,12 +176,12 @@ export default function ContactPage() {
 
                                     {/* Phone */}
                                     <div className="space-y-2">
-                                        <label className="text-[11px] font-bold uppercase tracking-wide text-subtle ml-1">
+                                        <label className="text-[11px] font-semibold uppercase tracking-wide text-subtle ml-1">
                                             Phone Number{' '}
                                         </label>
                                         <div className="relative flex items-center">
                                             <div className="absolute left-0 flex items-center h-full px-5 border-r border-border-solid">
-                                                <span className="text-sm font-bold text-muted select-none">+91</span>
+                                                <span className="text-sm font-semibold text-muted select-none">+91</span>
                                             </div>
                                             <input
                                                 type="tel"
@@ -205,8 +206,8 @@ export default function ContactPage() {
 
                                     {/* Message */}
                                     <div className="space-y-2">
-                                        <label className="text-[11px] font-bold uppercase tracking-wide text-subtle ml-1">
-                                            Your Feedback
+                                        <label className="text-[11px] font-semibold uppercase tracking-wide text-subtle ml-1">
+                                            Your Issues
                                             <span className="text-primary ml-1">*</span>
                                         </label>
                                         <div className="relative">
@@ -214,12 +215,12 @@ export default function ContactPage() {
                                             <textarea
                                                 required
                                                 rows={5}
-                                                placeholder="What made you like our product?"
+                                                placeholder="Tell us what issues you are facing and we'll resolve it at the earliest"
                                                 value={formData.message}
                                                 onChange={(e) => {
                                                     setFormData({ ...formData, message: e.target.value });
-                                                    if (e.target.value.length > 0 && e.target.value.length < 20) {
-                                                        setMessageError("Feedback must be at least 20 characters");
+                                                    if (e.target.value.length > 0 && e.target.value.length < 10) {
+                                                        setMessageError("Issues must be at least 10 characters long");
                                                     } else {
                                                         setMessageError("");
                                                     }
@@ -232,11 +233,11 @@ export default function ContactPage() {
                                                 ? <p className="text-[11px] font-semibold text-destructive">{messageError}</p>
                                                 : <span />
                                             }
-                                            <p className={`text-[11px] font-semibold ml-auto ${formData.message.length < 20 && formData.message.length > 0
+                                            <p className={`text-[11px] font-semibold ml-auto ${formData.message.length < 10 && formData.message.length > 0
                                                 ? 'text-destructive'
                                                 : 'text-subtle'
                                                 }`}>
-                                                {formData.message.length}/20 min
+                                                {formData.message.length}/10 min
                                             </p>
                                         </div>
                                     </div>
@@ -247,11 +248,11 @@ export default function ContactPage() {
                                         onClick={handleSubmit} // to be changed after creating the API
                                         // onClick={() => setIsSuccess(true)}
                                         disabled={isSubmitting}
-                                        className="w-full bg-primary hover:bg-primary-hover text-white py-5 rounded-none font-bold text-sm uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-md disabled:opacity-60 active:scale-[0.98] cursor-pointer"
+                                        className="w-full bg-primary hover:bg-primary-hover text-white py-5 rounded-none font-semibold text-sm uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-md disabled:opacity-60 active:scale-[0.98] cursor-pointer"
                                     >
                                         {isSubmitting
                                             ? <Loader2 className="w-5 h-5 animate-spin" />
-                                            : <> Send Feedback <Send className="w-4 h-4" /> </>
+                                            : <> Submit <Send className="w-4 h-4" /> </>
                                         }
                                     </button>
                                 </div>
@@ -279,7 +280,7 @@ export default function ContactPage() {
                                         setFormData({ phone: '', message: '' });
                                         setError("");
                                     }}
-                                    className="px-8 py-4 bg-surface-raised border border-border-solid text-muted rounded-none font-bold text-xs uppercase tracking-widest hover:text-foreground hover:border-primary/30 transition-all cursor-pointer"
+                                    className="px-8 py-4 bg-surface-raised border border-border-solid text-muted rounded-none font-semibold text-xs uppercase tracking-widest hover:text-foreground hover:border-primary/30 transition-all cursor-pointer"
                                 >
                                     Send another
                                 </button>

@@ -185,7 +185,7 @@ export default function DashboardLayout({ children }) {
                                 style={{ borderTop: "1px solid var(--sidebar-border)" }}
                             >
                                 {/* Feedback Button */}
-                                <Link
+                                {/* <Link
                                     href="/feedback"
                                     className="flex items-center justify-center gap-2 w-full px-4 py-3 text-sm font-semibold transition-all no-underline group"
                                     style={{
@@ -200,7 +200,7 @@ export default function DashboardLayout({ children }) {
                                         style={{ color: "var(--primary)" }}
                                     />
                                     <span>Submit Feedback</span>
-                                </Link>
+                                </Link> */}
 
                                 {/* Made in India */}
                                 <div className="flex items-center gap-2 px-1">
@@ -268,7 +268,7 @@ export default function DashboardLayout({ children }) {
             {/* FLOATING FEEDBACK BUTTON */}
             <>
                 {/* Floating Button */}
-                <motion.button
+                {/* <motion.button
                     onClick={() => setFeedbackOpen(true)}
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -287,7 +287,7 @@ export default function DashboardLayout({ children }) {
                     <span className="text-sm font-semibold hidden sm:block">
                         Submit Feedback
                     </span>
-                </motion.button>
+                </motion.button> */}
 
                 <FeedbackModal />
             </>
