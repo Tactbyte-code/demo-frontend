@@ -27,7 +27,7 @@ export default function ThemeToggle() {
             aria-label="Theme switcher"
             className="flex items-center gap-0.5 rounded-full p-1"
             style={{
-                backgroundColor: 'var(--surface-raised)',
+                backgroundColor: 'var(--surface-card)',
                 border: '1px solid var(--border-solid)',
             }}
         >

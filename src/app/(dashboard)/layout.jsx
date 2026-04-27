@@ -252,11 +252,11 @@ export default function DashboardLayout({ children }) {
                     </div>
 
                     {/* Right: Profile */}
-                    <div className="flex items-center gap-3">
-                        <div className="rounded-full bg-foreground/85">
+                    {/* <div className="flex items-center gap-3">
+                        <div className="rounded-full bg-foreground/85"> */}
                             <UserProfileButton />
-                        </div>
-                    </div>
+                        {/* </div>
+                    </div> */}
                 </div>
 
                 {/* Content */}
