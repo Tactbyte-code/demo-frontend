@@ -42,8 +42,8 @@ export const getQuery = async (queryId) => {
  * Submit answer to a clarifying question.
  * Returns { id, status: "CLARIFYING", question } or { id, status: "CLARIFIED" }
  */
-export const submitClarification = async (queryId, answer) => {
-    const response = await api.post(`/reddit/query/${queryId}/clarify`, { answer });
+export const submitClarification = async (queryId, answer, skip) => {
+    const response = await api.post(`/reddit/query/${queryId}/clarify`, { answer, skip});
     console.log('clarification submitted: ', response);
     return response.data;
 };
