@@ -218,26 +218,31 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
     const tempId = `temp-${Date.now()}`;
     const msgToSend = msg.trim();
 
-    // 1. Clear input immediately
+    // clear input immediately
     setMsg("");
 
-    // 2. Append optimistic (pending) bubble right away
-    setActive((prev) => ({
-      ...prev,
-      replies: [
-        ...(prev.replies ?? []),
-        {
-          id: tempId,
-          message: msgToSend,
-          is_admin: 0,
-          reply_type: "user",
-          created_at: new Date().toISOString(),
-          pending: true, // ← not yet confirmed by server
-        },
-      ],
-    }));
+    // optimistic bubble
+    setActive((prev) =>
+      prev
+        ? {
+            ...prev,
+            replies: [
+              ...(prev.replies ?? []),
+              {
+                id: tempId,
+                message: msgToSend,
+                is_admin: 0,
+                reply_type: "user",
+                created_at: new Date().toISOString(),
+                pending: true,
+              },
+            ],
+          }
+        : prev,
+    );
 
     setSending(true);
+
     try {
       const res = await fetch(
         `${API}/user/tickets/${activeTicket.id}/reply?email=${encodeURIComponent(userEmail)}`,
@@ -247,23 +252,30 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
           body: JSON.stringify({ message: msgToSend }),
         },
       );
-      const updated = await res.json();
 
-      // 3. Replace the whole ticket with real server data (removes pending flag)
-      setActive(updated);
-      setTickets((prev) =>
-        prev.map((t) => (t.id === updated.id ? updated : t)),
+      if (!res.ok) {
+        throw new Error("Failed to send reply");
+      }
+
+      // Some APIs return partial ticket data, so refetch the full list instead
+      await fetchTickets(true);
+    } catch (error) {
+      // remove optimistic bubble on failure
+      setActive((prev) =>
+        prev
+          ? {
+              ...prev,
+              replies: (prev.replies ?? []).filter((r) => r.id !== tempId),
+            }
+          : prev,
       );
-    } catch {
-      // 4. On failure: remove the optimistic bubble so user knows it failed
-      setActive((prev) => ({
-        ...prev,
-        replies: (prev.replies ?? []).filter((r) => r.id !== tempId),
-      }));
+
+      // restore typed message so user does not lose it
+      setMsg(msgToSend);
     } finally {
       setSending(false);
     }
-  }, [msg, activeTicket, sending, userEmail]);
+  }, [msg, activeTicket, sending, userEmail, fetchTickets]);
 
   // ── Create ticket ──────────────────────────────────────────────────────────
   const createTicket = useCallback(async () => {
