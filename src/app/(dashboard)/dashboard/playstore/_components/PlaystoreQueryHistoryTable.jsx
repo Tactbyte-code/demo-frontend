@@ -47,7 +47,7 @@ function StatusBadge({ status }) {
 
     return (
         <span
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider border rounded-none whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider border rounded-none whitespace-nowrap text-foreground/70"
             style={{
                 color: cfg.color,
                 backgroundColor: cfg.bg,
@@ -187,19 +187,19 @@ export default function PlaystoreQueryHistoryTable() {
             <div
                 className="border border-border overflow-hidden"
                 style={{
-                    backgroundColor: "var(--surface)",
+                    // backgroundColor: "var(--surface)",
                     boxShadow: "var(--shadow-sm)",
                 }}
             >
                 <div className="w-full overflow-x-auto">
-                    <table className="w-full text-left border-collapse min-w-[600px]">
-                        <thead style={{ backgroundColor: "var(--surface-card)" }}>
+                    <table className="w-full text-left border-collapse min-w-[600px] bg-surface-card">
+                        <thead style={{ backgroundColor: "var(--surface-raised)" }}>
                             <tr className="border-b border-border">
                                 {["App Id", "Status", "Created At"].map((h) => (
                                     <th
                                         key={h}
-                                        className="px-6 py-4 text-[12px] font-bold uppercase tracking-wide whitespace-nowrap"
-                                        style={{ color: "var(--text-muted)" }}
+                                        className="px-6 py-4 text-[12px] font-bold uppercase tracking-wide whitespace-nowrap text-foreground"
+                                        // style={{ color: "var(--text-muted)" }}
                                     >
                                         {h}
                                     </th>
@@ -207,7 +207,7 @@ export default function PlaystoreQueryHistoryTable() {
                             </tr>
                         </thead>
 
-                        <tbody className="divide-y" style={{ borderColor: "var(--border-solid)" }}>
+                        <tbody className="divide-y">
                             {isLoading && (
                                 <tr>
                                     <td colSpan={3} className="px-6 py-10 text-center text-xs">
@@ -251,17 +251,17 @@ export default function PlaystoreQueryHistoryTable() {
                                         key={query.id}
                                         onClick={() => handleRowClick(query)}
                                         className={`transition ${isDisabled
-                                            ? "cursor-not-allowed opacity-60"
-                                            : "cursor-pointer hover:bg-surface-card"
+                                            ? "cursor-not-allowed"
+                                            : "cursor-pointer hover:bg-surface border-b border-border"
                                             }`}
                                     >
-                                        <td className="px-6 py-3 md:py-4 text-sm whitespace-nowrap truncate max-w-[45vw] md:max-w-xs">
+                                        <td className="px-6 py-3 md:py-4 text-sm whitespace-nowrap truncate max-w-[45vw] md:max-w-xs text-foreground/70">
                                             {query.app_id}
                                         </td>
                                         <td className="px-6 py-3 md:py-4 whitespace-nowrap">
                                             <StatusBadge status={query.status} />
                                         </td>
-                                        <td className="px-6 py-3 md:py-4 text-sm whitespace-nowrap">
+                                        <td className="px-6 py-3 md:py-4 text-sm whitespace-nowrap text-foreground/70">
                                             {new Date(query.created_at).toLocaleDateString("en-IN")}
                                         </td>
                                     </tr>

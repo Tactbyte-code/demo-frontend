@@ -71,7 +71,7 @@ function StatusBadge({ status }) {
 
     return (
         <span
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider border"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider border text-foreground/70"
             style={{
                 color: cfg.color,
                 backgroundColor: cfg.bg,
@@ -176,14 +176,14 @@ export default function RedditQueryHistoryTable() {
 
             {/* Table */}
             <div className="border border-border overflow-hidden" style={{
-                backgroundColor: "var(--surface)",
-                boxShadow: "var(--shadow-sm)",
+                // backgroundColor: "var(--surface)",
+                // boxShadow: "var(--shadow-sm)",
             }}>
                 <Table>
-                    <TableHeader style={{ backgroundColor: "var(--surface-card)" }}>
-                        <TableRow className="border-b border-border hover:bg-transparent">
+                    <TableHeader className="bg-surface-raised">
+                        <TableRow className="border-b border-border">
                             {["Query", "Status", "Created At"].map((h) => (
-                                <TableHead key={h} className="px-6 py-4 text-[12px] font-bold uppercase tracking-wider text-muted">
+                                <TableHead key={h} className="px-6 py-4 text-[12px] font-bold uppercase tracking-wider text-foreground">
                                     {h}
                                 </TableHead>
                             ))}
@@ -217,14 +217,14 @@ export default function RedditQueryHistoryTable() {
                                         if (isDisabled) return;
                                         router.push(getQueryRoute(query));
                                     }}
-                                    className={`border-b transition-colors duration-75 ${isDisabled
+                                    className={`border-b border-border transition-colors bg-surface-card duration-75 ${isDisabled
                                         ? "cursor-not-allowed opacity-60"
-                                        : "cursor-pointer hover:bg-[var(--surface-card)]"
+                                        : "cursor-pointer"
                                         }`}
                                 >
                                     <TableCell className="px-4 md:px-6 py-3 md:py-4">
                                         <p
-                                            className="text-sm font-medium truncate max-w-[50vw] md:max-w-xs"
+                                            className="text-sm font-medium truncate max-w-[50vw] md:max-w-xs text-foreground/70"
                                             title={query.query}
                                         >
                                             {query.query}
@@ -237,7 +237,7 @@ export default function RedditQueryHistoryTable() {
 
                                     <TableCell className="px-6 py-3 md:py-4">
                                         <div className="flex items-center gap-1.5">
-                                            <span className="text- tabular-nums">
+                                            <span className="text- tabular-nums text-foreground/70">
                                                 {new Date(query.created_at).toLocaleDateString("en-IN")}
                                             </span>
                                         </div>
