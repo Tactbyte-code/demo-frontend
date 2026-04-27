@@ -94,17 +94,20 @@ export default function ClarifyPage({ params }) {
     if (!isOthers) setAnswer("");
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e, skip = false) => {
     e?.preventDefault();
-    if (!canSubmit) return;
+    if (!skip && !canSubmit) return;
     setSubmitting(true);
     setError(null);
 
-    const finalAnswer =
-      selectedOption === "others" ? answer.trim() : selectedOption;
+    const finalAnswer = skip
+      ? ""
+      : selectedOption === "others"
+      ? answer.trim()
+      : selectedOption;
 
     try {
-      const response = await submitClarification(query_id, finalAnswer);
+      const response = await submitClarification(query_id, finalAnswer, skip);
       if (response)
         queryClient.invalidateQueries({ queryKey: ["queries", user_id] });
 
@@ -131,12 +134,6 @@ export default function ClarifyPage({ params }) {
       handleSubmit();
     }
   };
-
-  // if (loading) {
-  //   return (
-  //     <AILoader />
-  //   );
-  // }
 
   if (loading) {
     return (
@@ -225,7 +222,6 @@ export default function ClarifyPage({ params }) {
                 </div>
               </div>
 
-              {/* Label: Shown when question appears, hidden when arrow is clicked */}
               <AnimatePresence>
                 {!submitting && (
                   <motion.div
@@ -250,7 +246,6 @@ export default function ClarifyPage({ params }) {
               style={{ backgroundColor: "var(--border-solid)", opacity: 0.4 }}
             />
 
-            {/* Entire question body slides in fresh on each new question */}
             <AnimatePresence mode="wait">
               <motion.div
                 key={clarificationCount}
@@ -326,7 +321,14 @@ export default function ClarifyPage({ params }) {
             </AnimatePresence>
 
             {/* Submit */}
-            <div className="flex justify-end items-center pt-1">
+            <div className="flex justify-end items-center gap-2 pt-1">
+              <Button
+                className="text-white rounded-none"
+                disabled={submitting}
+                onClick={(e) => handleSubmit(e, true)}
+              >
+                <div>Skip</div>
+              </Button>
               <Button
                 disabled={!canSubmit}
                 onClick={handleSubmit}
