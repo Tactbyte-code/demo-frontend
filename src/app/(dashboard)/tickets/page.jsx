@@ -15,6 +15,7 @@ import {
   Inbox,
   Lock,
   Sparkles,
+  Check,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { auth } from "@/lib/firebase";
@@ -80,7 +81,7 @@ function getMessagePlaceholder(team) {
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function TicketChatPopup({ hasUnread, setHasUnread }) {
   const [open, setOpen] = useState(false);
-  const [view, setView] = useState("list"); // list | new | chat
+  const [view, setView] = useState("list");
   const [tickets, setTickets] = useState([]);
   const [activeTicket, setActive] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -152,9 +153,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
         );
         const data = await res.json();
         setTickets(data);
-        // Only set unread if the popup is currently closed — never re-show
-        // the dot while the user already has the panel open
-        setHasUnread((prev) => {
+        setHasUnread(() => {
           if (open) return false;
           return data.some((t) => t.replies?.some((r) => r.is_admin === 1));
         });
@@ -195,7 +194,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
   // ── Toggle open — clears unread dot instantly on open ─────────────────────
   const handleToggleOpen = useCallback(() => {
     setOpen((prev) => {
-      if (!prev) setHasUnread(false); // opening → clear immediately
+      if (!prev) setHasUnread(false);
       return !prev;
     });
   }, [setHasUnread]);
@@ -212,9 +211,32 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
     setView("chat");
   }, []);
 
-  // ── Send reply ─────────────────────────────────────────────────────────────
+  // ── Send reply — optimistic: show bubble instantly, clear input, then confirm ──
   const sendReply = useCallback(async () => {
     if (!msg.trim() || !activeTicket || sending) return;
+
+    const tempId = `temp-${Date.now()}`;
+    const msgToSend = msg.trim();
+
+    // 1. Clear input immediately
+    setMsg("");
+
+    // 2. Append optimistic (pending) bubble right away
+    setActive((prev) => ({
+      ...prev,
+      replies: [
+        ...(prev.replies ?? []),
+        {
+          id: tempId,
+          message: msgToSend,
+          is_admin: 0,
+          reply_type: "user",
+          created_at: new Date().toISOString(),
+          pending: true, // ← not yet confirmed by server
+        },
+      ],
+    }));
+
     setSending(true);
     try {
       const res = await fetch(
@@ -222,17 +244,22 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: msg.trim() }),
+          body: JSON.stringify({ message: msgToSend }),
         },
       );
       const updated = await res.json();
+
+      // 3. Replace the whole ticket with real server data (removes pending flag)
       setActive(updated);
-      setMsg("");
       setTickets((prev) =>
         prev.map((t) => (t.id === updated.id ? updated : t)),
       );
     } catch {
-      // swallow
+      // 4. On failure: remove the optimistic bubble so user knows it failed
+      setActive((prev) => ({
+        ...prev,
+        replies: (prev.replies ?? []).filter((r) => r.id !== tempId),
+      }));
     } finally {
       setSending(false);
     }
@@ -280,7 +307,6 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
 
   return (
     <>
-      {/* ── Floating popup ────────────────────────────────────────────────── */}
       <AnimatePresence>
         {open && (
           <motion.div
@@ -346,7 +372,6 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                     New
                   </button>
                 )}
-                {/* ✅ FIX: use handleClose so dot clears on X click too */}
                 <button
                   onClick={handleClose}
                   className="p-1.5 rounded-md hover:bg-white/10 transition-colors"
@@ -359,7 +384,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
 
             {/* Body */}
             <div className="flex-1 overflow-hidden flex flex-col">
-              {/* ── LIST VIEW ──────────────────────────────────────────────── */}
+              {/* ── LIST VIEW ─────────────────────────────────────────────── */}
               {view === "list" && (
                 <div className="flex-1 overflow-y-auto p-3 space-y-2">
                   {loading ? (
@@ -457,10 +482,9 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                 </div>
               )}
 
-              {/* ── NEW TICKET VIEW ────────────────────────────────────────── */}
+              {/* ── NEW TICKET VIEW ───────────────────────────────────────── */}
               {view === "new" && (
                 <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
-                  {/* Subject — optional */}
                   <div>
                     <label
                       className="block text-[10px] font-bold uppercase tracking-widest mb-1.5"
@@ -483,7 +507,6 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                     />
                   </div>
 
-                  {/* Message */}
                   <div className="flex-1">
                     <label
                       className="block text-[10px] font-bold uppercase tracking-widest mb-1.5"
@@ -533,7 +556,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                 </div>
               )}
 
-              {/* ── CHAT VIEW ──────────────────────────────────────────────── */}
+              {/* ── CHAT VIEW ─────────────────────────────────────────────── */}
               {view === "chat" && activeTicket && (
                 <>
                   <div
@@ -558,11 +581,14 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                   </div>
 
                   <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+                    {/* Original message */}
                     <MessageBubble
                       isAdmin={false}
                       message={activeTicket.message}
                       time={activeTicket.created_at}
                       label="You"
+                      pending={false}
+                      sent={true}
                     />
 
                     {activeTicket.replies?.map((r) =>
@@ -575,11 +601,13 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                           message={r.message}
                           time={r.created_at}
                           label={r.is_admin === 1 ? "Support" : "You"}
+                          pending={r.pending === true}
+                          sent={!r.pending && r.is_admin === 0}
                         />
                       ),
                     )}
 
-                    {/* ── Closed ticket message ── */}
+                    {/* Closed ticket banner */}
                     {activeTicket.status === "closed" && (
                       <div className="flex flex-col items-center gap-3 py-4">
                         <div
@@ -701,7 +729,6 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
         )}
       </AnimatePresence>
 
-      {/* ✅ FIX: pass handleToggleOpen instead of setOpen */}
       <SidebarTrigger
         open={open}
         setOpen={handleToggleOpen}
@@ -749,7 +776,17 @@ export function SidebarTrigger({ open, setOpen, hasUnread }) {
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
-function MessageBubble({ isAdmin, message, time, label }) {
+
+// pending = optimistic bubble not yet confirmed by server
+// sent    = confirmed by server (only shown on user's own messages)
+function MessageBubble({
+  isAdmin,
+  message,
+  time,
+  label,
+  pending = false,
+  sent = false,
+}) {
   return (
     <div
       className={`flex flex-col gap-1 ${isAdmin ? "items-start" : "items-end"}`}
@@ -773,20 +810,45 @@ function MessageBubble({ isAdmin, message, time, label }) {
                 borderTopLeftRadius: 4,
               }
             : {
-                background: "var(--primary)",
+                background: pending
+                  ? "color-mix(in srgb, var(--primary) 60%, transparent)"
+                  : "var(--primary)",
                 color: "white",
                 borderTopRightRadius: 4,
+                opacity: pending ? 0.75 : 1,
               }
         }
       >
         {message}
       </div>
-      <span
-        className="text-[9px] px-1"
-        style={{ color: "var(--sidebar-muted)" }}
-      >
-        {fmt(time)}
-      </span>
+
+      {/* Timestamp + status row */}
+      <div className="flex items-center gap-1 px-1">
+        <span className="text-[9px]" style={{ color: "var(--sidebar-muted)" }}>
+          {fmt(time)}
+        </span>
+
+        {/* Pending: clock spinner */}
+        {!isAdmin && pending && (
+          <Clock
+            size={9}
+            style={{ color: "var(--sidebar-muted)" }}
+            className="opacity-60"
+          />
+        )}
+
+        {/* Sent: green double-check */}
+        {!isAdmin && !pending && sent && (
+          <span
+            className="flex items-center gap-0.5 text-[9px] font-semibold"
+            style={{ color: "#22c55e" }}
+          >
+            <Check size={9} strokeWidth={3} />
+            <Check size={9} strokeWidth={3} style={{ marginLeft: -4 }} />
+            Sent
+          </span>
+        )}
+      </div>
     </div>
   );
 }
