@@ -53,10 +53,6 @@ function fmt(iso) {
   });
 }
 
-/**
- * Returns a subject placeholder based on the team slug.
- * Covers the 4 standard teams: auth, ai, payment/payments, general.
- */
 function getSubjectPlaceholder(team) {
   if (!team) return "Brief summary of your issue… (optional)";
   const slug = (team.slug || "").toLowerCase();
@@ -69,9 +65,6 @@ function getSubjectPlaceholder(team) {
   return "Brief summary of your issue… (optional)";
 }
 
-/**
- * Returns a message (describe your issue) placeholder based on team slug.
- */
 function getMessagePlaceholder(team) {
   if (!team) return "Tell us what's happening…";
   const slug = (team.slug || "").toLowerCase();
@@ -159,10 +152,12 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
         );
         const data = await res.json();
         setTickets(data);
-        // Show unread dot when there are admin replies waiting
-        setHasUnread(
-          data.some((t) => t.replies?.some((r) => r.is_admin === 1)),
-        );
+        // Only set unread if the popup is currently closed — never re-show
+        // the dot while the user already has the panel open
+        setHasUnread((prev) => {
+          if (open) return false;
+          return data.some((t) => t.replies?.some((r) => r.is_admin === 1));
+        });
         const current = activeTicketRef.current;
         if (current) {
           const fresh = data.find((t) => t.id === current.id);
@@ -174,7 +169,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
         if (!silent) setLoading(false);
       }
     },
-    [userEmail, setHasUnread],
+    [userEmail, setHasUnread, open],
   );
 
   // Fetch only when the popup opens
@@ -196,6 +191,20 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
     const t = setTimeout(() => inputRef.current?.focus(), 150);
     return () => clearTimeout(t);
   }, [view]);
+
+  // ── Toggle open — clears unread dot instantly on open ─────────────────────
+  const handleToggleOpen = useCallback(() => {
+    setOpen((prev) => {
+      if (!prev) setHasUnread(false); // opening → clear immediately
+      return !prev;
+    });
+  }, [setHasUnread]);
+
+  // ── Close — clears unread dot too ─────────────────────────────────────────
+  const handleClose = useCallback(() => {
+    setOpen(false);
+    setHasUnread(false);
+  }, [setHasUnread]);
 
   // ── Open ticket ────────────────────────────────────────────────────────────
   const openTicket = useCallback((t) => {
@@ -337,8 +346,9 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                     New
                   </button>
                 )}
+                {/* ✅ FIX: use handleClose so dot clears on X click too */}
                 <button
-                  onClick={() => setOpen(false)}
+                  onClick={handleClose}
                   className="p-1.5 rounded-md hover:bg-white/10 transition-colors"
                   style={{ color: "var(--text-muted)" }}
                 >
@@ -450,109 +460,6 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
               {/* ── NEW TICKET VIEW ────────────────────────────────────────── */}
               {view === "new" && (
                 <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
-                  {/* Topic — dynamically loaded from teams */}
-                  <div>
-                    <label
-                      className="block text-[10px] font-bold uppercase tracking-widest mb-1.5"
-                      style={{ color: "var(--sidebar-muted)" }}
-                    >
-                      Which related query you want to ask
-                    </label>
-
-                    {teamsLoading ? (
-                      <div
-                        className="flex items-center gap-2 px-3 py-2.5 rounded-lg"
-                        style={{
-                          background:
-                            "color-mix(in srgb, var(--primary) 6%, transparent)",
-                          border: "1px solid var(--sidebar-border)",
-                        }}
-                      >
-                        <Loader2
-                          size={13}
-                          className="animate-spin"
-                          style={{ color: "var(--text-muted)" }}
-                        />
-                        <span
-                          className="text-xs"
-                          style={{ color: "var(--text-muted)" }}
-                        >
-                          Loading topics…
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="relative">
-                        <button
-                          onClick={() => setTypeOpen((p) => !p)}
-                          className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-semibold transition-all"
-                          style={{
-                            background:
-                              "color-mix(in srgb, var(--primary) 6%, transparent)",
-                            border: "1px solid var(--sidebar-border)",
-                            color: "var(--text-main)",
-                          }}
-                        >
-                          <span>{newTeam?.name ?? "Select a topic…"}</span>
-                          <ChevronDown
-                            size={14}
-                            className={`transition-transform ${typeOpen ? "rotate-180" : ""}`}
-                            style={{ color: "var(--text-muted)" }}
-                          />
-                        </button>
-
-                        <AnimatePresence>
-                          {typeOpen && (
-                            <motion.div
-                              initial={{ opacity: 0, y: -6 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -6 }}
-                              transition={{ duration: 0.15 }}
-                              className="absolute top-full mt-1 left-0 right-0 z-10 rounded-lg overflow-hidden shadow-xl"
-                              style={{
-                                background: "var(--sidebar-bg)",
-                                border: "1px solid var(--sidebar-border)",
-                              }}
-                            >
-                              {teams.length === 0 ? (
-                                <div
-                                  className="px-3 py-2 text-xs"
-                                  style={{ color: "var(--text-muted)" }}
-                                >
-                                  No teams available
-                                </div>
-                              ) : (
-                                teams.map((team) => {
-                                  const isSelected =
-                                    newTeam?.slug === team.slug;
-                                  return (
-                                    <button
-                                      key={team.id}
-                                      onClick={() => {
-                                        setNewTeam(team);
-                                        setTypeOpen(false);
-                                      }}
-                                      className="w-full text-left px-3 py-2 text-xs font-semibold transition-colors hover:bg-white/5"
-                                      style={{
-                                        color: isSelected
-                                          ? (team.color ?? "var(--primary)")
-                                          : "var(--text-muted)",
-                                        background: isSelected
-                                          ? `color-mix(in srgb, ${team.color ?? "var(--primary)"} 10%, transparent)`
-                                          : "transparent",
-                                      }}
-                                    >
-                                      {team.name}
-                                    </button>
-                                  );
-                                })
-                              )}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    )}
-                  </div>
-
                   {/* Subject — optional */}
                   <div>
                     <label
@@ -560,17 +467,9 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                       style={{ color: "var(--sidebar-muted)" }}
                     >
                       Subject
-                      <span
-                        className="ml-1.5 normal-case tracking-normal font-normal text-[9px] px-1.5 py-0.5 rounded"
-                        style={{
-                          background: "rgba(148,163,184,0.15)",
-                          color: "var(--sidebar-muted)",
-                        }}
-                      >
-                        optional
-                      </span>
                     </label>
                     <input
+                      required
                       value={newSubject}
                       onChange={(e) => setNewSubject(e.target.value)}
                       placeholder={getSubjectPlaceholder(newTeam)}
@@ -614,7 +513,12 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                       })();
                     }}
                     disabled={
-                      !newMsg.trim() || !newTeam || creating || teamsLoading
+                      !newMsg.trim() ||
+                      !newTeam ||
+                      creating ||
+                      teamsLoading ||
+                      !newSubject.trim() ||
+                      !newSubject
                     }
                     className="w-full flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-bold transition-all disabled:opacity-50"
                     style={{ background: "var(--primary)", color: "white" }}
@@ -706,20 +610,6 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                             We hope your issue was fully resolved!
                           </p>
                         </div>
-                        {/* <button
-                          onClick={raiseNewTicket}
-                          className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all mt-1"
-                          style={{
-                            background:
-                              "color-mix(in srgb, var(--primary) 15%, transparent)",
-                            border:
-                              "1px solid color-mix(in srgb, var(--primary) 30%, transparent)",
-                            color: "var(--primary)",
-                          }}
-                        >
-                          <Sparkles size={12} />
-                          Raise a New Ticket
-                        </button> */}
                       </div>
                     )}
 
@@ -811,8 +701,12 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
         )}
       </AnimatePresence>
 
-      {/* Sidebar trigger button */}
-      <SidebarTrigger open={open} setOpen={setOpen} hasUnread={hasUnread} />
+      {/* ✅ FIX: pass handleToggleOpen instead of setOpen */}
+      <SidebarTrigger
+        open={open}
+        setOpen={handleToggleOpen}
+        hasUnread={hasUnread}
+      />
     </>
   );
 }
