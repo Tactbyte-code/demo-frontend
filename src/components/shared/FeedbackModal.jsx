@@ -91,15 +91,14 @@ export default function FeedbackModal() {
                 animate={{ opacity: 1, y: 0 }}
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.97 }}
-                className="fixed bottom-6 right-6 z-[70] flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium"
+                className="fixed bottom-6 right-6 z-70 flex items-center gap-2 px-4 md:px-6 py-4 rounded-full text-sm font-medium bg-primary"
                 style={{
-                    background: "var(--primary)",
                     color: "var(--text-light)",
                     boxShadow: "var(--shadow-md)",
                 }}
             >
-                <MessageSquare className="w-4 h-4" />
-                Share feedback
+                <MessageSquare className="w-5 h-5" />
+                <span className="hidden md:block">Share Feedback</span>
             </motion.button>
 
             <AnimatePresence>

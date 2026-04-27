@@ -91,7 +91,7 @@ function QuickActions({ isMobile = false }) {
                         key={label}
                         href={href}
                         className={`
-                            flex items-center gap-3 px-3 py-2.5 border border-border-input bg-surface hover:border-primary/40 hover:bg-info-bg transition-all group
+                            flex items-center gap-3 px-3 py-2.5 border border-border-input bg-surface-card hover:border-primary/40 hover:bg-info-bg transition-all group
                             ${isMobile ? "flex-1 justify-center" : ""}
                         `}
                     >
@@ -139,7 +139,7 @@ function ActivityFeed({ jobs }) {
                     {recent.map((job, i) => {
                         const s = iconMap[job.status] || iconMap.PROCESSING;
                         return (
-                            <motion.div key={job.id} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.06 }} className="flex items-center gap-3">
+                            <motion.div key={job.id} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.06 }} className="flex items-center gap-3 bg-surface-card px-4 py-2 border border-border">
                                 <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${s.bg}`}>
                                     <s.Icon className={`w-3.5 h-3.5 ${s.color}`} />
                                 </div>
@@ -147,9 +147,9 @@ function ActivityFeed({ jobs }) {
                                     <p className="text-[12px] font-semibold text-foreground truncate">{job.query}</p>
                                     <p className="text-[10px] text-subtle font-mono">{formatDate(job.created_at)}</p>
                                 </div>
-                                <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 border border-glass-border rounded-none font-mono ${s.bg} ${s.color}`}>
+                                {/* <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 border border-glass-border rounded-none font-mono ${s.bg} ${s.color}`}>
                                     {job.status === "USER_PENDING" ? "Pending" : job.status.charAt(0) + job.status.slice(1).toLowerCase()}
-                                </span>
+                                </span> */}
                             </motion.div>
                         );
                     })}
@@ -236,7 +236,7 @@ export default function DashboardPage() {
 
                     {/* LEFT — TABS + TABLE */}
                     <div className="flex flex-col gap-4">
-                        {/* 📱 MOBILE: Activity Feed */}
+                        {/* MOBILE: Activity Feed */}
                         <div className="xl:hidden">
                             <ActivityFeed jobs={jobs} />
                         </div>
@@ -253,7 +253,7 @@ export default function DashboardPage() {
                                     {activeTab === id && (
                                         <motion.div
                                             layoutId="activeTab"
-                                            className="absolute inset-0 bg-surface/90 shadow-sm border border-border-input"
+                                            className="absolute inset-0 bg-surface-card shadow-sm border border-border-input"
                                             transition={{ type: "spring", stiffness: 400, damping: 30 }}
                                         />
                                     )}
