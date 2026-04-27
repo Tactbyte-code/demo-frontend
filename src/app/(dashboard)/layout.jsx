@@ -12,7 +12,8 @@ import {
     X,
     Search,
     MessageSquare,
-    Sparkles
+    Sparkles,
+    Clock
 } from 'lucide-react';
 import { FaReddit } from "react-icons/fa";
 import { FaGooglePlay } from "react-icons/fa";
@@ -88,7 +89,7 @@ export default function DashboardLayout({ children }) {
     ];
 
     const leadGenerationItems = [
-        { name: 'Keyword Search', icon: Search, beta: true },
+        { name: 'Lead Generation', icon: Search, beta: true },
     ];
 
     return (
@@ -142,8 +143,9 @@ export default function DashboardLayout({ children }) {
                                 <div className="mb-8">
                                     <Link
                                         href="/"
-                                        className="flex flex-row items-center no-underline group gap-2"
+                                        className="relative inline-block no-underline group"
                                     >
+                                        {/* Logo */}
                                         <div className="relative h-10 w-40">
                                             <Image
                                                 src="/images/logo_with_text_2.png"
@@ -154,12 +156,13 @@ export default function DashboardLayout({ children }) {
                                             />
                                         </div>
 
+                                        {/* 🔥 Beta Badge (top-left attached) */}
                                         <span
-                                            className="mt-1 sm:mt-0 shrink-0 flex items-center gap-1 px-2 py-1 text-[10px] tracking-wide font-bold uppercase rounded-full"
+                                            className="absolute -top-4.5 -left-0 bg-green-300 flex items-center gap-1 px-2 py-[2px] text-[9px] tracking-wide font-semibold text-foreground uppercase rounded-none border border-border"
                                             style={{
-                                                background: "linear-gradient(135deg, #16a34a, #22c55e)",
-                                                color: "white",
-                                                boxShadow: "0 2px 8px rgba(34, 197, 94, 0.25)",
+                                                // background: "linear-gradient(135deg, #16a34a, #22c55e)",
+                                                // color: "white",
+                                                // boxShadow: "0 2px 8px rgba(34, 197, 94, 0.3)",
                                             }}
                                         >
                                             <Sparkles className="w-3 h-3" />
@@ -167,7 +170,6 @@ export default function DashboardLayout({ children }) {
                                         </span>
                                     </Link>
                                 </div>
-
                                 <NavGroup label="General" items={mainItems} pathname={pathname} />
 
                                 <div className="mt-7">
@@ -175,7 +177,7 @@ export default function DashboardLayout({ children }) {
                                 </div>
 
                                 <div className="mt-7">
-                                    <NavGroup label="Lead Generation" items={leadGenerationItems} pathname={pathname} />
+                                    <NavGroup label="Keyword Search" items={leadGenerationItems} pathname={pathname} />
                                 </div>
                             </div>
 
@@ -184,24 +186,6 @@ export default function DashboardLayout({ children }) {
                                 className="mt-auto px-4 py-5 space-y-4"
                                 style={{ borderTop: "1px solid var(--sidebar-border)" }}
                             >
-                                {/* Feedback Button */}
-                                {/* <Link
-                                    href="/feedback"
-                                    className="flex items-center justify-center gap-2 w-full px-4 py-3 text-sm font-semibold transition-all no-underline group"
-                                    style={{
-                                        background:
-                                            "linear-gradient(135deg, color-mix(in srgb, var(--primary) 12%, transparent), color-mix(in srgb, var(--accent) 10%, transparent))",
-                                        border: "1px solid color-mix(in srgb, var(--primary) 25%, transparent)",
-                                        color: "var(--text-main)",
-                                    }}
-                                >
-                                    <Sparkles
-                                        className="w-5 h-5 group-hover:rotate-12 transition-transform"
-                                        style={{ color: "var(--primary)" }}
-                                    />
-                                    <span>Submit Feedback</span>
-                                </Link> */}
-
                                 {/* Made in India */}
                                 <div className="flex items-center gap-2 px-1">
                                     <span className="relative flex h-2 w-2">
@@ -230,7 +214,6 @@ export default function DashboardLayout({ children }) {
 
             {/* ── MAIN CONTENT AREA ── */}
             <div className="flex-1 flex flex-col overflow-hidden bg-surface">
-
                 {/* Topbar */}
                 <div className="flex items-center justify-between h-16 md:h-17.5 px-4 md:px-5 shrink-0 bg-sidebar border-b border-sidebar-border">
 
@@ -254,8 +237,8 @@ export default function DashboardLayout({ children }) {
                     {/* Right: Profile */}
                     {/* <div className="flex items-center gap-3">
                         <div className="rounded-full bg-foreground/85"> */}
-                            <UserProfileButton />
-                        {/* </div>
+                    <UserProfileButton />
+                    {/* </div>
                     </div> */}
                 </div>
 
@@ -265,32 +248,8 @@ export default function DashboardLayout({ children }) {
                 </main>
             </div>
 
-            {/* FLOATING FEEDBACK BUTTON */}
-            <>
-                {/* Floating Button */}
-                {/* <motion.button
-                    onClick={() => setFeedbackOpen(true)}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="fixed bottom-6 right-6 z-[70] flex items-center gap-2 px-5 py-3 shadow-2xl cursor-pointer"
-                    style={{
-                        background:
-                            "linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 75%, white))",
-                        color: "white",
-                        border: "1px solid rgba(255,255,255,0.1)",
-                        borderRadius: "999px",
-                    }}
-                >
-                    <MessageSquare className="w-5 h-5" />
-                    <span className="text-sm font-semibold hidden sm:block">
-                        Submit Feedback
-                    </span>
-                </motion.button> */}
-
-                <FeedbackModal />
-            </>
+            {/* FEEDBACK */}
+            <FeedbackModal />
         </div>
     );
 }
@@ -298,9 +257,29 @@ export default function DashboardLayout({ children }) {
 function NavGroup({ label, items, pathname }) {
     return (
         <div>
-            <p className="px-1 text-[9px] font-black uppercase tracking-[0.2em] mb-1.5 font-mono" style={{ color: 'var(--sidebar-muted)' }}>
-                {label}
-            </p>
+            {/* 🔹 LABEL ROW WITH BADGE */}
+            <div className="flex items-center justify-between mb-1.5 px-1">
+                <p
+                    className="text-xs font-bold tracking-wide uppercase font-mono"
+                    style={{ color: 'var(--sidebar-muted)' }}
+                >
+                    {label}
+                </p>
+
+                {label === "Keyword Search" && (
+                    <span
+                        className="inline-flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wide px-1.5 py-[2px]"
+                        style={{
+                            color: "#f59e0b",
+                            border: "1px solid #f59e0b",
+                            // backgroundColor: "color-mix(in srgb, #f59e0b 10%, transparent)",
+                        }}
+                    >
+                        <Clock className="w-3 h-3" />
+                        Coming Soon
+                    </span>
+                )}
+            </div>
             <nav className="flex flex-col gap-2">
                 {items.map(item => {
                     const isActive = pathname === item.href;
@@ -308,36 +287,21 @@ function NavGroup({ label, items, pathname }) {
                     // 🔹 BETA / COMING SOON ITEM
                     if (item.beta) {
                         return (
-                            <div
-                                key={item.name}
-                                className="flex items-center justify-between px-3 py-2.5 text-sm font-semibold cursor-not-allowed select-none rounded-md"
-                                style={{
-                                    backgroundColor: "transparent",
-                                    color: "var(--text-muted)",
-                                    border: "1px dashed var(--sidebar-border)",
-                                    opacity: 0.65,
-                                }}
-                            >
-                                {/* Left: icon + name */}
-                                <div className="flex items-center gap-2.5 min-w-0">
-                                    <item.icon
-                                        className="w-4 h-4 shrink-0"
-                                        style={{ color: "var(--sidebar-main)" }}
-                                    />
-                                    <span className="tracking-tight truncate">{item.name}</span>
-                                </div>
+                            <div key={item.name} className="flex flex-col">
 
-                                {/* Right: Coming Soon badge */}
-                                <span
-                                    className="shrink-0 text-[8px] font-bold uppercase tracking-wide px-1.5 py-0.5 ml-2"
+                                {/* Main item */}
+                                <div
+                                    className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-semibold rounded-none opacity-80 cursor-not-allowed"
                                     style={{
-                                        backgroundColor: "color-mix(in srgb, #f59e0b 15%, transparent)",
-                                        color: "#f59e0b",
-                                        border: "1px solid color-mix(in srgb, #f59e0b 30%, transparent)",
+                                        color: "var(--text-muted)",
                                     }}
                                 >
-                                    Soon
-                                </span>
+                                    <item.icon
+                                        className="w-5 h-5"
+                                        style={{ color: "var(--sidebar-main)" }}
+                                    />
+                                    <span className="tracking-tight">{item.name}</span>
+                                </div>
                             </div>
                         );
                     }
