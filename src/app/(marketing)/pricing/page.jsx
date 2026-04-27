@@ -94,7 +94,7 @@ export default function PricingPage() {
 
     return (
         <div
-            className="min-h-screen relative overflow-hidden"
+            className="min-h-screen relative overflow-hidden md:pt-15 pt-8"
             style={{ backgroundColor: "var(--background)", color: "var(--text-main)" }}
         >
             {/* Background */}

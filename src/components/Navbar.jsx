@@ -13,7 +13,6 @@ import {
   Briefcase,
   LayoutGrid,
   Tag,
-  Book,
   Menu,
   X,
   ArrowRight,
@@ -30,6 +29,7 @@ import { useRouter, usePathname } from "next/navigation";
 import UserProfileButton from "@/components/ui/UserProfileButton";
 
 export default function Navbar() {
+
   const [isFeaturesOpen, setIsFeaturesOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -38,14 +38,23 @@ export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
 
+  const [isScrolled, setIsScrolled] = useState(false);
+
   const { scrollY } = useScroll();
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = scrollY.getPrevious() ?? 0;
+
     if (latest > previous && latest > 150) {
       setIsVisible(false);
     } else {
       setIsVisible(true);
+    }
+
+    if (latest > 20) {
+      setIsScrolled(true);
+    } else {
+      setIsScrolled(false);
     }
   });
 
@@ -81,15 +90,11 @@ export default function Navbar() {
       isFeaturesOpen || isMobileMenuOpen ? "hidden" : "unset";
   }, [isFeaturesOpen, isMobileMenuOpen]);
 
-  // ✅ FIXED CLICK HANDLER
   const handleHowItWorksClick = (e) => {
     e.preventDefault();
-
     if (pathname === "/") {
       const el = document.getElementById("how-it-works");
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth" });
-      }
+      if (el) el.scrollIntoView({ behavior: "smooth" });
     } else {
       router.push("/#how-it-works");
     }
@@ -100,7 +105,6 @@ export default function Navbar() {
     { name: "Market Friction", href: "#market-friction", icon: AlertTriangle },
     { name: "Who Is It For", href: "#who-for", icon: Users },
     { name: "Pricing", href: "/pricing", icon: Tag },
-    // { name: "Resources", href: "/resources", icon: Book },
   ];
 
   return (
@@ -123,80 +127,96 @@ export default function Navbar() {
         }}
         animate={isVisible ? "visible" : "hidden"}
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="fixed top-0 left-0 w-full flex justify-center z-50 py-3 px-4 md:py-4"
+        className="fixed top-0 left-0 w-full flex justify-center z-50 py-2 px-2 md:py-4 md:px-5"
       >
-        {/* Desktop Navbar */}
-        <div className="hidden lg:flex w-full justify-center px-6 pt-2">
-          <div className="w-full max-w-7xl flex items-center justify-between pl-10 pr-3 py-3 rounded-full border border-white/10 bg-black/40 backdrop-blur-lg shadow-xl">
-
-            {/* LEFT → LOGO */}
+        {/* ── DESKTOP NAVBAR ── */}
+        <div className="hidden lg:flex w-full justify-center px-6 pt-0">
+          <div
+            className={`w-full max-w-8xl flex items-center rounded-full justify-between pl-10 pr-5 py-2 border transition-all duration-300
+              ${isScrolled
+                ? "bg-primary/20 backdrop-blur-xl border-primary/30 shadow-lg"
+                : "bg-transparent border-transparent shadow-none"
+              }
+            `}
+          >
+            {/* Logo */}
             <Link href="/" className="flex items-center gap-2">
-              <div className="relative h-9 w-36">
+              <div className="relative h-17 w-55">
                 <Image
                   src="/images/logo_with_text_2.png"
                   alt="Logo"
                   fill
-                  className="object-contain"
+                  className="object-contain transition-all"
                   priority
                 />
               </div>
             </Link>
 
-            {/* CENTER → NAV */}
+            {/* Center nav */}
             <div className="flex items-center gap-2 text-[13px] font-medium">
               {navItems.map((item) =>
-                item?.name === "How It Works" ? (
+                item.name === "How It Works" ? (
                   <a
                     key={item.name}
                     href={item.href}
                     onClick={handleHowItWorksClick}
-                    className="flex items-center gap-2 px-3 py-2 rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-all"
+                    className={`flex items-center gap-2 px-3 py-2 rounded-md transition-all
+                      ${isScrolled
+                        ? "text-foreground hover:bg-primary/10 font-semibold"
+                        : "hover:bg-primary/10 drop-shadow-sm text-foreground font-semibold"
+                      }`}
                   >
                     <item.icon className="w-4 h-4 opacity-70" />
                     <span>{item.name}</span>
                   </a>
                 ) : (
                   <Link
-                    key={item?.name}
-                    href={item?.href}
-                    className="flex items-center gap-2 px-3 py-2 rounded-md text-white/80 hover:text-white hover:bg-white/10 transition-all"
+                    key={item.name}
+                    href={item.href}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-md transition-all
+                      ${isScrolled
+                        ? "text-foreground hover:bg-primary/10 font-semibold"
+                        : "hover:bg-primary/10 drop-shadow-sm text-foreground font-semibold"
+                      }`}
                   >
                     <item.icon className="w-4 h-4 opacity-70" />
-                    <span>{item?.name}</span>
+                    <span>{item.name}</span>
                   </Link>
                 )
               )}
 
-              {/* FEATURES DROPDOWN */}
+              {/* Features trigger */}
               <div
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
                 className="relative"
               >
                 <button
-                  className={`flex items-center gap-2 px-3 py-2 rounded-md transition-all ${isFeaturesOpen
-                      ? "bg-white/10 text-white"
-                      : "text-white/80 hover:text-white hover:bg-white/10"
+                  className={`flex items-center gap-1 px-3 py-2 rounded-md transition-all
+                    ${isFeaturesOpen
+                      ? "text-foreground hover:bg-primary/10 font-semibold"
+                      : isScrolled
+                        ? "text-foreground font-semibold"
+                        : "hover:bg-primary/10 drop-shadow-sm text-foreground font-semibold"
                     }`}
                 >
                   <Zap className="w-4 h-4" />
                   <span>Features</span>
                   <ChevronDown
-                    className={`w-3 h-3 transition-transform ${isFeaturesOpen ? "rotate-180" : ""
-                      }`}
+                    className={`w-3 h-3 transition-transform ${isFeaturesOpen ? "rotate-180" : ""}`}
                   />
                 </button>
               </div>
             </div>
 
-            {/* RIGHT → ACTIONS */}
+            {/* Right actions */}
             <div className="flex items-center gap-3">
               {isLoggedIn ? (
                 <UserProfileButton />
               ) : (
                 <Link
                   href="/login"
-                  className="px-4 py-2 text-[12px] font-bold rounded-md bg-white text-black hover:bg-white/80 transition-all flex items-center gap-2"
+                  className="px-5 py-2 text-[12px] font-bold rounded-full bg-slate-900 dark:bg-white text-white dark:text-black hover:opacity-90 transition-all flex items-center gap-2 shadow-sm"
                 >
                   <LogIn className="w-4 h-4" />
                   Login
@@ -206,7 +226,58 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Desktop Features Mega Menu */}
+        {/* ── MOBILE NAVBAR ── */}
+        <div
+          className={`flex lg:hidden w-full items-center justify-between px-5 py-2 rounded-full mt-1 transition-all duration-300
+            ${isScrolled
+              ? "bg-primary/20 backdrop-blur-xl border border-primary/30 shadow-lg"
+              : "bg-transparent border-transparent shadow-none"
+            }
+          `}
+        >
+          {/* Hamburger */}
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            aria-label="Open menu"
+            className={`p-2 rounded-full transition-all
+            ${isScrolled
+              ? "text-foreground hover:bg-primary/10"
+              : "text-foreground hover:bg-primary/10 drop-shadow-sm"
+            }`}
+          >
+            <Menu size={20} />
+          </button>
+
+          {/* Logo */}
+          <Link href="/">
+            <div className="relative h-13 w-50">
+              <Image
+                src="/images/logo_with_text_2.png"
+                alt="Logo"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+          </Link>
+
+          {/* Login / profile */}
+          <div>
+            {isLoggedIn ? (
+              <UserProfileButton />
+            ) : (
+              <Link
+                href="/login"
+                className="px-4 py-2 text-[12px] font-bold rounded-full bg-slate-900 dark:bg-white text-white dark:text-black flex items-center gap-1.5 shadow-sm hover:opacity-90 transition-all"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                Login
+              </Link>
+            )}
+          </div>
+        </div>
+
+        {/* ── DESKTOP FEATURES MEGA MENU ── */}
         <AnimatePresence>
           {isFeaturesOpen && (
             <motion.div
@@ -215,146 +286,147 @@ export default function Navbar() {
               initial={{ opacity: 0, y: -10, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.98 }}
-              className="absolute hidden lg:block rounded-sm top-full left-1/2 -translate-x-1/2 w-[93%] bg-surface/90 backdrop-blur-2xl border border-glass-border p-8 shadow-2xl z-50 origin-top"
+              className="absolute hidden lg:block rounded-2xl top-full left-1/2 -translate-x-1/2 w-[93%] bg-navbar-bg backdrop-blur-2xl border border-slate-200/80 p-8 shadow-2xl z-50 origin-top"
             >
               <div className="grid grid-cols-12 gap-8">
-                <div className="col-span-4 space-y-2 border-r border-glass-border pr-8">
+                <div className="col-span-4 space-y-2 border-r border-slate-100 dark:border-white/8 pr-8">
                   <FeatureItem icon={Activity} title="Real-time Analytics" desc="Track app performance instantly." />
                   <FeatureItem icon={Shield} title="Enterprise Security" desc="Bank-grade encryption." />
                   <FeatureItem icon={Globe} title="Global Scale" desc="Deploy infrastructure globally." />
                 </div>
                 <div className="col-span-8 grid grid-cols-2 gap-6">
-                  <MegaMenuCard href='/dashboard/reddit' img="/images/f3.png" label="New Update" title="Reddit Analysis" />
-                  <MegaMenuCard href='/dashboard/playstore' img="/images/f4.jpeg" label="Case Study" title="Playstore Analysis" />
+                  <MegaMenuCard href="/dashboard/reddit" img="/images/f3.png" label="New Update" title="Reddit Analysis" />
+                  <MegaMenuCard href="/dashboard/playstore" img="/images/f4.jpeg" label="Case Study" title="Playstore Analysis" />
                 </div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Mobile Navbar */}
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="fixed inset-0 bg-background/80 backdrop-blur-md z-[60] lg:hidden"
-              />
-
-              <motion.div
-                initial={{ x: "-100%" }}
-                animate={{ x: 0 }}
-                exit={{ x: "-100%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                className="fixed inset-y-0 left-0 w-[280px] bg-surface z-[70] p-0 flex flex-col lg:hidden border-r border-border-solid/30 shadow-2xl"
-              >
-                <div className="flex justify-between items-center mb-0 p-4">
-                  <div className="h-15 w-48 relative">
-                    <Image
-                      src="/images/logo_with_text_2.png"
-                      alt="Logo"
-                      fill
-                      className="object-contain"
-                    />
-                  </div>
-                  <button
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-muted hover:text-foreground p-2 bg-surface-card rounded-full transition-colors"
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-
-                <div className="flex flex-col gap-1 p-6">
-                  <p className="text-xs font-semibold text-muted uppercase tracking-wide px-1 mb-2">
-                    Main Menu
-                  </p>
-
-                  {navItems.map((item) =>
-                    item.name === "How It Works" ? (
-                      <a
-                        key={item.name}
-                        href={item.href}
-                        onClick={(e) => {
-                          handleHowItWorksClick(e);
-                          setIsMobileMenuOpen(false);
-                        }}
-                        className="flex items-center gap-3 text-[16px] py-1.5 px-3 text-foreground font-medium hover:bg-surface-card transition-colors group"
-                      >
-                        <div className="p-2 bg-surface-raised rounded-full group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                          <item.icon className="w-4 h-4" />
-                        </div>
-                        {item.name}
-                      </a>
-                    ) : (
-                      <Link
-                        key={item.name}
-                        href={item.href}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-3 py-1.5 text-foreground text-[16px] font-medium hover:bg-surface-card transition-colors group"
-                      >
-                        <div className="p-2 bg-surface-raised rounded-full group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                          <item.icon className="w-4 h-4" />
-                        </div>
-                        {item.name}
-                      </Link>
-                    )
-                  )}
-
-                  <div className="h-px my-4" />
-
-                  <p className="text-xs font-semibold text-muted uppercase tracking-wide px-1 mb-2">
-                    Our Core Features
-                  </p>
-
-                  <Link
-                    href="/dashboard/reddit"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center justify-between p-4 bg-surface-card border border-border-solid/20 group active:scale-[0.98] transition-all mb-2"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Activity className="w-4 h-4 text-primary" />
-                      <span className="text-[16px] font-medium text-foreground">
-                        Reddit Scan
-                      </span>
-                    </div>
-                    <ArrowRight className="w-4 h-4 text-muted group-hover:translate-x-1 transition-transform" />
-                  </Link>
-
-                  <Link href="/dashboard/playstore"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center justify-between p-4 bg-surface-card border border-border-solid/20 group active:scale-[0.98] transition-all mb-2"
-                  >
-                    <div className="flex items-center gap-3">
-                      <LayoutGrid className="w-4 h-4 text-primary" />
-                      <span className="text-[16px] font-medium text-foreground">
-                        Playstore Analysis
-                      </span>
-                    </div>
-                    <ArrowRight className="w-4 h-4 text-muted group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                </div>
-
-                {!isLoggedIn && (
-                  <div className="mt-auto pt-6 pb-4 px-4">
-                    <Link
-                      href="/login"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="w-full bg-primary text-white py-4 font-semibold flex items-center justify-center gap-2 shadow-xl shadow-primary/30 active:scale-95 transition-transform"
-                    >
-                      Get Started
-                      <ArrowRight size={22} />
-                    </Link>
-                  </div>
-                )}
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
       </motion.nav>
+
+      {/* ── MOBILE SIDE DRAWER ── */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="fixed inset-0 bg-background/80 backdrop-blur-md z-[60] lg:hidden"
+            />
+
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 left-0 w-[280px] bg-surface z-[70] p-0 flex flex-col lg:hidden border-r border-border-solid/30 shadow-2xl"
+            >
+              <div className="flex justify-between items-center mb-0 p-4">
+                <div className="h-15 w-48 relative">
+                  <Image
+                    src="/images/logo_with_text_2.png"
+                    alt="Logo"
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+                <button
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="text-muted hover:text-foreground p-2 bg-surface-card rounded-full transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-1 p-6">
+                <p className="text-xs font-semibold text-muted uppercase tracking-wide px-1 mb-2">
+                  Main Menu
+                </p>
+
+                {navItems.map((item) =>
+                  item.name === "How It Works" ? (
+                    <a
+                      key={item.name}
+                      href={item.href}
+                      onClick={(e) => {
+                        handleHowItWorksClick(e);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="flex items-center gap-3 text-[16px] py-1.5 px-3 text-foreground font-medium hover:bg-surface-card transition-colors group"
+                    >
+                      <div className="p-2 bg-surface-raised rounded-full group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                        <item.icon className="w-4 h-4" />
+                      </div>
+                      {item.name}
+                    </a>
+                  ) : (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-3 py-1.5 text-foreground text-[16px] font-medium hover:bg-surface-card transition-colors group"
+                    >
+                      <div className="p-2 bg-surface-raised rounded-full group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                        <item.icon className="w-4 h-4" />
+                      </div>
+                      {item.name}
+                    </Link>
+                  )
+                )}
+
+                <div className="h-px my-4" />
+
+                <p className="text-xs font-semibold text-muted uppercase tracking-wide px-1 mb-2">
+                  Our Core Features
+                </p>
+
+                <Link
+                  href="/dashboard/reddit"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center justify-between p-4 bg-surface-card border border-border-solid/20 group active:scale-[0.98] transition-all mb-2"
+                >
+                  <div className="flex items-center gap-3">
+                    <Activity className="w-4 h-4 text-primary" />
+                    <span className="text-[16px] font-medium text-foreground">
+                      Reddit Scan
+                    </span>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-muted group-hover:translate-x-1 transition-transform" />
+                </Link>
+
+                <Link
+                  href="/dashboard/playstore"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center justify-between p-4 bg-surface-card border border-border-solid/20 group active:scale-[0.98] transition-all mb-2"
+                >
+                  <div className="flex items-center gap-3">
+                    <LayoutGrid className="w-4 h-4 text-primary" />
+                    <span className="text-[16px] font-medium text-foreground">
+                      Playstore Analysis
+                    </span>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-muted group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+
+              {!isLoggedIn && (
+                <div className="mt-auto pt-6 pb-4 px-4">
+                  <Link
+                    href="/login"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="w-full bg-primary text-white py-4 font-semibold flex items-center justify-center gap-2 shadow-xl shadow-primary/30 active:scale-95 transition-transform"
+                  >
+                    Get Started
+                    <ArrowRight size={22} />
+                  </Link>
+                </div>
+              )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </>
   );
 }
@@ -365,7 +437,7 @@ function FeatureItem({ icon: Icon, title, desc }) {
     <div className="p-3 hover:bg-primary/10 transition-all cursor-pointer group rounded-sm">
       <div className="flex items-center gap-3 mb-1">
         <Icon className="w-5 h-5 text-primary" />
-        <h4 className="font-bold text-foreground group-hover:text-primary transition-colors">{title}</h4>
+        <h4 className="font-bold text-subtle group-hover:text-primary transition-colors">{title}</h4>
       </div>
       <p className="text-xs text-muted ml-8">{desc}</p>
     </div>

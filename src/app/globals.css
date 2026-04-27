@@ -10,11 +10,12 @@
 
   /* Surfaces */
   --background: #F0F4F8;
-  --surface: #FFFFFF;
+  --surface: #f0f5fa;
   --surface-card: #EBF3F9;
-  --surface-raised: #DEEDF7;
+  --surface-raised: #ddedf7;
   --input-background: #E4F2FB;
   --surface-hover: #e8f1f8;
+  --navbar-bg: #0a2c49;
 
   /* Sidebar */
   --sidebar-bg: #FFFFFF;
@@ -26,7 +27,7 @@
 
   /* Text */
   --text-main: #0D1F2D;
-  --text-muted: #4A6275;
+  --text-muted: #3d5161;
   --text-subtle: #6A8396;
   --text-light: #FFFFFF;
 
@@ -60,20 +61,21 @@
 
 .dark {
   /* Brand */
-  --primary: #2484C8;
+  /* --primary: #2484C8; */
+  --primary: #9acdf1;
   --primary-hover: #1A6EAA;
   --secondary: #3A6A88;
   --accent: #7fe8ff;
   --navbar-border: #1A3D54;
 
   /* Surfaces */
-  /* inside .dark */
   --background: #000000;
-  --surface: #0E1C28;
-  --surface-card: #0c1722;
-  --surface-raised: #152534;
+  --surface: #122433;
+  --surface-card: #142739;
+  --surface-raised: #0c151e;
   --input-background: #0B3650;
   --surface-hover: #04080c;
+  --navbar-bg: #030c13;
 
   /* Sidebar */
   --sidebar-bg: #000000;
@@ -134,6 +136,7 @@
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
   --color-input-background: var(--input-background);
+  --color-navbar-bg: var(--navbar-bg);
 
   /* Sidebar */
   --color-sidebar: var(--sidebar-bg);
@@ -193,7 +196,8 @@ section {
 /* Mobile */
 @media (max-width: 768px) {
   section {
-    scroll-margin-top: 90px; /* adjust as needed */
+    scroll-margin-top: 90px;
+    /* adjust as needed */
   }
 }
 
@@ -230,6 +234,7 @@ section {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;

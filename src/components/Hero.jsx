@@ -22,7 +22,7 @@ const AVATARS = ["#3B82F6", "#8B5CF6", "#10B981", "#F59E0B", "#EF4444"];
 
 export default function Hero() {
     return (
-        <section className="relative min-h-screen flex items-center justify-center pt-32 pb-5 lg:pt-20 overflow-hidden">
+        <section className="relative min-h-screen flex items-center justify-center pt-32 pb-5 lg:pt-30 overflow-hidden">
             {/* Grid texture */}
             <div
                 className="absolute inset-0 -z-20"
