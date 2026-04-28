@@ -9,12 +9,10 @@ import {
   Loader2,
   CheckCircle2,
   Clock,
-  ChevronDown,
   Ticket,
   HeadphonesIcon,
   Inbox,
   Lock,
-  Sparkles,
   Check,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,7 +20,7 @@ import { auth } from "@/lib/firebase";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
-// ─── helpers ──────────────────────────────────────────────────────────────────
+// ─── helpers ───────────────────────────────────────────────────────────────────
 const statusMeta = {
   open: { label: "Open", color: "#22c55e", Icon: CheckCircle2 },
   in_progress: { label: "In Progress", color: "#f59e0b", Icon: Clock },
@@ -78,7 +76,16 @@ function getMessagePlaceholder(team) {
   return "Tell us what's happening — the more detail, the faster we can help!";
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
+// ─── Token helper ──────────────────────────────────────────────────────────────
+async function getAuthHeaders() {
+  const token = await auth.currentUser?.getIdToken();
+  return {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
+
+// ─── Main component ────────────────────────────────────────────────────────────
 export default function TicketChatPopup({ hasUnread, setHasUnread }) {
   const [open, setOpen] = useState(false);
   const [view, setView] = useState("list");
@@ -90,14 +97,11 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
   const [userEmail, setUserEmail] = useState(null);
   const [userName, setUserName] = useState(null);
 
-  // new-ticket form
   const [newSubject, setNewSubject] = useState("");
   const [newMsg, setNewMsg] = useState("");
   const [newTeam, setNewTeam] = useState(null);
-  const [typeOpen, setTypeOpen] = useState(false);
   const [creating, setCreating] = useState(false);
 
-  // teams fetched from backend
   const [teams, setTeams] = useState([]);
   const [teamsLoading, setTeamsLoading] = useState(false);
 
@@ -109,25 +113,29 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
     activeTicketRef.current = activeTicket;
   }, [activeTicket]);
 
-  // ── Firebase auth ──────────────────────────────────────────────────────────
+  // ── Firebase auth ────────────────────────────────────────────────────────────
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((u) => {
       if (u) {
         setUserEmail(u.email);
         setUserName(u.displayName || u.email?.split("@")[0] || "User");
+      } else {
+        setUserEmail(null);
+        setUserName(null);
       }
     });
     return unsubscribe;
   }, []);
 
-  // ── Fetch active teams ─────────────────────────────────────────────────────
+  // ── Fetch active teams (public — no auth needed) ─────────────────────────────
   const fetchTeams = useCallback(async () => {
     setTeamsLoading(true);
     try {
       const res = await fetch(`${API}/user/tickets/teams/active`);
       const data = await res.json();
-      setTeams(data);
-      if (data.length > 0) setNewTeam(data[0]);
+      const list = Array.isArray(data) ? data : [];
+      setTeams(list);
+      if (list.length > 0) setNewTeam(list[0]);
     } catch {
       // silently swallow
     } finally {
@@ -135,35 +143,47 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
     }
   }, []);
 
+  // ✅ FIX 1: async IIFE instead of void fetchTeams()
   useEffect(() => {
     if (view !== "new" || teams.length > 0) return;
-    void (async () => {
+    (async () => {
       await fetchTeams();
     })();
   }, [view, teams.length, fetchTeams]);
 
-  // ── Fetch tickets ──────────────────────────────────────────────────────────
+  // ── Fetch tickets (authenticated) ────────────────────────────────────────────
   const fetchTickets = useCallback(
     async (silent = false) => {
       if (!userEmail) return;
       if (!silent) setLoading(true);
       try {
+        const headers = await getAuthHeaders();
         const res = await fetch(
           `${API}/user/tickets/?email=${encodeURIComponent(userEmail)}`,
+          { headers },
         );
+
+        if (!res.ok) {
+          setTickets([]);
+          return;
+        }
+
         const data = await res.json();
-        setTickets(data);
+        const list = Array.isArray(data) ? data : [];
+
+        setTickets(list);
         setHasUnread(() => {
           if (open) return false;
-          return data.some((t) => t.replies?.some((r) => r.is_admin === 1));
+          return list.some((t) => t.replies?.some((r) => r.is_admin === 1));
         });
+
         const current = activeTicketRef.current;
         if (current) {
-          const fresh = data.find((t) => t.id === current.id);
+          const fresh = list.find((t) => t.id === current.id);
           if (fresh) setActive(fresh);
         }
       } catch {
-        // silently swallow
+        setTickets([]);
       } finally {
         if (!silent) setLoading(false);
       }
@@ -171,27 +191,25 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
     [userEmail, setHasUnread, open],
   );
 
-  // Fetch only when the popup opens
+  // ✅ FIX 2: async IIFE instead of void fetchTickets()
   useEffect(() => {
     if (!open || !userEmail) return;
-    void (async () => {
+    (async () => {
       await fetchTickets();
     })();
   }, [open, userEmail, fetchTickets]);
 
-  // Scroll to bottom on new messages
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [activeTicket?.replies]);
 
-  // Focus input when entering chat
   useEffect(() => {
     if (view !== "chat") return;
     const t = setTimeout(() => inputRef.current?.focus(), 150);
     return () => clearTimeout(t);
   }, [view]);
 
-  // ── Toggle open — clears unread dot instantly on open ─────────────────────
+  // ── Toggle / close ────────────────────────────────────────────────────────────
   const handleToggleOpen = useCallback(() => {
     setOpen((prev) => {
       if (!prev) setHasUnread(false);
@@ -199,29 +217,25 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
     });
   }, [setHasUnread]);
 
-  // ── Close — clears unread dot too ─────────────────────────────────────────
   const handleClose = useCallback(() => {
     setOpen(false);
     setHasUnread(false);
   }, [setHasUnread]);
 
-  // ── Open ticket ────────────────────────────────────────────────────────────
+  // ── Open ticket ───────────────────────────────────────────────────────────────
   const openTicket = useCallback((t) => {
     setActive(t);
     setView("chat");
   }, []);
 
-  // ── Send reply — optimistic: show bubble instantly, clear input, then confirm ──
+  // ── Send reply (optimistic) ───────────────────────────────────────────────────
   const sendReply = useCallback(async () => {
     if (!msg.trim() || !activeTicket || sending) return;
 
     const tempId = `temp-${Date.now()}`;
     const msgToSend = msg.trim();
 
-    // clear input immediately
     setMsg("");
-
-    // optimistic bubble
     setActive((prev) =>
       prev
         ? {
@@ -242,25 +256,21 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
     );
 
     setSending(true);
-
     try {
+      const headers = await getAuthHeaders();
       const res = await fetch(
         `${API}/user/tickets/${activeTicket.id}/reply?email=${encodeURIComponent(userEmail)}`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify({ message: msgToSend }),
         },
       );
 
-      if (!res.ok) {
-        throw new Error("Failed to send reply");
-      }
+      if (!res.ok) throw new Error("Failed to send reply");
 
-      // Some APIs return partial ticket data, so refetch the full list instead
       await fetchTickets(true);
-    } catch (error) {
-      // remove optimistic bubble on failure
+    } catch {
       setActive((prev) =>
         prev
           ? {
@@ -269,22 +279,21 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
             }
           : prev,
       );
-
-      // restore typed message so user does not lose it
       setMsg(msgToSend);
     } finally {
       setSending(false);
     }
   }, [msg, activeTicket, sending, userEmail, fetchTickets]);
 
-  // ── Create ticket ──────────────────────────────────────────────────────────
+  // ── Create ticket ─────────────────────────────────────────────────────────────
   const createTicket = useCallback(async () => {
     if (!newMsg.trim() || !newTeam || creating) return;
     setCreating(true);
     try {
+      const headers = await getAuthHeaders();
       const res = await fetch(`${API}/user/tickets/`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({
           subject: newSubject.trim() || `${newTeam.name} support request`,
           message: newMsg.trim(),
@@ -294,6 +303,9 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
           user_plan: "free",
         }),
       });
+
+      if (!res.ok) throw new Error("Failed to create ticket");
+
       const ticket = await res.json();
       setTickets((prev) => [ticket, ...prev]);
       setNewSubject("");
@@ -308,7 +320,6 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
     }
   }, [newSubject, newMsg, creating, userEmail, userName, newTeam, teams]);
 
-  // ── Go to new ticket from closed state ────────────────────────────────────
   const raiseNewTicket = useCallback(() => {
     setActive(null);
     setNewSubject("");
@@ -326,7 +337,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.96 }}
             transition={{ duration: 0.22, ease: "easeOut" }}
-            className="fixed bottom-20 left-4 z-[200] flex flex-col shadow-2xl overflow-hidden"
+            className="fixed bottom-20 left-4 z-200 flex flex-col shadow-2xl overflow-hidden"
             style={{
               width: 360,
               height: 520,
@@ -380,8 +391,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                     className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold transition-all"
                     style={{ background: "var(--primary)", color: "white" }}
                   >
-                    <Plus size={12} />
-                    New
+                    <Plus size={12} /> New
                   </button>
                 )}
                 <button
@@ -396,7 +406,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
 
             {/* Body */}
             <div className="flex-1 overflow-hidden flex flex-col">
-              {/* ── LIST VIEW ─────────────────────────────────────────────── */}
+              {/* ── LIST VIEW ───────────────────────────────────────────────── */}
               {view === "list" && (
                 <div className="flex-1 overflow-y-auto p-3 space-y-2">
                   {loading ? (
@@ -494,7 +504,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                 </div>
               )}
 
-              {/* ── NEW TICKET VIEW ───────────────────────────────────────── */}
+              {/* ── NEW TICKET VIEW ──────────────────────────────────────────── */}
               {view === "new" && (
                 <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
                   <div>
@@ -505,7 +515,6 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                       Subject
                     </label>
                     <input
-                      required
                       value={newSubject}
                       onChange={(e) => setNewSubject(e.target.value)}
                       placeholder={getSubjectPlaceholder(newTeam)}
@@ -542,18 +551,13 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                   </div>
 
                   <button
-                    onClick={() => {
-                      void (async () => {
-                        await createTicket();
-                      })();
-                    }}
+                    onClick={() => void createTicket()}
                     disabled={
                       !newMsg.trim() ||
                       !newTeam ||
                       creating ||
                       teamsLoading ||
-                      !newSubject.trim() ||
-                      !newSubject
+                      !newSubject.trim()
                     }
                     className="w-full flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-bold transition-all disabled:opacity-50"
                     style={{ background: "var(--primary)", color: "white" }}
@@ -568,7 +572,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                 </div>
               )}
 
-              {/* ── CHAT VIEW ─────────────────────────────────────────────── */}
+              {/* ── CHAT VIEW ────────────────────────────────────────────────── */}
               {view === "chat" && activeTicket && (
                 <>
                   <div
@@ -593,7 +597,6 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                   </div>
 
                   <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
-                    {/* Original message */}
                     <MessageBubble
                       isAdmin={false}
                       message={activeTicket.message}
@@ -619,7 +622,6 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                       ),
                     )}
 
-                    {/* Closed ticket banner */}
                     {activeTicket.status === "closed" && (
                       <div className="flex flex-col items-center gap-3 py-4">
                         <div
@@ -656,7 +658,6 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                     <div ref={bottomRef} />
                   </div>
 
-                  {/* Reply input — hidden when closed */}
                   {activeTicket.status !== "closed" && (
                     <div
                       className="shrink-0 px-3 py-3"
@@ -678,9 +679,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                           onKeyDown={(e) => {
                             if (e.key === "Enter" && !e.shiftKey) {
                               e.preventDefault();
-                              void (async () => {
-                                await sendReply();
-                              })();
+                              void sendReply();
                             }
                           }}
                           placeholder="Type a message…"
@@ -688,11 +687,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                           style={{ color: "var(--text-main)", maxHeight: 80 }}
                         />
                         <button
-                          onClick={() => {
-                            void (async () => {
-                              await sendReply();
-                            })();
-                          }}
+                          onClick={() => void sendReply()}
                           disabled={!msg.trim() || sending}
                           className="p-2 rounded-lg transition-all disabled:opacity-40 shrink-0"
                           style={{
@@ -716,7 +711,6 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                     </div>
                   )}
 
-                  {/* Locked footer when closed */}
                   {activeTicket.status === "closed" && (
                     <div
                       className="shrink-0 flex items-center justify-center gap-1.5 py-2.5"
@@ -750,7 +744,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
   );
 }
 
-// ─── Sidebar trigger ──────────────────────────────────────────────────────────
+// ─── Sidebar trigger ───────────────────────────────────────────────────────────
 export function SidebarTrigger({ open, setOpen, hasUnread }) {
   return (
     <button
@@ -787,10 +781,7 @@ export function SidebarTrigger({ open, setOpen, hasUnread }) {
   );
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
-// pending = optimistic bubble not yet confirmed by server
-// sent    = confirmed by server (only shown on user's own messages)
+// ─── Sub-components ────────────────────────────────────────────────────────────
 function MessageBubble({
   isAdmin,
   message,
@@ -833,14 +824,10 @@ function MessageBubble({
       >
         {message}
       </div>
-
-      {/* Timestamp + status row */}
       <div className="flex items-center gap-1 px-1">
         <span className="text-[9px]" style={{ color: "var(--sidebar-muted)" }}>
           {fmt(time)}
         </span>
-
-        {/* Pending: clock spinner */}
         {!isAdmin && pending && (
           <Clock
             size={9}
@@ -848,8 +835,6 @@ function MessageBubble({
             className="opacity-60"
           />
         )}
-
-        {/* Sent: green double-check */}
         {!isAdmin && !pending && sent && (
           <span
             className="flex items-center gap-0.5 text-[9px] font-semibold"
