@@ -19,6 +19,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { auth } from "@/lib/firebase";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
+const POLL_INTERVAL = 10_000;
 
 // ─── helpers ───────────────────────────────────────────────────────────────────
 const statusMeta = {
@@ -96,22 +97,25 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
   const [msg, setMsg] = useState("");
   const [userEmail, setUserEmail] = useState(null);
   const [userName, setUserName] = useState(null);
-
   const [newSubject, setNewSubject] = useState("");
   const [newMsg, setNewMsg] = useState("");
   const [newTeam, setNewTeam] = useState(null);
   const [creating, setCreating] = useState(false);
-
   const [teams, setTeams] = useState([]);
   const [teamsLoading, setTeamsLoading] = useState(false);
 
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
   const activeTicketRef = useRef(activeTicket);
+  const pollTimerRef = useRef(null); // ✅ holds interval id
+  const viewRef = useRef(view); // ✅ always-current view
 
   useEffect(() => {
     activeTicketRef.current = activeTicket;
   }, [activeTicket]);
+  useEffect(() => {
+    viewRef.current = view;
+  }, [view]);
 
   // ── Firebase auth ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -127,7 +131,85 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
     return unsubscribe;
   }, []);
 
-  // ── Fetch active teams (public — no auth needed) ─────────────────────────────
+  // ── Polling helpers — declared FIRST so fetchTickets can use pollTimerRef ────
+  // ✅ KEY FIX: stopPolling uses pollTimerRef directly (no useCallback dependency
+  //    on fetchTickets) so there is no forward-reference issue.
+  const stopPolling = useCallback(() => {
+    if (pollTimerRef.current) {
+      clearInterval(pollTimerRef.current);
+      pollTimerRef.current = null;
+    }
+  }, []);
+
+  // ── Fetch tickets ─────────────────────────────────────────────────────────────
+  const fetchTickets = useCallback(
+    async (silent = false) => {
+      if (!userEmail) return;
+      if (!silent) setLoading(true);
+      try {
+        const headers = await getAuthHeaders();
+        const res = await fetch(`${API}/user/tickets/`, { headers });
+
+        if (!res.ok) {
+          setTickets([]);
+          return;
+        }
+
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : [];
+
+        setTickets(list);
+
+        setHasUnread(() => {
+          if (open) return false;
+          return list.some((t) => t.replies?.some((r) => r.is_admin === 1));
+        });
+
+        const current = activeTicketRef.current;
+        if (current) {
+          const fresh = list.find((t) => t.id === current.id);
+          if (fresh) {
+            setActive(fresh);
+            // ✅ Use ref directly — stopPolling is declared above so it's safe,
+            //    but using the ref avoids any stale-closure risk entirely.
+            if (fresh.status === "closed") {
+              if (pollTimerRef.current) {
+                clearInterval(pollTimerRef.current);
+                pollTimerRef.current = null;
+              }
+            }
+          }
+        }
+      } catch {
+        setTickets([]);
+      } finally {
+        if (!silent) setLoading(false);
+      }
+    },
+    [userEmail, setHasUnread, open],
+  );
+
+  // ── startPolling — declared after fetchTickets (needs it in closure) ─────────
+  const startPolling = useCallback(() => {
+    // Clear any existing interval before starting a new one
+    if (pollTimerRef.current) {
+      clearInterval(pollTimerRef.current);
+      pollTimerRef.current = null;
+    }
+    pollTimerRef.current = setInterval(async () => {
+      const ticket = activeTicketRef.current;
+      if (viewRef.current !== "chat" || !ticket || ticket.status === "closed") {
+        if (pollTimerRef.current) {
+          clearInterval(pollTimerRef.current);
+          pollTimerRef.current = null;
+        }
+        return;
+      }
+      await fetchTickets(true);
+    }, POLL_INTERVAL);
+  }, [fetchTickets]);
+
+  // ── Fetch active teams ────────────────────────────────────────────────────────
   const fetchTeams = useCallback(async () => {
     setTeamsLoading(true);
     try {
@@ -143,7 +225,6 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
     }
   }, []);
 
-  // ✅ FIX 1: async IIFE instead of void fetchTeams()
   useEffect(() => {
     if (view !== "new" || teams.length > 0) return;
     (async () => {
@@ -151,47 +232,17 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
     })();
   }, [view, teams.length, fetchTeams]);
 
-  // ── Fetch tickets (authenticated) ────────────────────────────────────────────
-  const fetchTickets = useCallback(
-    async (silent = false) => {
-      if (!userEmail) return;
-      if (!silent) setLoading(true);
-      try {
-        const headers = await getAuthHeaders();
-        const res = await fetch(
-          `${API}/user/tickets/?email=${encodeURIComponent(userEmail)}`,
-          { headers },
-        );
+  // ── Start / stop polling when entering / leaving chat view ───────────────────
+  useEffect(() => {
+    if (view === "chat" && activeTicket && activeTicket.status !== "closed") {
+      startPolling();
+    } else {
+      stopPolling();
+    }
+    return () => stopPolling();
+  }, [view, activeTicket?.id, activeTicket?.status]); // eslint-disable-line
 
-        if (!res.ok) {
-          setTickets([]);
-          return;
-        }
-
-        const data = await res.json();
-        const list = Array.isArray(data) ? data : [];
-
-        setTickets(list);
-        setHasUnread(() => {
-          if (open) return false;
-          return list.some((t) => t.replies?.some((r) => r.is_admin === 1));
-        });
-
-        const current = activeTicketRef.current;
-        if (current) {
-          const fresh = list.find((t) => t.id === current.id);
-          if (fresh) setActive(fresh);
-        }
-      } catch {
-        setTickets([]);
-      } finally {
-        if (!silent) setLoading(false);
-      }
-    },
-    [userEmail, setHasUnread, open],
-  );
-
-  // ✅ FIX 2: async IIFE instead of void fetchTickets()
+  // ── Initial fetch when popup opens ───────────────────────────────────────────
   useEffect(() => {
     if (!open || !userEmail) return;
     (async () => {
@@ -199,10 +250,12 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
     })();
   }, [open, userEmail, fetchTickets]);
 
+  // ── Scroll to bottom on new replies ──────────────────────────────────────────
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [activeTicket?.replies]);
 
+  // ── Auto-focus input in chat view ────────────────────────────────────────────
   useEffect(() => {
     if (view !== "chat") return;
     const t = setTimeout(() => inputRef.current?.focus(), 150);
@@ -220,7 +273,8 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
   const handleClose = useCallback(() => {
     setOpen(false);
     setHasUnread(false);
-  }, [setHasUnread]);
+    stopPolling();
+  }, [setHasUnread, stopPolling]);
 
   // ── Open ticket ───────────────────────────────────────────────────────────────
   const openTicket = useCallback((t) => {
@@ -258,19 +312,23 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
     setSending(true);
     try {
       const headers = await getAuthHeaders();
-      const res = await fetch(
-        `${API}/user/tickets/${activeTicket.id}/reply?email=${encodeURIComponent(userEmail)}`,
-        {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ message: msgToSend }),
-        },
-      );
+      const res = await fetch(`${API}/user/tickets/${activeTicket.id}/reply`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ message: msgToSend }),
+      });
 
       if (!res.ok) throw new Error("Failed to send reply");
 
+      // Immediately refresh after sending
       await fetchTickets(true);
+
+      // Restart polling so the 10s clock resets from now
+      if (activeTicketRef.current?.status !== "closed") {
+        startPolling();
+      }
     } catch {
+      // Roll back optimistic bubble
       setActive((prev) =>
         prev
           ? {
@@ -283,7 +341,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
     } finally {
       setSending(false);
     }
-  }, [msg, activeTicket, sending, userEmail, fetchTickets]);
+  }, [msg, activeTicket, sending, fetchTickets, startPolling]);
 
   // ── Create ticket ─────────────────────────────────────────────────────────────
   const createTicket = useCallback(async () => {
@@ -312,7 +370,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
       setNewMsg("");
       setNewTeam(teams[0] ?? null);
       setActive(ticket);
-      setView("chat");
+      setView("chat"); // triggers polling useEffect
     } catch {
       // swallow
     } finally {
@@ -328,6 +386,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
     setView("new");
   }, [teams]);
 
+  // ─── Render ──────────────────────────────────────────────────────────────────
   return (
     <>
       <AnimatePresence>
@@ -359,6 +418,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                 {view !== "list" && (
                   <button
                     onClick={() => {
+                      stopPolling();
                       setView("list");
                       setActive(null);
                     }}
@@ -406,7 +466,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
 
             {/* Body */}
             <div className="flex-1 overflow-hidden flex flex-col">
-              {/* ── LIST VIEW ───────────────────────────────────────────────── */}
+              {/* ── LIST VIEW ─────────────────────────────────────────────── */}
               {view === "list" && (
                 <div className="flex-1 overflow-y-auto p-3 space-y-2">
                   {loading ? (
@@ -504,7 +564,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                 </div>
               )}
 
-              {/* ── NEW TICKET VIEW ──────────────────────────────────────────── */}
+              {/* ── NEW TICKET VIEW ───────────────────────────────────────── */}
               {view === "new" && (
                 <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
                   <div>
@@ -572,7 +632,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                 </div>
               )}
 
-              {/* ── CHAT VIEW ────────────────────────────────────────────────── */}
+              {/* ── CHAT VIEW ─────────────────────────────────────────────── */}
               {view === "chat" && activeTicket && (
                 <>
                   <div
@@ -594,6 +654,22 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                       {activeTicket.ticket_id} · {activeTicket.assigned_team}{" "}
                       team
                     </span>
+
+                    {/* Live polling indicator */}
+                    {activeTicket.status !== "closed" && (
+                      <span className="ml-auto flex items-center gap-1">
+                        <span className="relative flex h-1.5 w-1.5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500" />
+                        </span>
+                        <span
+                          className="text-[9px]"
+                          style={{ color: "var(--sidebar-muted)" }}
+                        >
+                          Live
+                        </span>
+                      </span>
+                    )}
                   </div>
 
                   <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
