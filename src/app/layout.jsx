@@ -3,6 +3,7 @@ import "./globals.css";
 import { Providers } from "@/providers/Providers";
 import AuthGuard from "@/middleware/AuthGuard";
 import { cn } from "@/lib/utils";
+import Script from "next/script";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -69,6 +70,9 @@ export default function RootLayout({ children }) {
         <Providers>
           <AuthGuard>{children}</AuthGuard>
         </Providers>
+
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+
       </body>
     </html>
   );

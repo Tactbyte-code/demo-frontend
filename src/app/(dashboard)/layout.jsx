@@ -241,7 +241,7 @@ export default function DashboardLayout({ children }) {
                         <button
                             onClick={toggleSidebar}
                             title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
-                            className="flex items-center justify-center w-9 h-9 md:w-8 md:h-8 transition-colors cursor-pointer border border-border-solid text-subtle hover:bg-sidebar-hover hover:text-foreground hover:border-primary rounded-md"
+                            className="flex items-center justify-center w-9 h-9 transition-colors cursor-pointer border border-border-solid text-subtle hover:bg-sidebar-hover hover:text-foreground hover:border-primary rounded-full"
                         >
                             {sidebarOpen ? (
                                 <PanelLeftClose className="w-4 h-4" />

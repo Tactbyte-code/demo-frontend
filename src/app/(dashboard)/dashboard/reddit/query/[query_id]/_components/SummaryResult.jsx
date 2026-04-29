@@ -772,10 +772,8 @@ export const SummaryResult = ({ data, sources = [], approvedCount = 0, maxApprov
                                 relative
                                 flex items-center justify-center gap-1.5
                                 
-                                /* 📱 Mobile */
-                                shrink-0 px-3 py-2.5 text-[12px]
+                                shrink-0 px-5 py-2.5 text-[12px]
                                 
-                                /* 💻 Desktop */
                                 md:flex-1 md:shrink md:px-0 md:py-3
                                 
                                 whitespace-nowrap

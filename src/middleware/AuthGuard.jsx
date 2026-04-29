@@ -13,7 +13,7 @@ export default function AuthGuard({ children }) {
 
     const router = useRouter();
     const pathname = usePathname();
-    console.log('pathname: ', pathname);
+    // console.log('pathname: ', pathname);
 
     const [checking, setChecking] = useState(true);
 
@@ -48,7 +48,7 @@ export default function AuthGuard({ children }) {
             }
 
             const user = JSON.parse(storedUser);
-            console.log('auth user: ', user);
+            // console.log('auth user: ', user);
 
             // 🚨 NOT ONBOARDED → force onboarding always
             if (!user.is_onboarded && pathname !== "/onboarding") {

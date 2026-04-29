@@ -152,10 +152,10 @@ export default function AppAnalysisPage() {
                         <button
                             type="submit"
                             disabled={submitLoading}
-                            className="w-full md:w-auto px-8 py-3.5 md:py-4 text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                            className="w-full md:w-auto px-8 py-3.5 text-light md:py-4 text-sm font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
                             style={{
                                 backgroundColor: "var(--primary)",
-                                color: "#fff",
+                                // color: "#fff",
                                 border: "1px solid var(--primary)",
                                 opacity: submitLoading ? 0.7 : 1,
                                 cursor: submitLoading ? "not-allowed" : "pointer",

@@ -1,13 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     MessageSquare, X, CheckCircle2, Zap, Smartphone,
     Clock, BarChart3, BookOpen, Headphones, Check,
 } from "lucide-react";
-import { resolve } from "styled-jsx/css";
-import axios from "axios";
+
+const SCORE_OPTIONS = [
+    { value: 1, label: "Very Bad", emoji: "😡", color: "#ef4444" },
+    { value: 2, label: "Bad", emoji: "😕", color: "#f97316" },
+    { value: 3, label: "Okay", emoji: "😐", color: "#eab308" },
+    { value: 4, label: "Good", emoji: "🙂", color: "#84cc16" },
+    { value: 5, label: "Excellent", emoji: "🤩", color: "#22c55e" },
+];
 
 const FEATURES = [
     { id: "performance", label: "Faster performance", icon: Zap },
@@ -27,8 +33,30 @@ export default function FeedbackModal() {
     const [comments, setComments] = useState("");
     const [email, setEmail] = useState("");
     const [loading, setLoading] = useState(false);
+    const [showHint, setShowHint] = useState(false);
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+    useEffect(() => {
+        const handleVisibility = () => {
+            if (document.visibilityState === "visible") {
+                setShowHint(true);
+
+                setTimeout(() => {
+                    setShowHint(false);
+                }, 1500); // visible duration
+            }
+        };
+
+        document.addEventListener("visibilitychange", handleVisibility);
+
+        // trigger once on mount
+        handleVisibility();
+
+        return () => {
+            document.removeEventListener("visibilitychange", handleVisibility);
+        };
+    }, []);
 
     const toggleFeature = (id) =>
         setSelectedFeatures((prev) =>
@@ -82,23 +110,49 @@ export default function FeedbackModal() {
         }
     };
 
+    const isEmailValid = email.trim().length > 0;
+
     return (
         <>
             {/* FAB */}
             <motion.button
                 onClick={handleOpen}
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                animate={{
+                    opacity: 1,
+                    y: 0,
+                    width: showHint ? 140 : 40,
+                    paddingLeft: showHint ? 16 : 12,
+                    paddingRight: showHint ? 16 : 12,
+                }}
+                transition={{
+                    width: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
+                    padding: { duration: 0.4 },
+                }}
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.97 }}
-                className="fixed bottom-6 right-6 z-70 flex items-center gap-2 px-4 md:px-6 py-4 rounded-full text-sm font-medium bg-primary"
+                className="fixed bottom-4 right-4 z-70 flex items-center gap-2 py-3 rounded-full text-sm font-medium bg-primary overflow-hidden"
                 style={{
                     color: "var(--text-light)",
                     boxShadow: "var(--shadow-md)",
                 }}
             >
-                <MessageSquare className="w-5 h-5" />
-                <span className="hidden md:block">Share Feedback</span>
+                <MessageSquare className="w-4 h-4 shrink-0" />
+
+                {/* TEXT ANIMATION */}
+                <AnimatePresence>
+                    {showHint && (
+                        <motion.span
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -10 }}
+                            transition={{ duration: 0.25 }}
+                            className="whitespace-nowrap"
+                        >
+                            Feedback
+                        </motion.span>
+                    )}
+                </AnimatePresence>
             </motion.button>
 
             <AnimatePresence>
@@ -190,7 +244,7 @@ export default function FeedbackModal() {
                                                 <div>
                                                     <p
                                                         className="text-xs font-semibold uppercase tracking-wider mb-1"
-                                                        style={{ color: "var(--text-subtle)" }}
+                                                        style={{ color: "var(--text-header)" }}
                                                     >
                                                         Your Feedback Matters
                                                     </p>
@@ -225,55 +279,50 @@ export default function FeedbackModal() {
                                                 <div>
                                                     <p
                                                         className="text-xs font-semibold uppercase tracking-wider mb-3"
-                                                        style={{ color: "var(--text-subtle)" }}
+                                                        style={{ color: "var(--text-header)" }}
                                                     >
                                                         Likelihood to recommend
                                                     </p>
 
                                                     {/* SCORE BUTTONS */}
                                                     <div className="flex gap-1.5">
-                                                        {Array.from({ length: 11 }, (_, i) => {
-                                                            // Color gradient from red → yellow → green
-                                                            const getColor = (score) => {
-                                                                if (score <= 3) return "#ef4444";       // red
-                                                                if (score <= 6) return "#f59e0b";       // amber
-                                                                if (score <= 8) return "#84cc16";       // light green
-                                                                return "#22c55e";                       // green
-                                                            };
+                                                        <div className="flex gap-2 w-full">
+                                                            {SCORE_OPTIONS.map((option) => {
+                                                                const selected = score === option.value;
 
-                                                            return (
-                                                                <button
-                                                                    key={i}
-                                                                    onClick={() => setScore(i)}
-                                                                    className="flex-1 h-10 text-sm font-bold transition-all rounded-md"
-                                                                    style={{
-                                                                        background:
-                                                                            score === i
-                                                                                ? getColor(i)
-                                                                                : "var(--surface-card)",
-                                                                        color: score === i ? "#fff" : "var(--text-muted)",
-                                                                        border:
-                                                                            score === i
-                                                                                ? `1px solid ${getColor(i)}`
+                                                                return (
+                                                                    <button
+                                                                        key={option.value}
+                                                                        onClick={() => setScore(option.value)}
+                                                                        className="flex-1 h-14 flex flex-col items-center justify-center text-xs font-semibold transition-all rounded-md"
+                                                                        style={{
+                                                                            background: selected ? option.color : "var(--surface-card)",
+                                                                            color: selected ? "#fff" : "var(--text-muted)",
+                                                                            border: selected
+                                                                                ? `1px solid ${option.color}`
                                                                                 : "1px solid var(--border)",
-                                                                        transform: score === i ? "scale(1.05)" : "scale(1)",
-                                                                    }}
-                                                                >
-                                                                    {i}
-                                                                </button>
-                                                            );
-                                                        })}
+                                                                            transform: selected ? "scale(1.05)" : "scale(1)",
+                                                                        }}
+                                                                    >
+                                                                        <span className="text-lg">{option.emoji}</span>
+                                                                        <span>{option.value}</span>
+                                                                    </button>
+                                                                );
+                                                            })}
+                                                        </div>
                                                     </div>
 
                                                     {/* SENTIMENT FEEDBACK */}
                                                     {score !== null && (
                                                         <div className="mt-4 text-center">
-                                                            <p className="text-sm font-semibold">
-                                                                {score <= 3 && "😡 Very Unlikely"}
-                                                                {score >= 4 && score <= 6 && "😕 Unlikely"}
-                                                                {score >= 7 && score <= 8 && "🙂 Likely"}
-                                                                {score >= 9 && "🤩 Highly Likely"}
-                                                            </p>
+                                                            {(() => {
+                                                                const selected = SCORE_OPTIONS.find((s) => s.value === score);
+                                                                return (
+                                                                    <p className="text-sm font-semibold">
+                                                                        {selected?.emoji} {selected?.label}
+                                                                    </p>
+                                                                );
+                                                            })()}
                                                         </div>
                                                     )}
                                                 </div>
@@ -282,7 +331,7 @@ export default function FeedbackModal() {
                                                 <div>
                                                     <p
                                                         className="text-xs font-semibold uppercase tracking-wider mb-3"
-                                                        style={{ color: "var(--text-subtle)" }}
+                                                        style={{ color: "var(--text-header)" }}
                                                     >
                                                         What needs improvement?
                                                     </p>
@@ -336,7 +385,7 @@ export default function FeedbackModal() {
                                                 <div>
                                                     <p
                                                         className="text-xs font-semibold uppercase tracking-wider mb-3"
-                                                        style={{ color: "var(--text-subtle)" }}
+                                                        style={{ color: "var(--text-header)" }}
                                                     >
                                                         Anything else?
                                                     </p>
@@ -365,7 +414,7 @@ export default function FeedbackModal() {
                                                 <div className="flex gap-2">
                                                     <input
                                                         type="email"
-                                                        placeholder="your@email.com (optional)"
+                                                        placeholder="your@gmail.com"
                                                         value={email}
                                                         onChange={(e) => setEmail(e.target.value)}
                                                         className="flex-1 h-10 px-3.5 outline-none text-sm transition-colors"
@@ -385,14 +434,14 @@ export default function FeedbackModal() {
                                                     />
                                                     <button
                                                         onClick={handleSubmit}
-                                                        disabled={score === null || loading}
+                                                        disabled={score === null || loading || !email.trim()}
                                                         className="h-10 px-5 text-sm font-semibold flex items-center justify-center gap-2 transition-all"
                                                         style={{
-                                                            background: (score === null || loading) ? "var(--surface-raised)" : "var(--primary)",
-                                                            color: (score === null || loading) ? "var(--text-subtle)" : "var(--text-light)",
+                                                            background: (score === null || loading || !email.trim()) ? "var(--surface-raised)" : "var(--primary)",
+                                                            color: (score === null || loading || !email.trim()) ? "var(--text-subtle)" : "var(--text-light)",
                                                             // borderRadius: "var(--radius-md)",
                                                             border: "1px solid transparent",
-                                                            cursor: (score === null || loading) ? "not-allowed" : "pointer",
+                                                            cursor: (score === null || loading || !email.trim()) ? "not-allowed" : "pointer",
                                                         }}
                                                     >
                                                         {loading ? (
