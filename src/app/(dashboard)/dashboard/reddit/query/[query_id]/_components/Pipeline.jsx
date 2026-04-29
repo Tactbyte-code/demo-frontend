@@ -103,11 +103,14 @@ export function Pipeline({
                         </div>
 
                         {/* Progress bar */}
-                        <div className="relative h-2 overflow-hidden bg-gray-300 dark:bg-gray-700">
+                        <div
+                            className="relative h-2 overflow-hidden"
+                            style={{ background: "color-mix(in srgb, var(--primary) 20%, transparent)" }}
+                        >
                             {/* Filled progress */}
                             <motion.div
                                 className="absolute top-0 left-0 h-full"
-                                style={{ background: getProgressColor() }}
+                                style={{ background: "var(--primary)" }}
                                 initial={{ width: 0 }}
                                 animate={{ width: `${progressPercent}%` }}
                                 transition={{ duration: 0.6, ease: "easeOut" }}
