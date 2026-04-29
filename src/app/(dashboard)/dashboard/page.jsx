@@ -37,7 +37,7 @@ function StatCard({ label, value, icon: Icon, colorClass, bgClass, delay = 0 }) 
             className="bg-surface border border-border p-5 flex flex-col gap-3 shadow-sm"
         >
             <div className="flex items-center justify-between">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] font-mono text-muted">
+                <span className="text-sm font-black uppercase tracking-wider font-mono text-muted">
                     {label}
                 </span>
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center border border-border-input ${bgClass}`}>

@@ -14,7 +14,7 @@ const poppins = Poppins({
 
 export const metadata = {
   title: "Problem Pulse",
-  description: "Problem Discovery System",
+  description: "AI Problem Discovery System",
 };
 
 export default function RootLayout({ children }) {

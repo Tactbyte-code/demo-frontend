@@ -94,7 +94,7 @@ export default function PricingPage() {
 
     return (
         <div
-            className="min-h-screen relative overflow-hidden md:pt-15 pt-8"
+            className="min-h-screen relative overflow-hidden"
             style={{ backgroundColor: "var(--background)", color: "var(--text-main)" }}
         >
             {/* Background */}
@@ -107,7 +107,7 @@ export default function PricingPage() {
                     style={{ backgroundColor: "var(--warning)" }} />
             </div>
 
-            <div className="relative z-10 max-w-7xl mx-auto px-6 py-24">
+            <div className="relative z-10 max-w-7xl mx-auto px-6 py-35">
                 {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
@@ -118,8 +118,8 @@ export default function PricingPage() {
                     <h1 className="text-5xl font-black tracking-tight mb-5 leading-tight"
                         style={{ color: "var(--text-main)" }}>
                         Invest in your
-                        <span className="block italic" style={{ color: "var(--primary)" }}>
-                            growth.
+                        <span className="italic" style={{ color: "var(--primary)" }}>
+                            {" "} growth.
                         </span>
                     </h1>
 

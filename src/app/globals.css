@@ -30,6 +30,7 @@
   --text-muted: #3d5161;
   --text-subtle: #6A8396;
   --text-light: #FFFFFF;
+  --text-header: #000;
 
   /* Border */
   --border: #C4D6E2;
@@ -71,7 +72,7 @@
   /* Surfaces */
   --background: #000000;
   --surface: #122433;
-  --surface-card: #142739;
+  --surface-card: #0e1c29;
   --surface-raised: #0c151e;
   --input-background: #0B3650;
   --surface-hover: #04080c;
@@ -90,6 +91,7 @@
   --text-muted: #447a96;
   --text-subtle: #376283;
   --text-light: #000;
+  --text-header: #5693b2;
 
   /* Border */
   --border: #1c5376;
@@ -151,6 +153,7 @@
   --color-muted: var(--text-muted);
   --color-subtle: var(--text-subtle);
   --color-light: var(--text-light);
+  --color-header: var(--text-header);
 
   /* Border */
   --color-border: var(--border);

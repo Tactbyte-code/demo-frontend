@@ -103,8 +103,7 @@ export const ActionsTab = ({ data, onReachEndSwipe, onReachStartSwipe }) => {
                         const diffX = touch.clientX - container._startX;
 
                         const atStart = container.scrollLeft <= 0;
-                        const atEnd =
-                            container.scrollLeft + container.clientWidth >= container.scrollWidth - 1;
+                        const atEnd = container.scrollLeft + container.clientWidth >= container.scrollWidth - 1;
 
                         const SWIPE_THRESHOLD = 50;
 
@@ -194,7 +193,7 @@ export const ActionsTab = ({ data, onReachEndSwipe, onReachStartSwipe }) => {
             {/* ── DESKTOP VIEW ── */}
             <div className="hidden sm:block space-y-3">
                 {steps.map((item, i) => (
-                    <Card key={i} className="border-0 rounded-none shadow-none p-0">
+                    <Card key={i} className="border border-border rounded-none shadow-none p-0">
                         <CardContent className="p-0 border-0">
                             <div className="grid grid-cols-12">
                                 {/* LEFT STRIP */}
@@ -230,7 +229,7 @@ export const ActionsTab = ({ data, onReachEndSwipe, onReachStartSwipe }) => {
                                     <Separator />
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="border border-border-input p-3">
+                                        <div className="border border-border-input p-3 bg-surface-card">
                                             <p className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">
                                                 Execution Plan
                                             </p>
@@ -239,7 +238,7 @@ export const ActionsTab = ({ data, onReachEndSwipe, onReachStartSwipe }) => {
                                             </p>
                                         </div>
 
-                                        <div className="border border-border-input p-3">
+                                        <div className="border border-border-input p-3 bg-surface-card">
                                             <p className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">
                                                 Outcome
                                             </p>
@@ -249,7 +248,7 @@ export const ActionsTab = ({ data, onReachEndSwipe, onReachStartSwipe }) => {
                                         </div>
                                     </div>
 
-                                    <div className="border border-border-input p-3">
+                                    <div className="border border-border-input p-3 bg-surface-card">
                                         <p className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">
                                             Estimated Effort
                                         </p>

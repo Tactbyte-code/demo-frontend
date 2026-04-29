@@ -166,8 +166,7 @@ export default function DashboardLayout({ children }) {
 
                                         {/* 🔥 Beta Badge (top-left attached) */}
                                         <span
-                                            className="absolute -top-3.5 -left-0 flex bg-green-300 items-center gap-1 px-2 py-1 text-[9px] tracking-wide font-bold uppercase border border-border"
-                                        
+                                            className="absolute -top-3.5 -left-0 flex bg-green-300 items-center gap-1 px-2 py-1 text-[9px] text-black tracking-wide font-bold uppercase border border-border"
                                         >
                                             <Sparkles className="w-3 h-3" />
                                             Beta
