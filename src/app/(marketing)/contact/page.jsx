@@ -114,7 +114,7 @@ export default function ContactPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="relative z-10 w-full max-w-2xl"
             >
-                <div className="bg-surface mt-20 border border-border-solid p-8 md:p-12 shadow-lg">
+                <div className="bg-surface mt-30 border border-border-solid p-8 md:p-12 shadow-lg">
                     <AnimatePresence mode="wait">
 
                         {/* ── Form ──────────────────────────── */}
