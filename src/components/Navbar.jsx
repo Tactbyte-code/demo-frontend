@@ -322,7 +322,7 @@ export default function Navbar() {
                       id: "reddit",
                       icon: Activity,
                       title: "Reddit Analysis",
-                      desc: "Mine real user conversations for product insights.",
+                      desc: "Mine real user conversations for product insight.",
                     },
                     {
                       id: "playstore",
@@ -341,7 +341,7 @@ export default function Navbar() {
                       key={feature.id}
                       onMouseEnter={() => setHoveredFeature(feature.id)}
                       onMouseLeave={() => setHoveredFeature(null)}
-                      className={`flex items-start gap-3 px-4 py-3 rounded-none text-left transition-all group
+                      className={`flex items-start gap-3 px-4 py-4 rounded-none text-left transition-all group
                 ${hoveredFeature === feature.id ? "bg-primary/10" : "hover:bg-primary/5"}`}
                     >
                       <div className={`p-2 rounded-full mt-0.5 transition-colors
