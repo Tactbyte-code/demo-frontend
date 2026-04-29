@@ -14,22 +14,26 @@ import {
   Inbox,
   Lock,
   Check,
+  WifiOff,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { auth } from "@/lib/firebase";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
-const POLL_INTERVAL = 10_000;
 
-// ─── helpers ───────────────────────────────────────────────────────────────────
+const defer = (fn) => {
+  const id = globalThis.setTimeout(fn, 0);
+  return () => globalThis.clearTimeout(id);
+};
+
 const statusMeta = {
-  open: { label: "Open", color: "#22c55e", Icon: CheckCircle2 },
-  in_progress: { label: "In Progress", color: "#f59e0b", Icon: Clock },
-  closed: { label: "Closed", color: "#94a3b8", Icon: CheckCircle2 },
+  open: { label: "Open", color: "#22c55e" },
+  in_progress: { label: "In Progress", color: "#f59e0b" },
+  closed: { label: "Closed", color: "#94a3b8" },
 };
 
 function StatusBadge({ status }) {
-  const m = statusMeta[status] ?? statusMeta.open;
+  const m = statusMeta[status] || statusMeta.open;
   return (
     <span
       className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
@@ -56,28 +60,25 @@ function fmt(iso) {
 function getSubjectPlaceholder(team) {
   if (!team) return "Brief summary of your issue… (optional)";
   const slug = (team.slug || "").toLowerCase();
-  if (slug === "auth")
-    return "e.g. Can't log in, password reset not working… (optional)";
+  if (slug === "auth") return "e.g. Can't log in, password reset not working…";
   if (slug === "ai" || slug === "ai-team")
-    return "e.g. AI giving wrong results, slow responses… (optional)";
+    return "e.g. AI giving wrong results, slow responses…";
   if (slug === "payment" || slug === "payments")
-    return "e.g. Payment failed, charged twice, refund… (optional)";
+    return "e.g. Payment failed, charged twice, refund…";
   return "Brief summary of your issue… (optional)";
 }
 
 function getMessagePlaceholder(team) {
   if (!team) return "Tell us what's happening…";
   const slug = (team.slug || "").toLowerCase();
-  if (slug === "auth")
-    return "Describe your authentication issue in detail — what happens when you try to log in?";
+  if (slug === "auth") return "Describe your authentication issue in detail…";
   if (slug === "ai" || slug === "ai-team")
-    return "Describe the AI issue — what query did you run and what was the unexpected output?";
+    return "Describe the AI issue — what query ran and what was unexpected?";
   if (slug === "payment" || slug === "payments")
-    return "Describe your payment issue — include any error messages or transaction references.";
+    return "Describe your payment issue — include any error messages.";
   return "Tell us what's happening — the more detail, the faster we can help!";
 }
 
-// ─── Token helper ──────────────────────────────────────────────────────────────
 async function getAuthHeaders() {
   const token = await auth.currentUser?.getIdToken();
   return {
@@ -86,7 +87,212 @@ async function getAuthHeaders() {
   };
 }
 
-// ─── Main component ────────────────────────────────────────────────────────────
+function isSameUserReply(a, b) {
+  return (
+    a &&
+    b &&
+    a.is_admin === b.is_admin &&
+    (a.message || "").trim() === (b.message || "").trim() &&
+    (a.reply_type || "message") === (b.reply_type || "message")
+  );
+}
+
+function mergeReplies(localReplies = [], incomingReplies = []) {
+  const merged = [...incomingReplies];
+  const localPending = localReplies.filter((r) => r && r.pending);
+
+  for (const local of localPending) {
+    const confirmedIndex = merged.findIndex((r) => isSameUserReply(local, r));
+    if (confirmedIndex !== -1) continue;
+
+    const sameIdIndex = merged.findIndex((r) => r.id === local.id);
+    if (sameIdIndex !== -1) continue;
+
+    merged.push(local);
+  }
+
+  return merged.sort(
+    (a, b) =>
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+  );
+}
+
+function mergeTicketState(prev, incoming) {
+  if (!prev) return incoming;
+
+  const prevMs = prev.updated_at ? new Date(prev.updated_at).getTime() : 0;
+  const incomingMs = incoming.updated_at
+    ? new Date(incoming.updated_at).getTime()
+    : 0;
+
+  const base = incomingMs >= prevMs ? incoming : prev;
+
+  return {
+    ...base,
+    ...incoming,
+    replies: mergeReplies(prev.replies || [], incoming.replies || []),
+  };
+}
+
+function openSSE(url, getHeaders, onEvent, onStatusChange) {
+  const controller = new AbortController();
+  let retryMs = 1000;
+  let hasConnected = false;
+  let retryTimer = null;
+
+  const scheduleReconnect = () => {
+    if (controller.signal.aborted) return;
+    retryTimer = globalThis.setTimeout(connect, retryMs);
+  };
+
+  controller.signal.addEventListener("abort", () => {
+    if (retryTimer) {
+      globalThis.clearTimeout(retryTimer);
+      retryTimer = null;
+    }
+  });
+
+  async function connect() {
+    if (controller.signal.aborted) return;
+    onStatusChange(hasConnected ? "reconnecting" : "connecting");
+
+    try {
+      const headers = await getHeaders();
+      const res = await fetch(url, { headers, signal: controller.signal });
+
+      if (!res.ok) throw new Error(`SSE HTTP ${res.status}`);
+      if (!res.body) throw new Error("SSE response has no body");
+
+      retryMs = 1000;
+      hasConnected = true;
+      onStatusChange("live");
+
+      const reader = res.body.getReader();
+      const dec = new TextDecoder();
+      let buf = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buf += dec.decode(value, { stream: true });
+        const parts = buf.split("\n\n");
+        buf = parts.pop() || "";
+
+        for (const part of parts) {
+          const dataLine = part.split("\n").find((l) => l.startsWith("data: "));
+          if (!dataLine) continue;
+
+          try {
+            const event = JSON.parse(dataLine.slice(6));
+            if (event.type !== "heartbeat") onEvent(event);
+          } catch {
+            // ignore invalid payloads
+          }
+        }
+      }
+
+      if (!controller.signal.aborted) {
+        onStatusChange("reconnecting");
+        scheduleReconnect();
+      }
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
+
+      onStatusChange("reconnecting");
+      retryMs = Math.min(retryMs * 2, 15000);
+
+      if (!controller.signal.aborted) scheduleReconnect();
+    }
+  }
+
+  connect();
+  return controller;
+}
+
+function SseIndicator({ status, muted = false }) {
+  const mutedColor = muted ? "var(--sidebar-muted)" : "var(--text-muted)";
+
+  if (status === "live") {
+    return (
+      <>
+        <span className="relative flex h-1.5 w-1.5">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500" />
+        </span>
+        <span className="text-[9px]" style={{ color: mutedColor }}>
+          Live
+        </span>
+      </>
+    );
+  }
+
+  if (status === "connecting") {
+    return (
+      <>
+        <Loader2
+          size={9}
+          className="animate-spin"
+          style={{ color: "#38bdf8" }}
+        />
+        <span className="text-[9px]" style={{ color: "#38bdf8" }}>
+          Connecting…
+        </span>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <WifiOff size={9} style={{ color: "#f59e0b" }} />
+      <span className="text-[9px]" style={{ color: "#f59e0b" }}>
+        Reconnecting…
+      </span>
+    </>
+  );
+}
+
+function AgentViewingIndicator({ agentName }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 6 }}
+      transition={{ duration: 0.2 }}
+      className="flex items-center gap-2"
+    >
+      <div
+        className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[8px] font-black text-white"
+        style={{ background: "var(--primary)" }}
+      >
+        {(agentName || "S")[0].toUpperCase()}
+      </div>
+      <div
+        className="flex items-center gap-1 px-3 py-2 rounded-2xl"
+        style={{
+          background: "color-mix(in srgb, var(--primary) 10%, transparent)",
+          border:
+            "1px solid color-mix(in srgb, var(--primary) 20%, transparent)",
+          borderTopLeftRadius: 4,
+        }}
+      >
+        {[0, 1, 2].map((i) => (
+          <motion.span
+            key={i}
+            className="block w-1.5 h-1.5 rounded-full"
+            style={{ background: "var(--primary)" }}
+            animate={{ y: [0, -4, 0] }}
+            transition={{ duration: 0.7, repeat: Infinity, delay: i * 0.15 }}
+          />
+        ))}
+      </div>
+      <span className="text-[9px]" style={{ color: "var(--sidebar-muted)" }}>
+        {agentName ? `${agentName} is viewing…` : "Support is viewing…"}
+      </span>
+    </motion.div>
+  );
+}
+
 export default function TicketChatPopup({ hasUnread, setHasUnread }) {
   const [open, setOpen] = useState(false);
   const [view, setView] = useState("list");
@@ -103,23 +309,22 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
   const [creating, setCreating] = useState(false);
   const [teams, setTeams] = useState([]);
   const [teamsLoading, setTeamsLoading] = useState(false);
+  const [sseStatus, setSseStatus] = useState("connecting");
+  const [agentViewing, setAgentViewing] = useState(false);
+  const [agentViewingName, setAgentViewingName] = useState(null);
 
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
-  const activeTicketRef = useRef(activeTicket);
-  const pollTimerRef = useRef(null); // ✅ holds interval id
-  const viewRef = useRef(view); // ✅ always-current view
+  const openRef = useRef(open);
+  const sseControllerRef = useRef(null);
+  const agentViewingTimer = useRef(null);
 
   useEffect(() => {
-    activeTicketRef.current = activeTicket;
-  }, [activeTicket]);
-  useEffect(() => {
-    viewRef.current = view;
-  }, [view]);
+    openRef.current = open;
+  }, [open]);
 
-  // ── Firebase auth ────────────────────────────────────────────────────────────
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((u) => {
+    const unsub = auth.onAuthStateChanged((u) => {
       if (u) {
         setUserEmail(u.email);
         setUserName(u.displayName || u.email?.split("@")[0] || "User");
@@ -128,88 +333,207 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
         setUserName(null);
       }
     });
-    return unsubscribe;
+    return unsub;
   }, []);
 
-  // ── Polling helpers — declared FIRST so fetchTickets can use pollTimerRef ────
-  // ✅ KEY FIX: stopPolling uses pollTimerRef directly (no useCallback dependency
-  //    on fetchTickets) so there is no forward-reference issue.
-  const stopPolling = useCallback(() => {
-    if (pollTimerRef.current) {
-      clearInterval(pollTimerRef.current);
-      pollTimerRef.current = null;
-    }
-  }, []);
-
-  // ── Fetch tickets ─────────────────────────────────────────────────────────────
-  const fetchTickets = useCallback(
+  const loadTickets = useCallback(
     async (silent = false) => {
-      if (!userEmail) return;
+      if (!userEmail) return [];
       if (!silent) setLoading(true);
+
       try {
         const headers = await getAuthHeaders();
         const res = await fetch(`${API}/user/tickets/`, { headers });
 
         if (!res.ok) {
           setTickets([]);
-          return;
+          return [];
         }
 
         const data = await res.json();
         const list = Array.isArray(data) ? data : [];
 
-        setTickets(list);
+        const sorted = [...list].sort(
+          (a, b) =>
+            new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
+        );
+
+        setTickets(sorted);
 
         setHasUnread(() => {
-          if (open) return false;
-          return list.some((t) => t.replies?.some((r) => r.is_admin === 1));
+          if (openRef.current) return false;
+          return sorted.some((t) => t.replies?.some((r) => r.is_admin === 1));
         });
 
-        const current = activeTicketRef.current;
-        if (current) {
-          const fresh = list.find((t) => t.id === current.id);
-          if (fresh) {
-            setActive(fresh);
-            // ✅ Use ref directly — stopPolling is declared above so it's safe,
-            //    but using the ref avoids any stale-closure risk entirely.
-            if (fresh.status === "closed") {
-              if (pollTimerRef.current) {
-                clearInterval(pollTimerRef.current);
-                pollTimerRef.current = null;
-              }
-            }
-          }
-        }
+        return sorted;
       } catch {
         setTickets([]);
+        return [];
       } finally {
         if (!silent) setLoading(false);
       }
     },
-    [userEmail, setHasUnread, open],
+    [userEmail, setHasUnread],
   );
 
-  // ── startPolling — declared after fetchTickets (needs it in closure) ─────────
-  const startPolling = useCallback(() => {
-    // Clear any existing interval before starting a new one
-    if (pollTimerRef.current) {
-      clearInterval(pollTimerRef.current);
-      pollTimerRef.current = null;
-    }
-    pollTimerRef.current = setInterval(async () => {
-      const ticket = activeTicketRef.current;
-      if (viewRef.current !== "chat" || !ticket || ticket.status === "closed") {
-        if (pollTimerRef.current) {
-          clearInterval(pollTimerRef.current);
-          pollTimerRef.current = null;
-        }
-        return;
-      }
-      await fetchTickets(true);
-    }, POLL_INTERVAL);
-  }, [fetchTickets]);
+  const applyTicketUpdate = useCallback(
+    (incoming) => {
+      setActive((prev) => {
+        if (!prev || prev.id !== incoming.id) return prev;
+        return mergeTicketState(prev, incoming);
+      });
 
-  // ── Fetch active teams ────────────────────────────────────────────────────────
+      setTickets((prev) => {
+        const exists = prev.some((t) => t.id === incoming.id);
+        if (!exists) return [incoming, ...prev];
+
+        return [...prev]
+          .map((t) =>
+            t.id === incoming.id ? mergeTicketState(t, incoming) : t,
+          )
+          .sort(
+            (a, b) =>
+              new Date(b.updated_at).getTime() -
+              new Date(a.updated_at).getTime(),
+          );
+      });
+
+      setHasUnread(() => {
+        if (openRef.current) return false;
+        return incoming.replies?.some((r) => r.is_admin === 1) ?? false;
+      });
+    },
+    [setHasUnread],
+  );
+
+  const connectSSE = useCallback(
+    (ticketId) => {
+      sseControllerRef.current?.abort();
+      sseControllerRef.current = null;
+      setSseStatus("connecting");
+
+      const url = `${API}/user/tickets/${ticketId}/stream`;
+
+      sseControllerRef.current = openSSE(
+        url,
+        getAuthHeaders,
+        (event) => {
+          if (event.type === "init") {
+            setActive((prev) => {
+              if (!prev || prev.id !== event.ticket.id) return event.ticket;
+
+              const prevMs = prev.updated_at
+                ? new Date(prev.updated_at).getTime()
+                : 0;
+              const initMs = event.ticket.updated_at
+                ? new Date(event.ticket.updated_at).getTime()
+                : 0;
+
+              if (initMs <= prevMs) return prev;
+              return mergeTicketState(prev, event.ticket);
+            });
+
+            setTickets((prev) => {
+              const t = event.ticket;
+              const exists = prev.some((x) => x.id === t.id);
+              if (!exists) return [t, ...prev];
+
+              return [...prev]
+                .map((x) => (x.id === t.id ? mergeTicketState(x, t) : x))
+                .sort(
+                  (a, b) =>
+                    new Date(b.updated_at).getTime() -
+                    new Date(a.updated_at).getTime(),
+                );
+            });
+
+            setHasUnread(() => {
+              if (openRef.current) return false;
+              return (
+                event.ticket.replies?.some((r) => r.is_admin === 1) ?? false
+              );
+            });
+          } else if (event.type === "ticket_update") {
+            applyTicketUpdate(event.ticket);
+          } else if (event.type === "agent_viewing") {
+            setAgentViewing(true);
+            setAgentViewingName(event.agent_name ?? null);
+
+            if (agentViewingTimer.current) {
+              globalThis.clearTimeout(agentViewingTimer.current);
+            }
+
+            agentViewingTimer.current = globalThis.setTimeout(() => {
+              setAgentViewing(false);
+              setAgentViewingName(null);
+            }, 8000);
+          } else if (event.type === "agent_left") {
+            setAgentViewing(false);
+            setAgentViewingName(null);
+
+            if (agentViewingTimer.current) {
+              globalThis.clearTimeout(agentViewingTimer.current);
+              agentViewingTimer.current = null;
+            }
+          }
+        },
+        (status) => setSseStatus(status),
+      );
+    },
+    [applyTicketUpdate],
+  );
+
+  const disconnectSSE = useCallback(() => {
+    sseControllerRef.current?.abort();
+    sseControllerRef.current = null;
+    setSseStatus("connecting");
+    setAgentViewing(false);
+    setAgentViewingName(null);
+
+    if (agentViewingTimer.current) {
+      globalThis.clearTimeout(agentViewingTimer.current);
+      agentViewingTimer.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    const shouldConnect = view === "chat" && !!activeTicket?.id && !!userEmail;
+
+    if (shouldConnect) {
+      const cancel = defer(() => {
+        connectSSE(activeTicket.id);
+      });
+
+      return () => {
+        cancel();
+        disconnectSSE();
+      };
+    }
+
+    const cancel = defer(() => {
+      disconnectSSE();
+    });
+
+    return cancel;
+  }, [view, activeTicket?.id, userEmail, connectSSE, disconnectSSE]);
+
+  useEffect(() => {
+    if (!open || !userEmail) return;
+    return defer(() => {
+      void loadTickets();
+    });
+  }, [open, userEmail, loadTickets]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [activeTicket?.replies?.length, agentViewing]);
+
+  useEffect(() => {
+    if (view !== "chat") return;
+    const t = globalThis.setTimeout(() => inputRef.current?.focus(), 150);
+    return () => globalThis.clearTimeout(t);
+  }, [view]);
+
   const fetchTeams = useCallback(async () => {
     setTeamsLoading(true);
     try {
@@ -219,7 +543,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
       setTeams(list);
       if (list.length > 0) setNewTeam(list[0]);
     } catch {
-      // silently swallow
+      // swallow
     } finally {
       setTeamsLoading(false);
     }
@@ -227,42 +551,11 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
 
   useEffect(() => {
     if (view !== "new" || teams.length > 0) return;
-    (async () => {
-      await fetchTeams();
-    })();
+    return defer(() => {
+      void fetchTeams();
+    });
   }, [view, teams.length, fetchTeams]);
 
-  // ── Start / stop polling when entering / leaving chat view ───────────────────
-  useEffect(() => {
-    if (view === "chat" && activeTicket && activeTicket.status !== "closed") {
-      startPolling();
-    } else {
-      stopPolling();
-    }
-    return () => stopPolling();
-  }, [view, activeTicket?.id, activeTicket?.status]); // eslint-disable-line
-
-  // ── Initial fetch when popup opens ───────────────────────────────────────────
-  useEffect(() => {
-    if (!open || !userEmail) return;
-    (async () => {
-      await fetchTickets();
-    })();
-  }, [open, userEmail, fetchTickets]);
-
-  // ── Scroll to bottom on new replies ──────────────────────────────────────────
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [activeTicket?.replies]);
-
-  // ── Auto-focus input in chat view ────────────────────────────────────────────
-  useEffect(() => {
-    if (view !== "chat") return;
-    const t = setTimeout(() => inputRef.current?.focus(), 150);
-    return () => clearTimeout(t);
-  }, [view]);
-
-  // ── Toggle / close ────────────────────────────────────────────────────────────
   const handleToggleOpen = useCallback(() => {
     setOpen((prev) => {
       if (!prev) setHasUnread(false);
@@ -273,46 +566,46 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
   const handleClose = useCallback(() => {
     setOpen(false);
     setHasUnread(false);
-    stopPolling();
-  }, [setHasUnread, stopPolling]);
+    disconnectSSE();
+  }, [setHasUnread, disconnectSSE]);
 
-  // ── Open ticket ───────────────────────────────────────────────────────────────
   const openTicket = useCallback((t) => {
     setActive(t);
     setView("chat");
   }, []);
 
-  // ── Send reply (optimistic) ───────────────────────────────────────────────────
   const sendReply = useCallback(async () => {
     if (!msg.trim() || !activeTicket || sending) return;
 
+    const ticketId = activeTicket.id;
     const tempId = `temp-${Date.now()}`;
     const msgToSend = msg.trim();
+
+    const pendingReply = {
+      id: tempId,
+      message: msgToSend,
+      is_admin: 0,
+      reply_type: "message",
+      created_at: new Date().toISOString(),
+      pending: true,
+    };
 
     setMsg("");
     setActive((prev) =>
       prev
         ? {
             ...prev,
-            replies: [
-              ...(prev.replies ?? []),
-              {
-                id: tempId,
-                message: msgToSend,
-                is_admin: 0,
-                reply_type: "user",
-                created_at: new Date().toISOString(),
-                pending: true,
-              },
-            ],
+            replies: [...(prev.replies || []), pendingReply],
+            updated_at: new Date().toISOString(),
           }
         : prev,
     );
 
     setSending(true);
+
     try {
       const headers = await getAuthHeaders();
-      const res = await fetch(`${API}/user/tickets/${activeTicket.id}/reply`, {
+      const res = await fetch(`${API}/user/tickets/${ticketId}/reply`, {
         method: "POST",
         headers,
         body: JSON.stringify({ message: msgToSend }),
@@ -320,20 +613,29 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
 
       if (!res.ok) throw new Error("Failed to send reply");
 
-      // Immediately refresh after sending
-      await fetchTickets(true);
+      const data = await res.json().catch(() => null);
 
-      // Restart polling so the 10s clock resets from now
-      if (activeTicketRef.current?.status !== "closed") {
-        startPolling();
+      if (data && typeof data === "object" && data.replies) {
+        applyTicketUpdate(data);
+      }
+
+      const latestTickets = await loadTickets(true);
+      const latest = latestTickets.find(
+        (t) => String(t.id) === String(ticketId),
+      );
+
+      if (latest) {
+        setActive((prev) => {
+          if (!prev || String(prev.id) !== String(ticketId)) return prev;
+          return mergeTicketState(prev, latest);
+        });
       }
     } catch {
-      // Roll back optimistic bubble
       setActive((prev) =>
         prev
           ? {
               ...prev,
-              replies: (prev.replies ?? []).filter((r) => r.id !== tempId),
+              replies: (prev.replies || []).filter((r) => r.id !== tempId),
             }
           : prev,
       );
@@ -341,11 +643,11 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
     } finally {
       setSending(false);
     }
-  }, [msg, activeTicket, sending, fetchTickets, startPolling]);
+  }, [msg, activeTicket, sending, applyTicketUpdate, loadTickets]);
 
-  // ── Create ticket ─────────────────────────────────────────────────────────────
   const createTicket = useCallback(async () => {
     if (!newMsg.trim() || !newTeam || creating) return;
+
     setCreating(true);
     try {
       const headers = await getAuthHeaders();
@@ -365,12 +667,13 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
       if (!res.ok) throw new Error("Failed to create ticket");
 
       const ticket = await res.json();
-      setTickets((prev) => [ticket, ...prev]);
+
+      setTickets((prev) => [ticket, ...prev.filter((t) => t.id !== ticket.id)]);
       setNewSubject("");
       setNewMsg("");
-      setNewTeam(teams[0] ?? null);
+      setNewTeam(teams[0] || null);
       setActive(ticket);
-      setView("chat"); // triggers polling useEffect
+      setView("chat");
     } catch {
       // swallow
     } finally {
@@ -380,13 +683,13 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
 
   const raiseNewTicket = useCallback(() => {
     setActive(null);
+    disconnectSSE();
     setNewSubject("");
     setNewMsg("");
     if (teams.length > 0) setNewTeam(teams[0]);
     setView("new");
-  }, [teams]);
+  }, [teams, disconnectSSE]);
 
-  // ─── Render ──────────────────────────────────────────────────────────────────
   return (
     <>
       <AnimatePresence>
@@ -396,16 +699,19 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.96 }}
             transition={{ duration: 0.22, ease: "easeOut" }}
-            className="fixed bottom-20 left-4 z-200 flex flex-col shadow-2xl overflow-hidden"
+            className="fixed bottom-20 left-4 z-[200] flex flex-col shadow-2xl overflow-hidden"
             style={{
-              width: 360,
-              height: 520,
+              width: "min(360px, calc(100vw - 2rem))",
+              height: "min(520px, calc(100dvh - 6rem))",
               backgroundColor: "var(--sidebar-bg)",
               border: "1px solid var(--sidebar-border)",
               borderRadius: 16,
             }}
+            onClick={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
           >
-            {/* Header */}
             <div
               className="flex items-center justify-between px-4 py-3 shrink-0"
               style={{
@@ -418,7 +724,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                 {view !== "list" && (
                   <button
                     onClick={() => {
-                      stopPolling();
+                      disconnectSSE();
                       setView("list");
                       setActive(null);
                     }}
@@ -437,7 +743,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                     ? "Support"
                     : view === "new"
                       ? "New Ticket"
-                      : (activeTicket?.ticket_id ?? "Chat")}
+                      : activeTicket?.ticket_id || "Chat"}
                 </span>
                 {view === "chat" && activeTicket && (
                   <StatusBadge status={activeTicket.status} />
@@ -445,15 +751,22 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
               </div>
 
               <div className="flex items-center gap-2">
+                {view === "chat" && activeTicket?.status !== "closed" && (
+                  <span className="flex items-center gap-1">
+                    <SseIndicator status={sseStatus} muted />
+                  </span>
+                )}
+
                 {view === "list" && (
                   <button
-                    onClick={() => setView("new")}
+                    onClick={raiseNewTicket}
                     className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold transition-all"
                     style={{ background: "var(--primary)", color: "white" }}
                   >
                     <Plus size={12} /> New
                   </button>
                 )}
+
                 <button
                   onClick={handleClose}
                   className="p-1.5 rounded-md hover:bg-white/10 transition-colors"
@@ -464,9 +777,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
               </div>
             </div>
 
-            {/* Body */}
             <div className="flex-1 overflow-hidden flex flex-col">
-              {/* ── LIST VIEW ─────────────────────────────────────────────── */}
               {view === "list" && (
                 <div className="flex-1 overflow-y-auto p-3 space-y-2">
                   {loading ? (
@@ -497,7 +808,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                         Raise one if you need help!
                       </p>
                       <button
-                        onClick={() => setView("new")}
+                        onClick={raiseNewTicket}
                         className="px-4 py-2 rounded-lg text-xs font-bold transition-all"
                         style={{ background: "var(--primary)", color: "white" }}
                       >
@@ -515,7 +826,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                           lastReply.message.slice(0, 40)
                         : t.message.slice(0, 40);
                       const tooLong =
-                        (lastReply?.message ?? t.message).length > 40;
+                        (lastReply?.message || t.message).length > 40;
 
                       return (
                         <button
@@ -542,6 +853,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                               <StatusBadge status={t.status} />
                             </div>
                           </div>
+
                           <div className="flex items-center justify-between">
                             <span
                               className="text-[10px] truncate max-w-[70%]"
@@ -564,7 +876,6 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                 </div>
               )}
 
-              {/* ── NEW TICKET VIEW ───────────────────────────────────────── */}
               {view === "new" && (
                 <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
                   <div>
@@ -632,7 +943,6 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                 </div>
               )}
 
-              {/* ── CHAT VIEW ─────────────────────────────────────────────── */}
               {view === "chat" && activeTicket && (
                 <>
                   <div
@@ -654,20 +964,9 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                       {activeTicket.ticket_id} · {activeTicket.assigned_team}{" "}
                       team
                     </span>
-
-                    {/* Live polling indicator */}
                     {activeTicket.status !== "closed" && (
                       <span className="ml-auto flex items-center gap-1">
-                        <span className="relative flex h-1.5 w-1.5">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500" />
-                        </span>
-                        <span
-                          className="text-[9px]"
-                          style={{ color: "var(--sidebar-muted)" }}
-                        >
-                          Live
-                        </span>
+                        <SseIndicator status={sseStatus} muted />
                       </span>
                     )}
                   </div>
@@ -697,6 +996,12 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                         />
                       ),
                     )}
+
+                    <AnimatePresence>
+                      {agentViewing && activeTicket.status !== "closed" && (
+                        <AgentViewingIndicator agentName={agentViewingName} />
+                      )}
+                    </AnimatePresence>
 
                     {activeTicket.status === "closed" && (
                       <div className="flex flex-col items-center gap-3 py-4">
@@ -734,7 +1039,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                     <div ref={bottomRef} />
                   </div>
 
-                  {activeTicket.status !== "closed" && (
+                  {activeTicket.status !== "closed" ? (
                     <div
                       className="shrink-0 px-3 py-3"
                       style={{ borderTop: "1px solid var(--sidebar-border)" }}
@@ -785,9 +1090,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                         Enter to send · Shift+Enter for newline
                       </p>
                     </div>
-                  )}
-
-                  {activeTicket.status === "closed" && (
+                  ) : (
                     <div
                       className="shrink-0 flex items-center justify-center gap-1.5 py-2.5"
                       style={{ borderTop: "1px solid var(--sidebar-border)" }}
@@ -820,11 +1123,14 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
   );
 }
 
-// ─── Sidebar trigger ───────────────────────────────────────────────────────────
 export function SidebarTrigger({ open, setOpen, hasUnread }) {
   return (
     <button
-      onClick={() => setOpen((p) => !p)}
+      onClick={(e) => {
+        e.stopPropagation();
+        setOpen((p) => !p);
+      }}
+      onTouchEnd={(e) => e.stopPropagation()}
       className="relative w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all group"
       style={{
         background: open
@@ -857,7 +1163,6 @@ export function SidebarTrigger({ open, setOpen, hasUnread }) {
   );
 }
 
-// ─── Sub-components ────────────────────────────────────────────────────────────
 function MessageBubble({
   isAdmin,
   message,
@@ -876,6 +1181,7 @@ function MessageBubble({
       >
         {label}
       </span>
+
       <div
         className="max-w-[82%] px-3 py-2 rounded-2xl text-sm leading-relaxed"
         style={
@@ -900,10 +1206,12 @@ function MessageBubble({
       >
         {message}
       </div>
+
       <div className="flex items-center gap-1 px-1">
         <span className="text-[9px]" style={{ color: "var(--sidebar-muted)" }}>
           {fmt(time)}
         </span>
+
         {!isAdmin && pending && (
           <Clock
             size={9}
@@ -911,6 +1219,7 @@ function MessageBubble({
             className="opacity-60"
           />
         )}
+
         {!isAdmin && !pending && sent && (
           <span
             className="flex items-center gap-0.5 text-[9px] font-semibold"
