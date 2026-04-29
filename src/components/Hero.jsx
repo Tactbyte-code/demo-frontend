@@ -127,7 +127,7 @@ export default function Hero() {
                 >
                     <Link
                         href="/dashboard"
-                        className="group w-full sm:w-auto flex items-center justify-center gap-2.5 px-8 py-4 text-sm font-bold uppercase tracking-widest text-white transition-all duration-300 hover:brightness-110 active:scale-95"
+                        className="group w-full sm:w-auto flex items-center justify-center gap-2.5 px-8 py-4 text-base font-bold uppercase tracking-wide text-light transition-all duration-300 hover:brightness-110 active:scale-95"
                         style={{ backgroundColor: "var(--primary)" }}
                     >
                         Get Early Access

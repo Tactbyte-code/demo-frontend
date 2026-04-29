@@ -200,10 +200,10 @@ export default function RedditIntelligencePage() {
                                     <button
                                         type="submit"
                                         disabled={!canSubmit}
-                                        className="flex items-center gap-2 px-5 h-9 text-[11px] font-bold uppercase tracking-widest transition-all border"
+                                        className="flex items-center gap-2 px-5 h-10 text-[11px] font-bold uppercase tracking-widest transition-all border border-input"
                                         style={{
                                             background: canSubmit ? "var(--primary)" : "var(--surface)",
-                                            color: canSubmit ? "#fff" : "var(--text-subtle)",
+                                            color: canSubmit ? "var(--text-light)" : "var(--text-subtle)",
                                             cursor: canSubmit ? "pointer" : "not-allowed",
                                         }}
                                     >

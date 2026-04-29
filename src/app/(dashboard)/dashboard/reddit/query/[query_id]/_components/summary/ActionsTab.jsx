@@ -3,9 +3,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Check } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
-import { Progress } from "@/components/ui/progress";
 
 export const ActionsTab = ({ data, onReachEndSwipe, onReachStartSwipe }) => {
 
@@ -16,7 +15,6 @@ export const ActionsTab = ({ data, onReachEndSwipe, onReachStartSwipe }) => {
         (a, b) => a.priority - b.priority
     );
 
-    // ✅ Hooks must always be called before any early return
     useEffect(() => {
         const container = scrollRef.current;
         if (!container) return;
@@ -32,6 +30,13 @@ export const ActionsTab = ({ data, onReachEndSwipe, onReachStartSwipe }) => {
         return () => container.removeEventListener("scroll", handleScroll);
     }, []);
 
+    const scrollToIndex = (index) => {
+        const container = scrollRef.current;
+        if (!container) return;
+        container.scrollTo({ left: index * container.clientWidth, behavior: 'smooth' });
+        setCurrentIndex(index);
+    };
+
     if (!steps?.length) {
         return (
             <div className="">
@@ -46,18 +51,9 @@ export const ActionsTab = ({ data, onReachEndSwipe, onReachStartSwipe }) => {
                     onTouchEnd={(e) => {
                         const touch = e.changedTouches[0];
                         const diffX = touch.clientX - scrollRef.current?._startX;
-
                         const SWIPE_THRESHOLD = 50;
-
-                        // Swipe right → previous tab
-                        if (diffX > SWIPE_THRESHOLD) {
-                            onReachStartSwipe?.();
-                        }
-
-                        // Swipe left → next tab
-                        if (diffX < -SWIPE_THRESHOLD) {
-                            onReachEndSwipe?.();
-                        }
+                        if (diffX > SWIPE_THRESHOLD) onReachStartSwipe?.();
+                        if (diffX < -SWIPE_THRESHOLD) onReachEndSwipe?.();
                     }}
                     className="min-h-50 flex items-center bg-input-background justify-center border border-border"
                 >
@@ -69,25 +65,10 @@ export const ActionsTab = ({ data, onReachEndSwipe, onReachStartSwipe }) => {
         );
     }
 
-    const progressValue = steps.length <= 1
-        ? 100
-        : (currentIndex / (steps.length - 1)) * 100;
-
     return (
         <div className="space-y-3">
             {/* ── MOBILE SWIPE VIEW ── */}
             <div className="sm:hidden">
-                {/* ── Progress indicator ── */}
-                <div className="my-3 px-1 flex items-center gap-3">
-                    <Progress
-                        value={progressValue}
-                        className="h-1 flex-1 rounded-none bg-border/90"
-                    />
-                    <span className="text-[11px] font-mono text-muted-foreground shrink-0 tabular-nums">
-                        {currentIndex + 1} / {steps.length}
-                    </span>
-                </div>
-
                 {/* Swipe cards */}
                 <div
                     ref={scrollRef}
@@ -107,17 +88,10 @@ export const ActionsTab = ({ data, onReachEndSwipe, onReachStartSwipe }) => {
 
                         const SWIPE_THRESHOLD = 50;
 
-                        // 👉 Swipe RIGHT at first card → go to previous tab
-                        if (diffX > SWIPE_THRESHOLD && atStart) {
-                            onReachStartSwipe?.();
-                        }
-
-                        // 👉 Swipe LEFT at last card → go to next tab
-                        if (diffX < -SWIPE_THRESHOLD && atEnd) {
-                            onReachEndSwipe?.();
-                        }
+                        if (diffX > SWIPE_THRESHOLD && atStart) onReachStartSwipe?.();
+                        if (diffX < -SWIPE_THRESHOLD && atEnd) onReachEndSwipe?.();
                     }}
-                    className="overflow-x-auto flex gap-3 snap-x snap-mandatory scroll-smooth [-webkit-overflow-scrolling:touch]"
+                    className="overflow-x-auto flex snap-x snap-mandatory gap-3 scroll-smooth [-webkit-overflow-scrolling:touch]"
                 >
                     {steps.map((item, i) => (
                         <div key={i} className="min-w-full snap-start border border-border">
@@ -187,6 +161,33 @@ export const ActionsTab = ({ data, onReachEndSwipe, onReachStartSwipe }) => {
                             </Card>
                         </div>
                     ))}
+                </div>
+
+                {/* ── Dot indicators + swipe hint ── */}
+                <div className="flex flex-col items-center gap-2 mt-3">
+
+                    {/* Dots */}
+                    <div className="flex items-center justify-center gap-1.5">
+                        {steps.map((_, i) => (
+                            <button
+                                key={i}
+                                onClick={() => scrollToIndex(i)}
+                                className={`rounded-full transition-all duration-300 ${
+                                    i === currentIndex
+                                        ? 'w-4 h-1.5 bg-primary'
+                                        : 'w-1.5 h-1.5 bg-border-solid active:bg-primary/50'
+                                }`}
+                            />
+                        ))}
+                    </div>
+
+                    {/* Swipe hint — only show when not on last card */}
+                    {currentIndex < steps.length - 1 && (
+                        <div className="flex items-center gap-1 text-[10px] text-muted-foreground/50 animate-pulse select-none">
+                            <span>swipe</span>
+                            <ArrowRight className="w-3 h-3" />
+                        </div>
+                    )}
                 </div>
             </div>
 
