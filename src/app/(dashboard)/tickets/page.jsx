@@ -342,24 +342,14 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
       if (!silent) setLoading(true);
 
       try {
-        const headers = await getAuthHeaders();
-        const res = await fetch(`${API}/user/tickets/`, { headers });
-
-        if (!res.ok) {
-          setTickets([]);
-          return [];
-        }
-
-        const data = await res.json();
-        const list = Array.isArray(data) ? data : [];
-
-        const sorted = [...list].sort(
-          (a, b) =>
-            new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
+        const res = await fetch(
+          `${API}/user/tickets/?email=${encodeURIComponent(userEmail)}`,
+          // `${API}/tickets`,
         );
+        const data = await res.json();
+        console.log('tickets: ', data);
 
-        setTickets(sorted);
-
+        setTickets(data);
         setHasUnread(() => {
           if (openRef.current) return false;
           return sorted.some((t) => t.replies?.some((r) => r.is_admin === 1));
@@ -613,10 +603,10 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
 
       if (!res.ok) throw new Error("Failed to send reply");
 
-      const data = await res.json().catch(() => null);
+      console.log('tickets: ', res);
 
-      if (data && typeof data === "object" && data.replies) {
-        applyTicketUpdate(data);
+      if (!res.ok) {
+        throw new Error("Failed to send reply");
       }
 
       const latestTickets = await loadTickets(true);
@@ -788,7 +778,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                         style={{ color: "var(--primary)" }}
                       />
                     </div>
-                  ) : tickets.length === 0 ? (
+                  ) : tickets?.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full gap-3 py-8">
                       <div
                         className="w-14 h-14 rounded-2xl flex items-center justify-center"
@@ -816,7 +806,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
                       </button>
                     </div>
                   ) : (
-                    tickets.map((t) => {
+                    tickets?.map((t) => {
                       const lastReply = t.replies?.[t.replies.length - 1];
                       const hasAdminReply = t.replies?.some(
                         (r) => r.is_admin === 1,

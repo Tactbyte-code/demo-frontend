@@ -8,8 +8,11 @@ import { useRouter } from "next/navigation";
 import { createQuery } from "@/lib/api/reddit";
 import QueryProcessingLoader from "../../../_components/QueryProcessingLoader";
 import { useQueryClient } from "@tanstack/react-query";
+import { Zap } from "lucide-react";
+import { motion } from "framer-motion";
 
 export function QueryCard({ query, isCompleted, onRequeryStart }) {
+
     const [editing, setEditing] = useState(false);
     const [value, setValue] = useState(query || null);
     const textareaRef = useRef(null);
@@ -80,7 +83,7 @@ export function QueryCard({ query, isCompleted, onRequeryStart }) {
             {/* Card Header */}
             <CardHeader className="px-0 pt-5 pb-0">
                 <SectionLabel
-                    icon={<Sparkles className="w-3.5 h-3.5 text-white" />}
+                    icon={<Sparkles className="w-4 h-4 text-white" />}
                     label="Your Query"
                 />
             </CardHeader>

@@ -103,10 +103,8 @@ export function Pipeline({
                         </div>
 
                         {/* Progress bar */}
-                        <div
-                            className="relative h-2 overflow-hidden"
-                            style={{ background: "var(--surface-raised)" }}
-                        >
+                        <div className="relative h-2 overflow-hidden bg-gray-300 dark:bg-gray-700">
+                            {/* Filled progress */}
                             <motion.div
                                 className="absolute top-0 left-0 h-full"
                                 style={{ background: getProgressColor() }}
