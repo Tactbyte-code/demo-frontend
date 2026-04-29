@@ -908,7 +908,7 @@ export default function TicketChatPopup({
           (a, b) =>
             new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
         );
-        const data = await res.json();
+        const sdata = await res.json();
         console.log('tickets: ', data);
 
         setTickets(sorted);

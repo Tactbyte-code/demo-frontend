@@ -322,7 +322,7 @@ export default function Navbar() {
                       id: "reddit",
                       icon: Activity,
                       title: "Reddit Analysis",
-                      desc: "Mine real user conversations for product insights.",
+                      desc: "Mine real user conversations for product insight.",
                     },
                     {
                       id: "playstore",
