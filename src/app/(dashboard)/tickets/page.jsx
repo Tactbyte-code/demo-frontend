@@ -32,6 +32,18 @@ const statusMeta = {
   closed: { label: "Closed", color: "#94a3b8" },
 };
 
+// ─── Mobile detection hook ────────────────────────────────────────────────────
+function useIsMobile(breakpoint = 768) {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < breakpoint);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, [breakpoint]);
+  return isMobile;
+}
+
 function StatusBadge({ status }) {
   const m = statusMeta[status] || statusMeta.open;
   return (
@@ -87,28 +99,34 @@ async function getAuthHeaders() {
   };
 }
 
-function isSameUserReply(a, b) {
-  return (
-    a &&
-    b &&
-    a.is_admin === b.is_admin &&
-    (a.message || "").trim() === (b.message || "").trim() &&
-    (a.reply_type || "message") === (b.reply_type || "message")
-  );
+function getReplyKey(reply) {
+  return [
+    reply?.is_admin ?? 0,
+    reply?.reply_type || "message",
+    (reply?.message || "").trim(),
+  ].join("|");
 }
 
 function mergeReplies(localReplies = [], incomingReplies = []) {
-  const merged = [...incomingReplies];
-  const localPending = localReplies.filter((r) => r && r.pending);
+  const seenKeys = new Set();
+  const seenIds = new Set();
+  const merged = [];
 
-  for (const local of localPending) {
-    const confirmedIndex = merged.findIndex((r) => isSameUserReply(local, r));
-    if (confirmedIndex !== -1) continue;
+  for (const r of incomingReplies || []) {
+    if (!r) continue;
+    merged.push(r);
+    if (r.id != null) seenIds.add(String(r.id));
+    seenKeys.add(getReplyKey(r));
+  }
 
-    const sameIdIndex = merged.findIndex((r) => r.id === local.id);
-    if (sameIdIndex !== -1) continue;
-
-    merged.push(local);
+  for (const local of localReplies || []) {
+    if (!local) continue;
+    const localId = local.id != null ? String(local.id) : null;
+    const localKey = getReplyKey(local);
+    const exists = (localId && seenIds.has(localId)) || seenKeys.has(localKey);
+    if (!exists && (local.pending || local._optimistic)) {
+      merged.push(local);
+    }
   }
 
   return merged.sort(
@@ -119,14 +137,11 @@ function mergeReplies(localReplies = [], incomingReplies = []) {
 
 function mergeTicketState(prev, incoming) {
   if (!prev) return incoming;
-
   const prevMs = prev.updated_at ? new Date(prev.updated_at).getTime() : 0;
   const incomingMs = incoming.updated_at
     ? new Date(incoming.updated_at).getTime()
     : 0;
-
   const base = incomingMs >= prevMs ? incoming : prev;
-
   return {
     ...base,
     ...incoming,
@@ -155,11 +170,9 @@ function openSSE(url, getHeaders, onEvent, onStatusChange) {
   async function connect() {
     if (controller.signal.aborted) return;
     onStatusChange(hasConnected ? "reconnecting" : "connecting");
-
     try {
       const headers = await getHeaders();
       const res = await fetch(url, { headers, signal: controller.signal });
-
       if (!res.ok) throw new Error(`SSE HTTP ${res.status}`);
       if (!res.body) throw new Error("SSE response has no body");
 
@@ -174,20 +187,17 @@ function openSSE(url, getHeaders, onEvent, onStatusChange) {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-
         buf += dec.decode(value, { stream: true });
         const parts = buf.split("\n\n");
         buf = parts.pop() || "";
-
         for (const part of parts) {
           const dataLine = part.split("\n").find((l) => l.startsWith("data: "));
           if (!dataLine) continue;
-
           try {
             const event = JSON.parse(dataLine.slice(6));
             if (event.type !== "heartbeat") onEvent(event);
           } catch {
-            // ignore invalid payloads
+            // ignore
           }
         }
       }
@@ -198,10 +208,8 @@ function openSSE(url, getHeaders, onEvent, onStatusChange) {
       }
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") return;
-
       onStatusChange("reconnecting");
       retryMs = Math.min(retryMs * 2, 15000);
-
       if (!controller.signal.aborted) scheduleReconnect();
     }
   }
@@ -212,7 +220,6 @@ function openSSE(url, getHeaders, onEvent, onStatusChange) {
 
 function SseIndicator({ status, muted = false }) {
   const mutedColor = muted ? "var(--sidebar-muted)" : "var(--text-muted)";
-
   if (status === "live") {
     return (
       <>
@@ -226,7 +233,6 @@ function SseIndicator({ status, muted = false }) {
       </>
     );
   }
-
   if (status === "connecting") {
     return (
       <>
@@ -241,7 +247,6 @@ function SseIndicator({ status, muted = false }) {
       </>
     );
   }
-
   return (
     <>
       <WifiOff size={9} style={{ color: "#f59e0b" }} />
@@ -293,8 +298,537 @@ function AgentViewingIndicator({ agentName }) {
   );
 }
 
-export default function TicketChatPopup({ hasUnread, setHasUnread }) {
-  const [open, setOpen] = useState(false);
+function MessageBubble({
+  isAdmin,
+  message,
+  time,
+  label,
+  pending = false,
+  sent = false,
+}) {
+  return (
+    <div
+      className={`flex flex-col gap-1 ${isAdmin ? "items-start" : "items-end"}`}
+    >
+      <span
+        className="text-[9px] font-bold uppercase tracking-widest px-1"
+        style={{ color: "var(--sidebar-muted)" }}
+      >
+        {label}
+      </span>
+      <div
+        className="max-w-[82%] px-3 py-2 rounded-2xl text-sm leading-relaxed"
+        style={
+          isAdmin
+            ? {
+                background:
+                  "color-mix(in srgb, var(--primary) 10%, transparent)",
+                border:
+                  "1px solid color-mix(in srgb, var(--primary) 20%, transparent)",
+                color: "var(--text-main)",
+                borderTopLeftRadius: 4,
+              }
+            : {
+                background: pending
+                  ? "color-mix(in srgb, var(--primary) 60%, transparent)"
+                  : "var(--primary)",
+                color: "white",
+                borderTopRightRadius: 4,
+                opacity: pending ? 0.75 : 1,
+              }
+        }
+      >
+        {message}
+      </div>
+      <div className="flex items-center gap-1 px-1">
+        <span className="text-[9px]" style={{ color: "var(--sidebar-muted)" }}>
+          {fmt(time)}
+        </span>
+        {!isAdmin && pending && (
+          <Clock
+            size={9}
+            style={{ color: "var(--sidebar-muted)" }}
+            className="opacity-60"
+          />
+        )}
+        {!isAdmin && !pending && sent && (
+          <span
+            className="flex items-center gap-0.5 text-[9px] font-semibold"
+            style={{ color: "#22c55e" }}
+          >
+            <Check size={9} strokeWidth={3} />
+            <Check size={9} strokeWidth={3} style={{ marginLeft: -4 }} />
+            Sent
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ForwardedNote({ reply }) {
+  return (
+    <div className="flex justify-center">
+      <span
+        className="text-[9px] px-3 py-1 rounded-full font-semibold"
+        style={{
+          background: "color-mix(in srgb, #f59e0b 12%, transparent)",
+          color: "#f59e0b",
+          border: "1px solid color-mix(in srgb, #f59e0b 25%, transparent)",
+        }}
+      >
+        {reply.message}
+      </span>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Shared inner panel content (used by both desktop popup & mobile drawer)
+// ─────────────────────────────────────────────────────────────────────────────
+function PanelContent({
+  view,
+  setView,
+  tickets,
+  activeTicket,
+  loading,
+  sending,
+  msg,
+  setMsg,
+  newSubject,
+  setNewSubject,
+  newMsg,
+  setNewMsg,
+  newTeam,
+  creating,
+  teams,
+  teamsLoading,
+  sseStatus,
+  agentViewing,
+  agentViewingName,
+  bottomRef,
+  inputRef,
+  handleClose,
+  openTicket,
+  sendReply,
+  createTicket,
+  raiseNewTicket,
+  disconnectSSE,
+  isMobile,
+}) {
+  return (
+    <>
+      {/* ── Header ────────────────────────────────────────────────────────── */}
+      <div
+        className="flex items-center justify-between px-4 shrink-0"
+        style={{
+          paddingTop: isMobile ? 12 : 12,
+          paddingBottom: 12,
+          borderBottom: "1px solid var(--sidebar-border)",
+          background:
+            "linear-gradient(135deg, color-mix(in srgb, var(--primary) 10%, transparent), color-mix(in srgb, var(--accent) 8%, transparent))",
+          // Mobile: add top drag handle spacing
+          borderRadius: isMobile ? "20px 20px 0 0" : undefined,
+        }}
+      >
+        {/* Drag handle — mobile only */}
+        {isMobile && (
+          <div
+            className="absolute top-2.5 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full"
+            style={{ background: "var(--sidebar-border)" }}
+          />
+        )}
+
+        <div className="flex items-center gap-2.5">
+          {view !== "list" && (
+            <button
+              onClick={() => {
+                disconnectSSE();
+                setView("list");
+              }}
+              className="p-1 rounded-md hover:bg-white/10 transition-colors"
+              style={{ color: "var(--text-muted)" }}
+            >
+              <ChevronLeft size={16} />
+            </button>
+          )}
+          <HeadphonesIcon size={16} style={{ color: "var(--primary)" }} />
+          <span
+            className="text-sm font-bold"
+            style={{ color: "var(--text-main)" }}
+          >
+            {view === "list"
+              ? "Support"
+              : view === "new"
+                ? "New Ticket"
+                : activeTicket?.ticket_id || "Chat"}
+          </span>
+          {view === "chat" && activeTicket && (
+            <StatusBadge status={activeTicket.status} />
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          {view === "chat" && activeTicket?.status !== "closed" && (
+            <span className="flex items-center gap-1">
+              <SseIndicator status={sseStatus} muted />
+            </span>
+          )}
+          {view === "list" && (
+            <button
+              onClick={raiseNewTicket}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold transition-all"
+              style={{ background: "var(--primary)", color: "white" }}
+            >
+              <Plus size={12} /> New
+            </button>
+          )}
+          <button
+            onClick={handleClose}
+            className="p-1.5 rounded-md hover:bg-white/10 transition-colors"
+            style={{ color: "var(--text-muted)" }}
+          >
+            <X size={15} />
+          </button>
+        </div>
+      </div>
+
+      {/* ── Body ──────────────────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-hidden flex flex-col">
+        {/* LIST VIEW */}
+        {view === "list" && (
+          <div className="flex-1 overflow-y-auto p-3 space-y-2">
+            {loading ? (
+              <div className="flex items-center justify-center h-full">
+                <Loader2
+                  size={22}
+                  className="animate-spin"
+                  style={{ color: "var(--primary)" }}
+                />
+              </div>
+            ) : tickets.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full gap-3 py-8">
+                <div
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                  style={{
+                    background:
+                      "color-mix(in srgb, var(--primary) 12%, transparent)",
+                  }}
+                >
+                  <Inbox size={24} style={{ color: "var(--primary)" }} />
+                </div>
+                <p
+                  className="text-xs font-semibold text-center"
+                  style={{ color: "var(--text-muted)" }}
+                >
+                  No tickets yet.
+                  <br />
+                  Raise one if you need help!
+                </p>
+                <button
+                  onClick={raiseNewTicket}
+                  className="px-4 py-2 rounded-lg text-xs font-bold transition-all"
+                  style={{ background: "var(--primary)", color: "white" }}
+                >
+                  + Raise a Ticket
+                </button>
+              </div>
+            ) : (
+              tickets.map((t) => {
+                const lastReply = t.replies?.[t.replies.length - 1];
+                const hasAdminReply = t.replies?.some((r) => r.is_admin === 1);
+                const preview = lastReply
+                  ? (lastReply.is_admin ? "Support: " : "You: ") +
+                    lastReply.message.slice(0, 40)
+                  : t.message.slice(0, 40);
+                const tooLong = (lastReply?.message || t.message).length > 40;
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => openTicket(t)}
+                    className="w-full text-left rounded-xl p-3 transition-all"
+                    style={{
+                      background:
+                        "color-mix(in srgb, var(--primary) 5%, transparent)",
+                      border: "1px solid var(--sidebar-border)",
+                    }}
+                  >
+                    <div className="flex items-start justify-between gap-2 mb-1.5">
+                      <span
+                        className="text-xs font-bold truncate flex-1"
+                        style={{ color: "var(--text-main)" }}
+                      >
+                        {t.subject}
+                      </span>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {hasAdminReply && (
+                          <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
+                        )}
+                        <StatusBadge status={t.status} />
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span
+                        className="text-[10px] truncate max-w-[70%]"
+                        style={{ color: "var(--text-muted)" }}
+                      >
+                        {preview}
+                        {tooLong ? "…" : ""}
+                      </span>
+                      <span
+                        className="text-[9px] shrink-0 ml-2"
+                        style={{ color: "var(--sidebar-muted)" }}
+                      >
+                        {fmt(t.updated_at)}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </div>
+        )}
+
+        {/* NEW TICKET VIEW */}
+        {view === "new" && (
+          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+            <div>
+              <label
+                className="block text-[10px] font-bold uppercase tracking-widest mb-1.5"
+                style={{ color: "var(--sidebar-muted)" }}
+              >
+                Subject
+              </label>
+              <input
+                value={newSubject}
+                onChange={(e) => setNewSubject(e.target.value)}
+                placeholder={getSubjectPlaceholder(newTeam)}
+                className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
+                style={{
+                  background:
+                    "color-mix(in srgb, var(--primary) 6%, transparent)",
+                  border: "1px solid var(--sidebar-border)",
+                  color: "var(--text-main)",
+                }}
+              />
+            </div>
+            <div className="flex-1">
+              <label
+                className="block text-[10px] font-bold uppercase tracking-widest mb-1.5"
+                style={{ color: "var(--sidebar-muted)" }}
+              >
+                Describe your issue
+              </label>
+              <textarea
+                value={newMsg}
+                onChange={(e) => setNewMsg(e.target.value)}
+                placeholder={getMessagePlaceholder(newTeam)}
+                rows={5}
+                className="w-full px-3 py-2.5 rounded-lg text-sm outline-none resize-none"
+                style={{
+                  background:
+                    "color-mix(in srgb, var(--primary) 6%, transparent)",
+                  border: "1px solid var(--sidebar-border)",
+                  color: "var(--text-main)",
+                }}
+              />
+            </div>
+            <button
+              onClick={() => void createTicket()}
+              disabled={
+                !newMsg.trim() ||
+                !newTeam ||
+                creating ||
+                teamsLoading ||
+                !newSubject.trim()
+              }
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-bold transition-all disabled:opacity-50"
+              style={{ background: "var(--primary)", color: "white" }}
+            >
+              {creating ? (
+                <Loader2 size={15} className="animate-spin" />
+              ) : (
+                <Send size={15} />
+              )}
+              {creating ? "Raising ticket…" : "Submit Ticket"}
+            </button>
+          </div>
+        )}
+
+        {/* CHAT VIEW */}
+        {view === "chat" && activeTicket && (
+          <>
+            <div
+              className="px-4 py-2 shrink-0 flex items-center gap-2"
+              style={{
+                borderBottom: "1px solid var(--sidebar-border)",
+                background:
+                  "color-mix(in srgb, var(--primary) 4%, transparent)",
+              }}
+            >
+              <Ticket size={11} style={{ color: "var(--sidebar-muted)" }} />
+              <span
+                className="text-[10px] font-mono"
+                style={{ color: "var(--sidebar-muted)" }}
+              >
+                {activeTicket.ticket_id} · {activeTicket.assigned_team} team
+              </span>
+              {activeTicket.status !== "closed" && (
+                <span className="ml-auto flex items-center gap-1">
+                  <SseIndicator status={sseStatus} muted />
+                </span>
+              )}
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+              <MessageBubble
+                isAdmin={false}
+                message={activeTicket.message}
+                time={activeTicket.created_at}
+                label="You"
+                pending={false}
+                sent={true}
+              />
+              {activeTicket.replies?.map((r) =>
+                r.reply_type === "forwarded" ? (
+                  <ForwardedNote key={r.id} reply={r} />
+                ) : (
+                  <MessageBubble
+                    key={r.id}
+                    isAdmin={r.is_admin === 1}
+                    message={r.message}
+                    time={r.created_at}
+                    label={r.is_admin === 1 ? "Support" : "You"}
+                    pending={r.pending === true}
+                    sent={!r.pending && r.is_admin === 0}
+                  />
+                ),
+              )}
+              <AnimatePresence>
+                {agentViewing && activeTicket.status !== "closed" && (
+                  <AgentViewingIndicator agentName={agentViewingName} />
+                )}
+              </AnimatePresence>
+              {activeTicket.status === "closed" && (
+                <div className="flex flex-col items-center gap-3 py-4">
+                  <div
+                    className="flex items-center justify-center w-12 h-12 rounded-full"
+                    style={{
+                      background: "rgba(34,197,94,0.12)",
+                      border: "1px solid rgba(34,197,94,0.25)",
+                    }}
+                  >
+                    <CheckCircle2 size={22} style={{ color: "#22c55e" }} />
+                  </div>
+                  <div className="text-center">
+                    <p
+                      className="text-xs font-bold mb-1"
+                      style={{ color: "#22c55e" }}
+                    >
+                      Ticket Resolved
+                    </p>
+                    <p
+                      className="text-[10px] leading-relaxed"
+                      style={{ color: "var(--sidebar-muted)" }}
+                    >
+                      This ticket has been closed by our support team.
+                      <br />
+                      We hope your issue was fully resolved!
+                    </p>
+                  </div>
+                </div>
+              )}
+              <div ref={bottomRef} />
+            </div>
+
+            {activeTicket.status !== "closed" ? (
+              <div
+                className="shrink-0 px-3 py-3"
+                style={{ borderTop: "1px solid var(--sidebar-border)" }}
+              >
+                <div
+                  className="flex items-end gap-2 rounded-xl px-3 py-2"
+                  style={{
+                    background:
+                      "color-mix(in srgb, var(--primary) 6%, transparent)",
+                    border: "1px solid var(--sidebar-border)",
+                  }}
+                >
+                  <textarea
+                    ref={inputRef}
+                    rows={1}
+                    value={msg}
+                    onChange={(e) => setMsg(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        void sendReply();
+                      }
+                    }}
+                    placeholder="Type a message…"
+                    className="flex-1 resize-none text-sm bg-transparent outline-none"
+                    style={{ color: "var(--text-main)", maxHeight: 80 }}
+                  />
+                  <button
+                    onClick={() => void sendReply()}
+                    disabled={!msg.trim() || sending}
+                    className="p-2 rounded-lg transition-all disabled:opacity-40 shrink-0"
+                    style={{ background: "var(--primary)", color: "white" }}
+                  >
+                    {sending ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      <Send size={14} />
+                    )}
+                  </button>
+                </div>
+                <p
+                  className="text-[9px] mt-1 text-center"
+                  style={{ color: "var(--sidebar-muted)" }}
+                >
+                  Enter to send · Shift+Enter for newline
+                </p>
+              </div>
+            ) : (
+              <div
+                className="shrink-0 flex items-center justify-center gap-1.5 py-2.5"
+                style={{ borderTop: "1px solid var(--sidebar-border)" }}
+              >
+                <Lock size={10} style={{ color: "var(--sidebar-muted)" }} />
+                <span
+                  className="text-[10px]"
+                  style={{ color: "var(--sidebar-muted)" }}
+                >
+                  Replies are locked for closed tickets
+                </span>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TicketChatPopup
+//
+//  Props:
+//    open / setOpen       — visibility state (lifted to parent)
+//    hasUnread / setHasUnread
+//    closeSidebar         — NEW: called on mobile to collapse the sidebar
+//                           when the drawer opens.  Pass `() => setSidebarOpen(false)`
+//                           (or whatever your sidebar state setter is) from your layout.
+// ─────────────────────────────────────────────────────────────────────────────
+export default function TicketChatPopup({
+  open,
+  setOpen,
+  hasUnread,
+  setHasUnread,
+  closeSidebar, // ← new prop: () => void
+}) {
+  const isMobile = useIsMobile();
+
   const [view, setView] = useState("list");
   const [tickets, setTickets] = useState([]);
   const [activeTicket, setActive] = useState(null);
@@ -323,6 +857,23 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
     openRef.current = open;
   }, [open]);
 
+  // ── Auto-close sidebar on mobile when drawer opens ──────────────────────
+  useEffect(() => {
+    if (open && isMobile && typeof closeSidebar === "function") {
+      closeSidebar();
+    }
+  }, [open, isMobile, closeSidebar]);
+
+  // ── Prevent body scroll when mobile drawer is open ───────────────────────
+  useEffect(() => {
+    if (isMobile && open) {
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "";
+      };
+    }
+  }, [isMobile, open]);
+
   useEffect(() => {
     const unsub = auth.onAuthStateChanged((u) => {
       if (u) {
@@ -340,11 +891,12 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
     async (silent = false) => {
       if (!userEmail) return [];
       if (!silent) setLoading(true);
-
       try {
         const headers = await getAuthHeaders();
-        const res = await fetch(`${API}/user/tickets/`, { headers });
-
+        const res = await fetch(`${API}/user/tickets/`, {
+          headers,
+          cache: "no-store",
+        });
         if (!res.ok) {
           setTickets([]);
           return [];
@@ -352,13 +904,19 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
 
         const data = await res.json();
         const list = Array.isArray(data) ? data : [];
-
         const sorted = [...list].sort(
           (a, b) =>
             new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
         );
 
         setTickets(sorted);
+
+        setActive((prev) => {
+          if (!prev) return prev;
+          const fresh = sorted.find((t) => String(t.id) === String(prev.id));
+          if (!fresh) return prev;
+          return mergeTicketState(prev, fresh);
+        });
 
         setHasUnread(() => {
           if (openRef.current) return false;
@@ -379,17 +937,17 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
   const applyTicketUpdate = useCallback(
     (incoming) => {
       setActive((prev) => {
-        if (!prev || prev.id !== incoming.id) return prev;
+        if (!prev || String(prev.id) !== String(incoming.id)) return prev;
         return mergeTicketState(prev, incoming);
       });
-
       setTickets((prev) => {
-        const exists = prev.some((t) => t.id === incoming.id);
+        const exists = prev.some((t) => String(t.id) === String(incoming.id));
         if (!exists) return [incoming, ...prev];
-
         return [...prev]
           .map((t) =>
-            t.id === incoming.id ? mergeTicketState(t, incoming) : t,
+            String(t.id) === String(incoming.id)
+              ? mergeTicketState(t, incoming)
+              : t,
           )
           .sort(
             (a, b) =>
@@ -397,7 +955,6 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
               new Date(a.updated_at).getTime(),
           );
       });
-
       setHasUnread(() => {
         if (openRef.current) return false;
         return incoming.replies?.some((r) => r.is_admin === 1) ?? false;
@@ -413,40 +970,37 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
       setSseStatus("connecting");
 
       const url = `${API}/user/tickets/${ticketId}/stream`;
-
       sseControllerRef.current = openSSE(
         url,
         getAuthHeaders,
         (event) => {
           if (event.type === "init") {
             setActive((prev) => {
-              if (!prev || prev.id !== event.ticket.id) return event.ticket;
-
+              if (!prev || String(prev.id) !== String(event.ticket.id))
+                return event.ticket;
               const prevMs = prev.updated_at
                 ? new Date(prev.updated_at).getTime()
                 : 0;
               const initMs = event.ticket.updated_at
                 ? new Date(event.ticket.updated_at).getTime()
                 : 0;
-
               if (initMs <= prevMs) return prev;
               return mergeTicketState(prev, event.ticket);
             });
-
             setTickets((prev) => {
               const t = event.ticket;
-              const exists = prev.some((x) => x.id === t.id);
+              const exists = prev.some((x) => String(x.id) === String(t.id));
               if (!exists) return [t, ...prev];
-
               return [...prev]
-                .map((x) => (x.id === t.id ? mergeTicketState(x, t) : x))
+                .map((x) =>
+                  String(x.id) === String(t.id) ? mergeTicketState(x, t) : x,
+                )
                 .sort(
                   (a, b) =>
                     new Date(b.updated_at).getTime() -
                     new Date(a.updated_at).getTime(),
                 );
             });
-
             setHasUnread(() => {
               if (openRef.current) return false;
               return (
@@ -458,11 +1012,8 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
           } else if (event.type === "agent_viewing") {
             setAgentViewing(true);
             setAgentViewingName(event.agent_name ?? null);
-
-            if (agentViewingTimer.current) {
+            if (agentViewingTimer.current)
               globalThis.clearTimeout(agentViewingTimer.current);
-            }
-
             agentViewingTimer.current = globalThis.setTimeout(() => {
               setAgentViewing(false);
               setAgentViewingName(null);
@@ -470,7 +1021,6 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
           } else if (event.type === "agent_left") {
             setAgentViewing(false);
             setAgentViewingName(null);
-
             if (agentViewingTimer.current) {
               globalThis.clearTimeout(agentViewingTimer.current);
               agentViewingTimer.current = null;
@@ -480,7 +1030,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
         (status) => setSseStatus(status),
       );
     },
-    [applyTicketUpdate],
+    [applyTicketUpdate, setHasUnread],
   );
 
   const disconnectSSE = useCallback(() => {
@@ -489,7 +1039,6 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
     setSseStatus("connecting");
     setAgentViewing(false);
     setAgentViewingName(null);
-
     if (agentViewingTimer.current) {
       globalThis.clearTimeout(agentViewingTimer.current);
       agentViewingTimer.current = null;
@@ -498,22 +1047,14 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
 
   useEffect(() => {
     const shouldConnect = view === "chat" && !!activeTicket?.id && !!userEmail;
-
     if (shouldConnect) {
-      const cancel = defer(() => {
-        connectSSE(activeTicket.id);
-      });
-
+      const cancel = defer(() => connectSSE(activeTicket.id));
       return () => {
         cancel();
         disconnectSSE();
       };
     }
-
-    const cancel = defer(() => {
-      disconnectSSE();
-    });
-
+    const cancel = defer(() => disconnectSSE());
     return cancel;
   }, [view, activeTicket?.id, userEmail, connectSSE, disconnectSSE]);
 
@@ -522,6 +1063,14 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
     return defer(() => {
       void loadTickets();
     });
+  }, [open, userEmail, loadTickets]);
+
+  useEffect(() => {
+    if (!open || !userEmail) return;
+    const interval = globalThis.setInterval(() => {
+      void loadTickets(true);
+    }, 1000);
+    return () => globalThis.clearInterval(interval);
   }, [open, userEmail, loadTickets]);
 
   useEffect(() => {
@@ -537,13 +1086,15 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
   const fetchTeams = useCallback(async () => {
     setTeamsLoading(true);
     try {
-      const res = await fetch(`${API}/user/tickets/teams/active`);
+      const res = await fetch(`${API}/user/tickets/teams/active`, {
+        cache: "no-store",
+      });
       const data = await res.json();
       const list = Array.isArray(data) ? data : [];
       setTeams(list);
       if (list.length > 0) setNewTeam(list[0]);
     } catch {
-      // swallow
+      /* swallow */
     } finally {
       setTeamsLoading(false);
     }
@@ -556,18 +1107,11 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
     });
   }, [view, teams.length, fetchTeams]);
 
-  const handleToggleOpen = useCallback(() => {
-    setOpen((prev) => {
-      if (!prev) setHasUnread(false);
-      return !prev;
-    });
-  }, [setHasUnread]);
-
   const handleClose = useCallback(() => {
     setOpen(false);
     setHasUnread(false);
     disconnectSSE();
-  }, [setHasUnread, disconnectSSE]);
+  }, [setOpen, setHasUnread, disconnectSSE]);
 
   const openTicket = useCallback((t) => {
     setActive(t);
@@ -576,33 +1120,42 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
 
   const sendReply = useCallback(async () => {
     if (!msg.trim() || !activeTicket || sending) return;
-
     const ticketId = activeTicket.id;
-    const tempId = `temp-${Date.now()}`;
     const msgToSend = msg.trim();
-
+    const tempId = `temp-${Date.now()}`;
+    const now = new Date().toISOString();
     const pendingReply = {
       id: tempId,
+      ticket_id: ticketId,
       message: msgToSend,
       is_admin: 0,
       reply_type: "message",
-      created_at: new Date().toISOString(),
+      created_at: now,
       pending: true,
+      _optimistic: true,
     };
-
     setMsg("");
     setActive((prev) =>
       prev
         ? {
             ...prev,
             replies: [...(prev.replies || []), pendingReply],
-            updated_at: new Date().toISOString(),
+            updated_at: now,
           }
         : prev,
     );
-
+    setTickets((prev) =>
+      [...prev].map((t) =>
+        String(t.id) === String(ticketId)
+          ? {
+              ...t,
+              updated_at: now,
+              replies: [...(t.replies || []), pendingReply],
+            }
+          : t,
+      ),
+    );
     setSending(true);
-
     try {
       const headers = await getAuthHeaders();
       const res = await fetch(`${API}/user/tickets/${ticketId}/reply`, {
@@ -610,25 +1163,47 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
         headers,
         body: JSON.stringify({ message: msgToSend }),
       });
-
       if (!res.ok) throw new Error("Failed to send reply");
-
       const data = await res.json().catch(() => null);
-
-      if (data && typeof data === "object" && data.replies) {
-        applyTicketUpdate(data);
+      if (data && typeof data === "object") {
+        setActive((prev) => {
+          if (!prev || String(prev.id) !== String(ticketId)) return prev;
+          return mergeTicketState(prev, data);
+        });
+        setTickets((prev) =>
+          [...prev]
+            .map((t) =>
+              String(t.id) === String(ticketId) ? mergeTicketState(t, data) : t,
+            )
+            .sort(
+              (a, b) =>
+                new Date(b.updated_at).getTime() -
+                new Date(a.updated_at).getTime(),
+            ),
+        );
       }
-
       const latestTickets = await loadTickets(true);
       const latest = latestTickets.find(
         (t) => String(t.id) === String(ticketId),
       );
-
       if (latest) {
         setActive((prev) => {
           if (!prev || String(prev.id) !== String(ticketId)) return prev;
           return mergeTicketState(prev, latest);
         });
+        setTickets((prev) =>
+          [...prev]
+            .map((t) =>
+              String(t.id) === String(ticketId)
+                ? mergeTicketState(t, latest)
+                : t,
+            )
+            .sort(
+              (a, b) =>
+                new Date(b.updated_at).getTime() -
+                new Date(a.updated_at).getTime(),
+            ),
+        );
       }
     } catch {
       setActive((prev) =>
@@ -639,15 +1214,24 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
             }
           : prev,
       );
+      setTickets((prev) =>
+        prev.map((t) =>
+          String(t.id) === String(ticketId)
+            ? {
+                ...t,
+                replies: (t.replies || []).filter((r) => r.id !== tempId),
+              }
+            : t,
+        ),
+      );
       setMsg(msgToSend);
     } finally {
       setSending(false);
     }
-  }, [msg, activeTicket, sending, applyTicketUpdate, loadTickets]);
+  }, [msg, activeTicket, sending, loadTickets]);
 
   const createTicket = useCallback(async () => {
     if (!newMsg.trim() || !newTeam || creating) return;
-
     setCreating(true);
     try {
       const headers = await getAuthHeaders();
@@ -663,11 +1247,8 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
           user_plan: "free",
         }),
       });
-
       if (!res.ok) throw new Error("Failed to create ticket");
-
       const ticket = await res.json();
-
       setTickets((prev) => [ticket, ...prev.filter((t) => t.id !== ticket.id)]);
       setNewSubject("");
       setNewMsg("");
@@ -675,7 +1256,7 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
       setActive(ticket);
       setView("chat");
     } catch {
-      // swallow
+      /* swallow */
     } finally {
       setCreating(false);
     }
@@ -690,439 +1271,127 @@ export default function TicketChatPopup({ hasUnread, setHasUnread }) {
     setView("new");
   }, [teams, disconnectSSE]);
 
-  return (
-    <>
+  // ── Shared panel props ────────────────────────────────────────────────────
+  const panelProps = {
+    view,
+    setView,
+    tickets,
+    activeTicket,
+    loading,
+    sending,
+    msg,
+    setMsg,
+    newSubject,
+    setNewSubject,
+    newMsg,
+    setNewMsg,
+    newTeam,
+    creating,
+    teams,
+    teamsLoading,
+    sseStatus,
+    agentViewing,
+    agentViewingName,
+    bottomRef,
+    inputRef,
+    handleClose,
+    openTicket,
+    sendReply,
+    createTicket,
+    raiseNewTicket,
+    disconnectSSE,
+    isMobile,
+  };
+
+  if (isMobile) {
+    return (
       <AnimatePresence>
         {open && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.96 }}
-            transition={{ duration: 0.22, ease: "easeOut" }}
-            className="fixed bottom-20 left-4 z-[200] flex flex-col shadow-2xl overflow-hidden"
-            style={{
-              width: "min(360px, calc(100vw - 2rem))",
-              height: "min(520px, calc(100dvh - 6rem))",
-              backgroundColor: "var(--sidebar-bg)",
-              border: "1px solid var(--sidebar-border)",
-              borderRadius: 16,
-            }}
-            onClick={(e) => e.stopPropagation()}
-            onTouchStart={(e) => e.stopPropagation()}
-            onTouchEnd={(e) => e.stopPropagation()}
-            onPointerDown={(e) => e.stopPropagation()}
-          >
-            <div
-              className="flex items-center justify-between px-4 py-3 shrink-0"
+          <>
+            {/* Blurred backdrop */}
+            <motion.div
+              key="mobile-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-9998"
               style={{
-                borderBottom: "1px solid var(--sidebar-border)",
-                background:
-                  "linear-gradient(135deg, color-mix(in srgb, var(--primary) 10%, transparent), color-mix(in srgb, var(--accent) 8%, transparent))",
+                backdropFilter: "blur(6px)",
+                WebkitBackdropFilter: "blur(6px)",
+                background: "rgba(0, 0, 0, 0.45)",
               }}
+              onClick={handleClose}
+            />
+
+            {/* Bottom drawer */}
+            <motion.div
+              key="mobile-drawer"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className="fixed bottom-0 left-0 right-0 z-[9999] flex flex-col"
+              style={{
+                height: "85dvh",
+                backgroundColor: "var(--sidebar-bg)",
+                borderTop: "1px solid var(--sidebar-border)",
+                borderRadius: "20px 20px 0 0",
+                boxShadow: "0 -8px 40px rgba(0,0,0,0.35)",
+                // Extra top padding for drag handle
+                paddingTop: 16,
+              }}
+              onClick={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
+              onTouchEnd={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center gap-2.5">
-                {view !== "list" && (
-                  <button
-                    onClick={() => {
-                      disconnectSSE();
-                      setView("list");
-                      setActive(null);
-                    }}
-                    className="p-1 rounded-md hover:bg-white/10 transition-colors"
-                    style={{ color: "var(--text-muted)" }}
-                  >
-                    <ChevronLeft size={16} />
-                  </button>
-                )}
-                <HeadphonesIcon size={16} style={{ color: "var(--primary)" }} />
-                <span
-                  className="text-sm font-bold"
-                  style={{ color: "var(--text-main)" }}
-                >
-                  {view === "list"
-                    ? "Support"
-                    : view === "new"
-                      ? "New Ticket"
-                      : activeTicket?.ticket_id || "Chat"}
-                </span>
-                {view === "chat" && activeTicket && (
-                  <StatusBadge status={activeTicket.status} />
-                )}
-              </div>
+              {/* Drag handle pill */}
+              <div
+                className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full"
+                style={{ background: "var(--sidebar-border)" }}
+              />
 
-              <div className="flex items-center gap-2">
-                {view === "chat" && activeTicket?.status !== "closed" && (
-                  <span className="flex items-center gap-1">
-                    <SseIndicator status={sseStatus} muted />
-                  </span>
-                )}
-
-                {view === "list" && (
-                  <button
-                    onClick={raiseNewTicket}
-                    className="flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold transition-all"
-                    style={{ background: "var(--primary)", color: "white" }}
-                  >
-                    <Plus size={12} /> New
-                  </button>
-                )}
-
-                <button
-                  onClick={handleClose}
-                  className="p-1.5 rounded-md hover:bg-white/10 transition-colors"
-                  style={{ color: "var(--text-muted)" }}
-                >
-                  <X size={15} />
-                </button>
-              </div>
-            </div>
-
-            <div className="flex-1 overflow-hidden flex flex-col">
-              {view === "list" && (
-                <div className="flex-1 overflow-y-auto p-3 space-y-2">
-                  {loading ? (
-                    <div className="flex items-center justify-center h-full">
-                      <Loader2
-                        size={22}
-                        className="animate-spin"
-                        style={{ color: "var(--primary)" }}
-                      />
-                    </div>
-                  ) : tickets.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full gap-3 py-8">
-                      <div
-                        className="w-14 h-14 rounded-2xl flex items-center justify-center"
-                        style={{
-                          background:
-                            "color-mix(in srgb, var(--primary) 12%, transparent)",
-                        }}
-                      >
-                        <Inbox size={24} style={{ color: "var(--primary)" }} />
-                      </div>
-                      <p
-                        className="text-xs font-semibold text-center"
-                        style={{ color: "var(--text-muted)" }}
-                      >
-                        No tickets yet.
-                        <br />
-                        Raise one if you need help!
-                      </p>
-                      <button
-                        onClick={raiseNewTicket}
-                        className="px-4 py-2 rounded-lg text-xs font-bold transition-all"
-                        style={{ background: "var(--primary)", color: "white" }}
-                      >
-                        + Raise a Ticket
-                      </button>
-                    </div>
-                  ) : (
-                    tickets.map((t) => {
-                      const lastReply = t.replies?.[t.replies.length - 1];
-                      const hasAdminReply = t.replies?.some(
-                        (r) => r.is_admin === 1,
-                      );
-                      const preview = lastReply
-                        ? (lastReply.is_admin ? "Support: " : "You: ") +
-                          lastReply.message.slice(0, 40)
-                        : t.message.slice(0, 40);
-                      const tooLong =
-                        (lastReply?.message || t.message).length > 40;
-
-                      return (
-                        <button
-                          key={t.id}
-                          onClick={() => openTicket(t)}
-                          className="w-full text-left rounded-xl p-3 transition-all"
-                          style={{
-                            background:
-                              "color-mix(in srgb, var(--primary) 5%, transparent)",
-                            border: "1px solid var(--sidebar-border)",
-                          }}
-                        >
-                          <div className="flex items-start justify-between gap-2 mb-1.5">
-                            <span
-                              className="text-xs font-bold truncate flex-1"
-                              style={{ color: "var(--text-main)" }}
-                            >
-                              {t.subject}
-                            </span>
-                            <div className="flex items-center gap-1.5 shrink-0">
-                              {hasAdminReply && (
-                                <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
-                              )}
-                              <StatusBadge status={t.status} />
-                            </div>
-                          </div>
-
-                          <div className="flex items-center justify-between">
-                            <span
-                              className="text-[10px] truncate max-w-[70%]"
-                              style={{ color: "var(--text-muted)" }}
-                            >
-                              {preview}
-                              {tooLong ? "…" : ""}
-                            </span>
-                            <span
-                              className="text-[9px] shrink-0 ml-2"
-                              style={{ color: "var(--sidebar-muted)" }}
-                            >
-                              {fmt(t.updated_at)}
-                            </span>
-                          </div>
-                        </button>
-                      );
-                    })
-                  )}
-                </div>
-              )}
-
-              {view === "new" && (
-                <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
-                  <div>
-                    <label
-                      className="block text-[10px] font-bold uppercase tracking-widest mb-1.5"
-                      style={{ color: "var(--sidebar-muted)" }}
-                    >
-                      Subject
-                    </label>
-                    <input
-                      value={newSubject}
-                      onChange={(e) => setNewSubject(e.target.value)}
-                      placeholder={getSubjectPlaceholder(newTeam)}
-                      className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
-                      style={{
-                        background:
-                          "color-mix(in srgb, var(--primary) 6%, transparent)",
-                        border: "1px solid var(--sidebar-border)",
-                        color: "var(--text-main)",
-                      }}
-                    />
-                  </div>
-
-                  <div className="flex-1">
-                    <label
-                      className="block text-[10px] font-bold uppercase tracking-widest mb-1.5"
-                      style={{ color: "var(--sidebar-muted)" }}
-                    >
-                      Describe your issue
-                    </label>
-                    <textarea
-                      value={newMsg}
-                      onChange={(e) => setNewMsg(e.target.value)}
-                      placeholder={getMessagePlaceholder(newTeam)}
-                      rows={5}
-                      className="w-full px-3 py-2.5 rounded-lg text-sm outline-none resize-none"
-                      style={{
-                        background:
-                          "color-mix(in srgb, var(--primary) 6%, transparent)",
-                        border: "1px solid var(--sidebar-border)",
-                        color: "var(--text-main)",
-                      }}
-                    />
-                  </div>
-
-                  <button
-                    onClick={() => void createTicket()}
-                    disabled={
-                      !newMsg.trim() ||
-                      !newTeam ||
-                      creating ||
-                      teamsLoading ||
-                      !newSubject.trim()
-                    }
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-bold transition-all disabled:opacity-50"
-                    style={{ background: "var(--primary)", color: "white" }}
-                  >
-                    {creating ? (
-                      <Loader2 size={15} className="animate-spin" />
-                    ) : (
-                      <Send size={15} />
-                    )}
-                    {creating ? "Raising ticket…" : "Submit Ticket"}
-                  </button>
-                </div>
-              )}
-
-              {view === "chat" && activeTicket && (
-                <>
-                  <div
-                    className="px-4 py-2 shrink-0 flex items-center gap-2"
-                    style={{
-                      borderBottom: "1px solid var(--sidebar-border)",
-                      background:
-                        "color-mix(in srgb, var(--primary) 4%, transparent)",
-                    }}
-                  >
-                    <Ticket
-                      size={11}
-                      style={{ color: "var(--sidebar-muted)" }}
-                    />
-                    <span
-                      className="text-[10px] font-mono"
-                      style={{ color: "var(--sidebar-muted)" }}
-                    >
-                      {activeTicket.ticket_id} · {activeTicket.assigned_team}{" "}
-                      team
-                    </span>
-                    {activeTicket.status !== "closed" && (
-                      <span className="ml-auto flex items-center gap-1">
-                        <SseIndicator status={sseStatus} muted />
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
-                    <MessageBubble
-                      isAdmin={false}
-                      message={activeTicket.message}
-                      time={activeTicket.created_at}
-                      label="You"
-                      pending={false}
-                      sent={true}
-                    />
-
-                    {activeTicket.replies?.map((r) =>
-                      r.reply_type === "forwarded" ? (
-                        <ForwardedNote key={r.id} reply={r} />
-                      ) : (
-                        <MessageBubble
-                          key={r.id}
-                          isAdmin={r.is_admin === 1}
-                          message={r.message}
-                          time={r.created_at}
-                          label={r.is_admin === 1 ? "Support" : "You"}
-                          pending={r.pending === true}
-                          sent={!r.pending && r.is_admin === 0}
-                        />
-                      ),
-                    )}
-
-                    <AnimatePresence>
-                      {agentViewing && activeTicket.status !== "closed" && (
-                        <AgentViewingIndicator agentName={agentViewingName} />
-                      )}
-                    </AnimatePresence>
-
-                    {activeTicket.status === "closed" && (
-                      <div className="flex flex-col items-center gap-3 py-4">
-                        <div
-                          className="flex items-center justify-center w-12 h-12 rounded-full"
-                          style={{
-                            background: "rgba(34,197,94,0.12)",
-                            border: "1px solid rgba(34,197,94,0.25)",
-                          }}
-                        >
-                          <CheckCircle2
-                            size={22}
-                            style={{ color: "#22c55e" }}
-                          />
-                        </div>
-                        <div className="text-center">
-                          <p
-                            className="text-xs font-bold mb-1"
-                            style={{ color: "#22c55e" }}
-                          >
-                            Ticket Resolved
-                          </p>
-                          <p
-                            className="text-[10px] leading-relaxed"
-                            style={{ color: "var(--sidebar-muted)" }}
-                          >
-                            This ticket has been closed by our support team.
-                            <br />
-                            We hope your issue was fully resolved!
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    <div ref={bottomRef} />
-                  </div>
-
-                  {activeTicket.status !== "closed" ? (
-                    <div
-                      className="shrink-0 px-3 py-3"
-                      style={{ borderTop: "1px solid var(--sidebar-border)" }}
-                    >
-                      <div
-                        className="flex items-end gap-2 rounded-xl px-3 py-2"
-                        style={{
-                          background:
-                            "color-mix(in srgb, var(--primary) 6%, transparent)",
-                          border: "1px solid var(--sidebar-border)",
-                        }}
-                      >
-                        <textarea
-                          ref={inputRef}
-                          rows={1}
-                          value={msg}
-                          onChange={(e) => setMsg(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" && !e.shiftKey) {
-                              e.preventDefault();
-                              void sendReply();
-                            }
-                          }}
-                          placeholder="Type a message…"
-                          className="flex-1 resize-none text-sm bg-transparent outline-none"
-                          style={{ color: "var(--text-main)", maxHeight: 80 }}
-                        />
-                        <button
-                          onClick={() => void sendReply()}
-                          disabled={!msg.trim() || sending}
-                          className="p-2 rounded-lg transition-all disabled:opacity-40 shrink-0"
-                          style={{
-                            background: "var(--primary)",
-                            color: "white",
-                          }}
-                        >
-                          {sending ? (
-                            <Loader2 size={14} className="animate-spin" />
-                          ) : (
-                            <Send size={14} />
-                          )}
-                        </button>
-                      </div>
-                      <p
-                        className="text-[9px] mt-1 text-center"
-                        style={{ color: "var(--sidebar-muted)" }}
-                      >
-                        Enter to send · Shift+Enter for newline
-                      </p>
-                    </div>
-                  ) : (
-                    <div
-                      className="shrink-0 flex items-center justify-center gap-1.5 py-2.5"
-                      style={{ borderTop: "1px solid var(--sidebar-border)" }}
-                    >
-                      <Lock
-                        size={10}
-                        style={{ color: "var(--sidebar-muted)" }}
-                      />
-                      <span
-                        className="text-[10px]"
-                        style={{ color: "var(--sidebar-muted)" }}
-                      >
-                        Replies are locked for closed tickets
-                      </span>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          </motion.div>
+              <PanelContent {...panelProps} />
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
+    );
+  }
 
-      <SidebarTrigger
-        open={open}
-        setOpen={handleToggleOpen}
-        hasUnread={hasUnread}
-      />
-    </>
+  // ══════════════════════════════════════════════════════════════════════════
+  //  DESKTOP / TABLET  — floating popup (original, untouched)
+  // ══════════════════════════════════════════════════════════════════════════
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 20, scale: 0.96 }}
+          transition={{ duration: 0.22, ease: "easeOut" }}
+          className="fixed bottom-20 left-4 z-9999 flex flex-col shadow-2xl overflow-hidden"
+          style={{
+            width: "min(360px, calc(100vw - 2rem))",
+            height: "min(520px, calc(100dvh - 6rem))",
+            backgroundColor: "var(--sidebar-bg)",
+            border: "1px solid var(--sidebar-border)",
+            borderRadius: 16,
+          }}
+          onClick={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
+          onTouchEnd={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          <PanelContent {...panelProps} />
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
+// ── Sidebar trigger button — unchanged ────────────────────────────────────────
 export function SidebarTrigger({ open, setOpen, hasUnread }) {
   return (
     <button
@@ -1160,94 +1429,5 @@ export function SidebarTrigger({ open, setOpen, hasUnread }) {
         </span>
       )}
     </button>
-  );
-}
-
-function MessageBubble({
-  isAdmin,
-  message,
-  time,
-  label,
-  pending = false,
-  sent = false,
-}) {
-  return (
-    <div
-      className={`flex flex-col gap-1 ${isAdmin ? "items-start" : "items-end"}`}
-    >
-      <span
-        className="text-[9px] font-bold uppercase tracking-widest px-1"
-        style={{ color: "var(--sidebar-muted)" }}
-      >
-        {label}
-      </span>
-
-      <div
-        className="max-w-[82%] px-3 py-2 rounded-2xl text-sm leading-relaxed"
-        style={
-          isAdmin
-            ? {
-                background:
-                  "color-mix(in srgb, var(--primary) 10%, transparent)",
-                border:
-                  "1px solid color-mix(in srgb, var(--primary) 20%, transparent)",
-                color: "var(--text-main)",
-                borderTopLeftRadius: 4,
-              }
-            : {
-                background: pending
-                  ? "color-mix(in srgb, var(--primary) 60%, transparent)"
-                  : "var(--primary)",
-                color: "white",
-                borderTopRightRadius: 4,
-                opacity: pending ? 0.75 : 1,
-              }
-        }
-      >
-        {message}
-      </div>
-
-      <div className="flex items-center gap-1 px-1">
-        <span className="text-[9px]" style={{ color: "var(--sidebar-muted)" }}>
-          {fmt(time)}
-        </span>
-
-        {!isAdmin && pending && (
-          <Clock
-            size={9}
-            style={{ color: "var(--sidebar-muted)" }}
-            className="opacity-60"
-          />
-        )}
-
-        {!isAdmin && !pending && sent && (
-          <span
-            className="flex items-center gap-0.5 text-[9px] font-semibold"
-            style={{ color: "#22c55e" }}
-          >
-            <Check size={9} strokeWidth={3} />
-            <Check size={9} strokeWidth={3} style={{ marginLeft: -4 }} />
-            Sent
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function ForwardedNote({ reply }) {
-  return (
-    <div className="flex justify-center">
-      <span
-        className="text-[9px] px-3 py-1 rounded-full font-semibold"
-        style={{
-          background: "color-mix(in srgb, #f59e0b 12%, transparent)",
-          color: "#f59e0b",
-          border: "1px solid color-mix(in srgb, #f59e0b 25%, transparent)",
-        }}
-      >
-        {reply.message}
-      </span>
-    </div>
   );
 }
