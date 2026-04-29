@@ -1,3 +1,4 @@
+// src/lib/api/campaigns.js
 import api from "@/lib/axios";
 
 export const getCampaigns = async () => {
@@ -50,6 +51,28 @@ export const createLeadAction = async (cid, lid, body) => {
   const res = await api.post(
     `/ai-lead-engine/campaigns/${cid}/leads/${lid}/actions`,
     body
+  );
+  return res.data;
+};
+
+export const getCampaignHistory = async (id) => {
+  const res = await api.get(`/ai-lead-engine/campaigns/${id}/history`);
+  return res.data;
+};
+
+export const getKeywords = async (cid) => {
+  const res = await api.get(`/ai-lead-engine/campaigns/${cid}/keywords`);
+  return res.data;
+};
+
+export const createKeyword = async (cid, body) => {
+  const res = await api.post(`/ai-lead-engine/campaigns/${cid}/keywords`, body);
+  return res.data;
+};
+
+export const deleteKeyword = async (cid, kid) => {
+  const res = await api.delete(
+    `/ai-lead-engine/campaigns/${cid}/keywords/${kid}`
   );
   return res.data;
 };
