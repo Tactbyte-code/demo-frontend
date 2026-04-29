@@ -10,6 +10,7 @@ import {
   Shield,
   Zap,
   Globe,
+  Search,
   Briefcase,
   LayoutGrid,
   Tag,
@@ -37,6 +38,7 @@ export default function Navbar() {
   const timeoutRef = useRef(null);
   const router = useRouter();
   const pathname = usePathname();
+  const [hoveredFeature, setHoveredFeature] = useState(null);
 
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -107,6 +109,30 @@ export default function Navbar() {
     { name: "Pricing", href: "/pricing", icon: Tag },
   ];
 
+  const useCases = {
+    reddit: [
+      { title: "Validate a product idea", desc: "Find real demand before building" },
+      { title: "Find market gaps", desc: "Spot what competitors are missing" },
+      { title: "Understand customer pain", desc: "Read raw, unfiltered user frustrations" },
+      { title: "Spy on competitors", desc: "See what users hate about rival products" },
+      { title: "Build your pitch deck", desc: "Back your problem slide with real data" },
+    ],
+    playstore: [
+      { title: "Find competitor weaknesses", desc: "See what 1-star reviews say about rival apps" },
+      { title: "Prioritize your roadmap", desc: "Rank features users request most in reviews" },
+      { title: "Track sentiment over time", desc: "See if an app's ratings are improving or declining" },
+      { title: "Validate before building", desc: "Check if your idea already exists and underdelivers" },
+      { title: "Improve your app listing", desc: "Learn what language converts users in your niche" },
+    ],
+    keyword: [
+      { title: "Spot trends early", desc: "Find problems gaining traction before competitors do" },
+      { title: "Monitor your niche", desc: "Track specific keywords across multiple communities" },
+      { title: "Identify content opportunities", desc: "See what questions your audience keeps asking" },
+      { title: "Power your SEO strategy", desc: "Discover organic keywords straight from user pain" },
+      { title: "Build your pitch narrative", desc: "Use real search volume data to prove market demand" },
+    ],
+  };
+
   return (
     <>
       <AnimatePresence>
@@ -160,7 +186,7 @@ export default function Navbar() {
                     key={item.name}
                     href={item.href}
                     onClick={handleHowItWorksClick}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-md transition-all
+                    className={`flex items-center gap-2 px-3 py-2 rounded-none transition-all
                       ${isScrolled
                         ? "text-foreground hover:bg-primary/10 font-semibold"
                         : "hover:bg-primary/10 drop-shadow-sm text-foreground font-semibold"
@@ -173,7 +199,7 @@ export default function Navbar() {
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-md transition-all
+                    className={`flex items-center gap-2 px-3 py-2 rounded-none transition-all
                       ${isScrolled
                         ? "text-foreground hover:bg-primary/10 font-semibold"
                         : "hover:bg-primary/10 drop-shadow-sm text-foreground font-semibold"
@@ -192,7 +218,7 @@ export default function Navbar() {
                 className="relative"
               >
                 <button
-                  className={`flex items-center gap-1 px-3 py-2 rounded-md transition-all
+                  className={`flex items-center gap-1 px-3 py-2 rounded-none transition-all
                     ${isFeaturesOpen
                       ? "text-foreground hover:bg-primary/10 font-semibold"
                       : isScrolled
@@ -241,9 +267,9 @@ export default function Navbar() {
             aria-label="Open menu"
             className={`p-2 rounded-full transition-all
             ${isScrolled
-              ? "text-foreground hover:bg-primary/10"
-              : "text-foreground hover:bg-primary/10 drop-shadow-sm"
-            }`}
+                ? "text-foreground hover:bg-primary/10"
+                : "text-foreground hover:bg-primary/10 drop-shadow-sm"
+              }`}
           >
             <Menu size={20} />
           </button>
@@ -268,7 +294,7 @@ export default function Navbar() {
             ) : (
               <Link
                 href="/login"
-                className="px-4 py-2 text-[12px] font-bold rounded-full bg-slate-900 dark:bg-white text-white dark:text-black flex items-center gap-1.5 shadow-sm hover:opacity-90 transition-all"
+                className="px-4 py-2 text-[12px] font-bold bg-slate-900 dark:bg-white text-light flex items-center gap-1.5 shadow-sm hover:opacity-90 transition-all"
               >
                 <LogIn className="w-3.5 h-3.5" />
                 Login
@@ -286,17 +312,100 @@ export default function Navbar() {
               initial={{ opacity: 0, y: -10, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.98 }}
-              className="absolute hidden lg:block rounded-2xl top-full left-1/2 -translate-x-1/2 w-[93%] bg-navbar-bg backdrop-blur-2xl border border-slate-200/80 p-8 shadow-2xl z-50 origin-top"
+              className="absolute hidden lg:block rounded-none top-full left-1/2 -translate-x-1/2 w-[93%] bg-navbar-bg backdrop-blur-2xl border border-slate-200/80 shadow-2xl z-50 origin-top overflow-hidden"
             >
-              <div className="grid grid-cols-12 gap-8">
-                <div className="col-span-4 space-y-2 border-r border-slate-100 dark:border-white/8 pr-8">
-                  <FeatureItem icon={Activity} title="Real-time Analytics" desc="Track app performance instantly." />
-                  <FeatureItem icon={Shield} title="Enterprise Security" desc="Bank-grade encryption." />
-                  <FeatureItem icon={Globe} title="Global Scale" desc="Deploy infrastructure globally." />
+              <div className="flex">
+                {/* ── LEFT: Feature list ── */}
+                <div className="w-[38%] border-r border-slate-100 dark:border-white/8 p-6 flex flex-col gap-4">
+                  {[
+                    {
+                      id: "reddit",
+                      icon: Activity,
+                      title: "Reddit Analysis",
+                      desc: "Mine real user conversations for product insights.",
+                    },
+                    {
+                      id: "playstore",
+                      icon: LayoutGrid,
+                      title: "Playstore Analysis",
+                      desc: "Decode app reviews to find competitor weaknesses.",
+                    },
+                    {
+                      id: "keyword",
+                      icon: Search,
+                      title: "Keyword Tracking",
+                      desc: "Track trending keywords across communities.",
+                    },
+                  ].map((feature) => (
+                    <button
+                      key={feature.id}
+                      onMouseEnter={() => setHoveredFeature(feature.id)}
+                      onMouseLeave={() => setHoveredFeature(null)}
+                      className={`flex items-start gap-3 px-4 py-3 rounded-none text-left transition-all group
+                ${hoveredFeature === feature.id ? "bg-primary/10" : "hover:bg-primary/5"}`}
+                    >
+                      <div className={`p-2 rounded-full mt-0.5 transition-colors
+                ${hoveredFeature === feature.id ? "bg-primary/15 text-primary" : "bg-surface-raised text-muted"}`}>
+                        <feature.icon className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className={`text-sm font-semibold transition-colors
+                  ${hoveredFeature === feature.id ? "text-primary" : "text-foreground"}`}>
+                          {feature.title}
+                        </p>
+                        <p className="text-xs text-muted mt-0.5">{feature.desc}</p>
+                      </div>
+                      <ArrowRight className={`w-3.5 h-3.5 ml-auto mt-1 transition-all
+                ${hoveredFeature === feature.id ? "opacity-100 translate-x-0 text-primary" : "opacity-0 -translate-x-1"}`} />
+                    </button>
+                  ))}
                 </div>
-                <div className="col-span-8 grid grid-cols-2 gap-6">
-                  <MegaMenuCard href="/dashboard/reddit" img="/images/f3.png" label="New Update" title="Reddit Analysis" />
-                  <MegaMenuCard href="/dashboard/playstore" img="/images/f4.jpeg" label="Case Study" title="Playstore Analysis" />
+
+                {/* ── RIGHT: Use cases panel ── */}
+                <div className="flex-1 p-6">
+                  <AnimatePresence mode="wait">
+                    {hoveredFeature ? (
+                      <motion.div
+                        key={hoveredFeature}
+                        initial={{ opacity: 0, x: 8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -8 }}
+                        transition={{ duration: 0.18 }}
+                      >
+                        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted mb-4 px-1">
+                          Use cases
+                        </p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {useCases[hoveredFeature].map((item, i) => (
+                            <div
+                              key={i}
+                              className="px-4 py-3 rounded-none border border-border-solid hover:border-primary/30 hover:bg-primary/5 transition-all group cursor-default"
+                            >
+                              <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                                {item.title}
+                              </p>
+                              <p className="text-xs text-muted mt-0.5 leading-relaxed">
+                                {item.desc}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="empty"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="h-full flex flex-col items-center justify-center text-center gap-3 py-8"
+                      >
+                        <div className="p-3 rounded-full bg-surface-raised">
+                          <Zap className="w-5 h-5 text-muted" />
+                        </div>
+                        <p className="text-sm text-muted">Hover a feature to explore use cases</p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
             </motion.div>
@@ -434,7 +543,7 @@ export default function Navbar() {
 // Sub-components
 function FeatureItem({ icon: Icon, title, desc }) {
   return (
-    <div className="p-3 hover:bg-primary/10 transition-all cursor-pointer group rounded-sm">
+    <div className="p-3 hover:bg-primary/10 transition-all cursor-pointer group rounded-full">
       <div className="flex items-center gap-3 mb-1">
         <Icon className="w-5 h-5 text-primary" />
         <h4 className="font-bold text-subtle group-hover:text-primary transition-colors">{title}</h4>

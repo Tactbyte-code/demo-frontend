@@ -198,7 +198,7 @@ export default function ClarifyPage({ params }) {
                 <div>
                   <p
                     className="text-sm font-bold uppercase tracking-wider"
-                    style={{ color: "var(--text-subtle)" }}
+                    style={{ color: "var(--text-header)" }}
                   >
                     Clarification needed
                   </p>
@@ -323,7 +323,7 @@ export default function ClarifyPage({ params }) {
             {/* Submit */}
             <div className="flex justify-end items-center gap-2 pt-1">
               <Button
-                className="text-white rounded-none"
+                className="text-light rounded-none"
                 disabled={submitting}
                 onClick={(e) => handleSubmit(e, true)}
               >
@@ -332,7 +332,7 @@ export default function ClarifyPage({ params }) {
               <Button
                 disabled={!canSubmit}
                 onClick={handleSubmit}
-                className="text-white rounded-none"
+                className="text-light rounded-none"
               >
                 {submitting ? (
                   <Loader2 className="w-4 h-4 animate-spin" />

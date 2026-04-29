@@ -15,16 +15,15 @@ import { useQueryClient } from "@tanstack/react-query";
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const EXAMPLES = [
-    "What do Indians regret most after buying an electric vehicle?",
-    "What are the biggest challenges people face when adopting EVs in India?",
-    //   "Is gym culture in Mumbai becoming too expensive or overcrowded?",
-    "What are solo travelers saying about safety in North East India?",
+    "What problems do people face with existing invoicing tools?",
+    "Why do customers abandon WhatsApp-based businesses?",
+    "Why do clients fire their digital marketing agency?",
+    "What are CEOs most frustrated about with business consultants?",
+    "Why do people uninstall productivity apps within a week?",
     // "How safe is street food in Delhi according to locals?",
-    "What are the downsides of remote work culture in Bangalore startups?",
-    "Why is startup funding slowing down in India in 2024?",
-    "How do people in India manage work-life balance in tech jobs?",
-    "Is Zomato/Swiggy delivery work sustainable long-term in India?",
-    "What are common scams or issues faced by tourists in India?"
+    // "How do people in India manage work-life balance in tech jobs?",
+    // "Is Zomato/Swiggy delivery work sustainable long-term in India?",
+    // "What are common scams or issues faced by tourists in India?"
 ];
 
 const REFRESH_INTERVAL_MS = 5000;
@@ -187,7 +186,7 @@ export default function RedditIntelligencePage() {
                                         onKeyDown={handleKeyDown}
                                         rows={3}
                                         disabled={isOnCooldown}
-                                        placeholder={isOnCooldown ? "Please wait for the cooldown to finish..." : "Describe the topic you want to analyze..."}
+                                        placeholder={isOnCooldown ? "Please wait for the cooldown to finish..." : "What topic (market, product, pain point) should we dig into?"}
                                         className="flex-1 w-full bg-transparent outline-none resize-none text-sm leading-relaxed disabled:cursor-not-allowed"
                                         style={{ color: "var(--text-main)" }}
                                     />
@@ -277,21 +276,22 @@ export default function RedditIntelligencePage() {
                     {EXAMPLES.map((s, i) => (
                         <motion.button
                             key={s}
-                            // ... animation props
-                            whileHover={{ scale: 1.05, y: -2 }}
+                            onClick={() => {
+                                setQuery(s);
+                                textareaRef.current?.focus();
+                            }}
+                            whileHover={{ scale: 1.02, y: -2 }}
                             whileTap={{ scale: 0.95 }}
-                            className="relative px-4 py-1.5 rounded-full text-[11px] font-medium transition-colors"
+                            className="relative px-4 py-1.5 cursor-pointer rounded-full text-[11px] font-medium transition-colors"
                             style={{
                                 backgroundColor: "var(--surface)",
                                 border: "1px solid var(--border-subtle)",
                                 boxShadow: "0 2px 10px -4px rgba(0,0,0,0.1)"
                             }}
-                        // Use Framer Motion's hover state instead of manual listeners for cleaner code
                         >
                             <span className="relative z-10">{s}</span>
-                            {/* Subtle highlight effect on hover */}
                             <motion.div
-                                className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary/10 to-transparent opacity-0"
+                                className="absolute inset-0 rounded-full bg-linear-to-tr from-primary/10 to-transparent opacity-0"
                                 whileHover={{ opacity: 1 }}
                             />
                         </motion.button>
