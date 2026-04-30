@@ -341,9 +341,7 @@ export default function Navbar() {
                 ].map((feature, index) => (
                   <button
                     key={feature.id}
-                    onClick={() => { router.push(feature.href); setIsFeaturesOpen(false); }}
                     onMouseEnter={() => setHoveredFeature(feature.id)}
-                    onMouseLeave={() => setHoveredFeature(null)}
                     className={`flex items-start gap-4 p-6 text-left transition-all group relative
               ${index !== 2 ? "border-r border-primary" : ""}
               ${hoveredFeature === feature.id ? "bg-primary/8" : "hover:bg-primary/5"}`}
@@ -380,11 +378,25 @@ export default function Navbar() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -6 }}
                       transition={{ duration: 0.18 }}
-                      // className="
                     >
-                      <p className="text-[11px] font-semibold uppercase tracking-widest text-muted mb-4 px-1">
-                        Use cases — {hoveredFeature.charAt(0).toUpperCase() + hoveredFeature.slice(1)}
-                      </p>
+                      <div className="flex items-center justify-between mb-4 px-1">
+                        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted">
+                          Use cases — {hoveredFeature.charAt(0).toUpperCase() + hoveredFeature.slice(1)}
+                        </p>
+                        <button
+                          onClick={() => {
+                            const href = [
+                              { id: "reddit", href: "/dashboard/reddit" },
+                              { id: "playstore", href: "/dashboard/playstore" },
+                              { id: "keyword", href: "/dashboard/lead" },
+                            ].find((f) => f.id === hoveredFeature)?.href;
+                            if (href) { router.push(href); setIsFeaturesOpen(false); }
+                          }}
+                          className="flex items-center gap-1.5 text-[11px] font-bold text-light px-5 py-3 hover:underline transition-all bg-primary"
+                        >
+                          Want to try? <ArrowRight className="w-3 h-3" />
+                        </button>
+                      </div>
                       <div className="grid grid-cols-4 gap-2">
                         {useCases[hoveredFeature].map((item, i) => (
                           <div
