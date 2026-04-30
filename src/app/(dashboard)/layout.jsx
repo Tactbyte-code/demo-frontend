@@ -13,8 +13,7 @@ import {
     Sparkles
 } from 'lucide-react';
 import { BsRobot } from "react-icons/bs";
-    Sparkles,
-} from "lucide-react";
+
 import { FaReddit } from "react-icons/fa";
 import { FaGooglePlay } from "react-icons/fa";
 import Link from "next/link";
