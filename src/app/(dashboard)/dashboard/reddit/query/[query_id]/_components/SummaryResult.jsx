@@ -191,7 +191,7 @@ const PainPointRow = ({ pp, initialOpen = false }) => {
                             {/* Quote */}
                             {pp.example_quote && (
                                 <div className="pt-3">
-                                    <p className="text-[10px] uppercase tracking-widest text-subtle mb-2">
+                                    <p className="text-[10px] uppercase tracking-widest text-header mb-2">
                                         Quote
                                     </p>
                                     <p className="text-xs italic text-muted leading-relaxed border-l-2 border-primary pl-3">
@@ -203,10 +203,10 @@ const PainPointRow = ({ pp, initialOpen = false }) => {
                             {/* User Suggestions */}
                             {pp.user_suggested_solutions?.length > 0 && (
                                 <div>
-                                    <p className="text-[10px] uppercase tracking-widest text-subtle mb-2">
+                                    <p className="text-[10px] uppercase tracking-widest text-header mb-2">
                                         User Suggestions
                                     </p>
-                                    <div className="space-y-2">
+                                    <div className="space-y-2 bg-surface border border-border p-3">
                                         {pp.user_suggested_solutions.map((s, i) => (
                                             <div key={i} className="flex items-start gap-2">
                                                 <span className="mt-1.5 h-1.5 w-1.5 bg-primary shrink-0" />
@@ -222,7 +222,7 @@ const PainPointRow = ({ pp, initialOpen = false }) => {
                             {/* System Actions */}
                             {pp.system_actions?.length > 0 && (
                                 <div>
-                                    <p className="text-[10px] uppercase tracking-widest text-subtle mb-2">
+                                    <p className="text-[10px] uppercase tracking-widest text-header mb-2">
                                         System Actions
                                     </p>
                                     <div className="space-y-2">
@@ -267,106 +267,264 @@ const PainPointRow = ({ pp, initialOpen = false }) => {
 };
 
 // ── Tab: Themes ───────────────────────────────────────────
-const ThemesTab = ({ data }) => {
-    const [activeTheme, setActiveTheme] = useState(data.themes?.[0]?.id ?? null)
-    const theme = data.themes?.find(t => t.id === activeTheme)
+/* Circular progress ring for relevance score */
+const RelevanceRing = ({ score, size = 36, strokeWidth = 3, className = '' }) => {
+    const radius = (size - strokeWidth * 2) / 2;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (score / 100) * circumference;
 
     return (
-        /* lg:flex-row handles the sidebar on desktop, flex-col stacks on mobile */
+        <div className={`relative inline-flex items-center justify-center shrink-0 ${className}`} style={{ width: size, height: size }}>
+            <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+                {/* Track */}
+                <circle
+                    cx={size / 2} cy={size / 2} r={radius}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={strokeWidth}
+                    className="text-border-solid"
+                />
+                {/* Fill */}
+                <circle
+                    cx={size / 2} cy={size / 2} r={radius}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={strokeWidth}
+                    strokeDasharray={circumference}
+                    strokeDashoffset={offset}
+                    strokeLinecap="round"
+                    className="text-primary transition-all duration-500"
+                />
+            </svg>
+            {/* Label */}
+            <span
+                className="absolute font-mono font-semibold text-primary"
+                style={{ fontSize: size * 0.24 }}
+            >
+                {score}
+            </span>
+        </div>
+    );
+};
+
+/* Inline bar progress for relevance score — compact variant for sidebar */
+const RelevanceBar = ({ score, className = '' }) => (
+    <div className={`flex items-center gap-1.5 w-full ${className}`}>
+        <div className="relative flex-1 h-1 bg-border-solid rounded-full overflow-hidden">
+            <div
+                className="absolute inset-y-0 left-0 bg-primary rounded-full transition-all duration-500"
+                style={{ width: `${score}%` }}
+            />
+        </div>
+        <span className="font-mono text-[10px] font-semibold text-primary shrink-0 w-7 text-right">
+            {score}%
+        </span>
+    </div>
+);
+
+/* Labelled bar for detail panel — wider, taller, with header label */
+const RelevanceBarDetail = ({ score, className = '' }) => (
+    <div className={`flex flex-col gap-1 ${className}`}>
+        <div className="flex items-center justify-between">
+            <span className="text-[10px] uppercase tracking-widest text-subtle">Relevance</span>
+            <span className="font-mono text-xs font-semibold text-primary">{score}%</span>
+        </div>
+        <div className="relative w-full h-1.5 bg-border-solid rounded-full overflow-hidden">
+            <div
+                className="absolute inset-y-0 left-0 bg-primary rounded-full transition-all duration-500"
+                style={{ width: `${score}%` }}
+            />
+        </div>
+    </div>
+);
+
+const ThemesTab = ({ data }) => {
+    console.log('core issues: ', data);
+
+    const [activeTheme, setActiveTheme] = useState(data.themes?.[0]?.id ?? null);
+    const [expandedPainPoints, setExpandedPainPoints] = useState({ 0: true });
+    const theme = data.themes?.find(t => t.id === activeTheme);
+
+    const togglePainPoint = (i) => {
+        setExpandedPainPoints(prev => ({ ...prev, [i]: !prev[i] }));
+    };
+
+    return (
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
 
-            {/* Theme list: Horizontal scroll on mobile, Vertical sidebar on desktop */}
-            <div className="
-                flex shrink-0 gap-2 
-                overflow-x-auto pb-2 scrollbar-hide /* Mobile horizontal scroll */
-                lg:flex-col lg:w-60 lg:overflow-visible lg:pb-0 /* Desktop sidebar */
-            ">
+            {/* ── Sidebar ── */}
+            <div className="flex shrink-0 gap-2 overflow-x-auto pb-2 lg:flex-col lg:w-56 lg:overflow-visible lg:pb-0">
                 {data.themes?.map(t => (
                     <button
                         key={t.id}
                         onClick={() => setActiveTheme(t.id)}
                         className={`
-                            flex flex-col items-start border px-3 py-2.5 text-left transition-all shrink-0
-                            /* Fixed width on mobile to ensure visibility, full width on desktop */
-                            w-[180px] lg:w-full cursor-pointer
+                            flex flex-col items-start px-3 py-2.5 text-left transition-all shrink-0
+                            w-[180px] lg:w-full cursor-pointer border-l-2
                             ${activeTheme === t.id
-                                ? 'border-primary bg-info-bg shadow-sm'
-                                : 'border-border-solid bg-surface hover:bg-surface-card'
+                                ? 'border-l-primary bg-info-bg border border-border-solid shadow-sm'
+                                : 'border-l-transparent border border-border-solid bg-surface hover:bg-surface-card'
                             }
                         `}
                     >
-                        <span className={`text-xs font-medium leading-snug truncate w-full ${activeTheme === t.id ? 'text-primary' : 'text-foreground'}`}>
+                        {/* Title */}
+                        <span className={`text-xs font-medium leading-snug w-full ${activeTheme === t.id ? 'text-primary' : 'text-foreground'}`}>
                             {t.title}
                         </span>
-                        <div className="mt-1 flex flex-wrap gap-x-2">
-                            <span className="font-mono text-[10px] text-muted">{t.signal_count} signals</span>
-                            <span className="font-mono text-[10px] text-muted">{t.relevance_score}%</span>
-                        </div>
-                        <div className="mt-2">
+
+                        {/* Relevance bar — spans full width under title */}
+                        <RelevanceBar score={t.relevance_score} className="mt-2" />
+
+                        {/* Bottom row: sentiment left, signal count right */}
+                        <div className="flex items-center justify-between w-full mt-2 gap-2">
                             <SentimentBadge sentiment={t.sentiment} small />
+                            <span className="font-mono text-[10px] text-subtle shrink-0">{t.signal_count} signals</span>
                         </div>
                     </button>
                 ))}
             </div>
 
-            {/* Theme detail */}
+            {/* ── Detail Panel ── */}
             {theme && (
-                <div className="min-w-0 flex-1 space-y-4 animate-in fade-in slide-in-from-right-2 duration-300">
-                    <div className="border border-border-solid bg-surface p-4 md:p-6">
-                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4">
-                            <div>
-                                <h2 className="text-sm md:text-base font-semibold text-foreground">{theme.title}</h2>
-                                <p className="font-mono text-[10px] text-subtle mt-1">
-                                    {theme.signal_count} signals · {theme.relevance_score}% relevance
-                                </p>
-                            </div>
-                            {/* Force Badge to stay top-right on desktop, or inline on mobile */}
-                            <div className="shrink-0 self-start">
-                                <SentimentBadge sentiment={theme.sentiment} small />
-                            </div>
+                <div className="min-w-0 flex-1 space-y-3 animate-in fade-in slide-in-from-right-2 duration-300">
+
+                    {/* ── System Analysis Card ── */}
+                    <div className="border border-border-solid bg-surface">
+
+                        {/* Card header with system label */}
+                        <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border-solid bg-surface-raised/40">
+                            {/* Square icon = system/machine generated */}
+                            <span className="inline-block w-2 h-2 rounded-[2px] bg-primary/40 shrink-0" />
+                            <p className="text-[10px] uppercase tracking-widest text-subtle font-medium">
+                                System Analysis
+                            </p>
                         </div>
 
-                        <p className="text-sm leading-relaxed text-muted">{theme.summary}</p>
-
-                        {/* Metadata Grid (Brands & Demographics) */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-                            {theme.brands_mentioned?.length > 0 && (
-                                <div className="rounded-none">
-                                    <p className="text-[10px] uppercase tracking-widest text-subtle mb-2.5">Brands</p>
-                                    <div className="flex flex-wrap gap-1.5">
-                                        {theme.brands_mentioned.map((b, index) => <Pill key={index} label={b} />)}
+                        <div className="p-4 md:p-5">
+                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-start justify-between gap-3">
+                                        <h2 className="text-sm md:text-base font-semibold text-foreground">{theme.title}</h2>
+                                        <div className="shrink-0 self-start">
+                                            <SentimentBadge sentiment={theme.sentiment} small />
+                                        </div>
                                     </div>
+                                    <p className="font-mono text-[10px] text-subtle mt-1 mb-3">
+                                        {theme.signal_count} signals
+                                    </p>
+                                    <RelevanceBarDetail score={theme.relevance_score} />
                                 </div>
-                            )}
+                            </div>
 
-                            {theme.demographic_signals?.length > 0 && (
-                                <div className="">
-                                    <p className="text-[10px] uppercase tracking-widest text-subtle mb-2.5">Demographics</p>
-                                    <div className="flex flex-wrap gap-1.5">
-                                        {theme.demographic_signals.map(d => <Pill key={d} label={d} muted />)}
-                                    </div>
+                            <p className="text-sm leading-relaxed text-muted">{theme.summary}</p>
+
+                            {/* Metadata Grid */}
+                            {(theme.brands_mentioned?.length > 0 || theme.demographic_signals?.length > 0) && (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5 pt-4 border-t border-border-solid">
+                                    {theme.brands_mentioned?.length > 0 && (
+                                        <div>
+                                            <p className="text-[10px] uppercase tracking-widest text-subtle mb-2">Brands</p>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {theme.brands_mentioned.map((b, index) => <Pill key={index} label={b} />)}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {theme.demographic_signals?.length > 0 && (
+                                        <div>
+                                            <p className="text-[10px] uppercase tracking-widest text-subtle mb-2">Demographics</p>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {theme.demographic_signals.map(d => <Pill key={d} label={d} muted />)}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
                     </div>
 
-                    {/* Pain points for this theme */}
+                    {/* ── Pain Points (System-generated) ── */}
                     {theme.pain_points?.length > 0 && (
                         <div className="border border-border-solid bg-surface overflow-hidden">
-                            <div className="px-4 py-3 border-b border-border-solid bg-surface-raised/50">
-                                <p className="text-[10px] uppercase tracking-widest text-subtle">
-                                    Pain Points ({theme.pain_points.length})
+                            <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border-solid bg-surface-raised/40">
+                                {/* Square icon = system/machine generated */}
+                                <span className="inline-block w-2 h-2 rounded-[2px] bg-primary/40 shrink-0" />
+                                <p className="text-[10px] uppercase tracking-widest text-subtle font-medium">
+                                    Pain Points
+                                    <span className="ml-1.5 text-subtle/60">({theme.pain_points.length})</span>
                                 </p>
                             </div>
                             <div className="divide-y divide-border-solid">
-                                {theme.pain_points.map((pp, i) => <PainPointRow key={i} pp={pp} initialOpen={i === 0} />)}
+                                {theme.pain_points.map((pp, i) => (
+                                    <PainPointRow
+                                        key={i}
+                                        pp={pp}
+                                        initialOpen={i === 0}
+                                        isOpen={!!expandedPainPoints[i]}
+                                        onToggle={() => togglePainPoint(i)}
+                                    />
+                                ))}
                             </div>
                         </div>
                     )}
+
+                    {/* ── User Signals (visually distinct from system analysis) ── */}
+                    {theme.user_signals?.length > 0 && (
+                        <div className="border border-border-solid bg-surface overflow-hidden">
+
+                            {/* Header — circle icon to contrast with system's square */}
+                            <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border-solid bg-info-bg/30">
+                                <span className="inline-block w-2 h-2 rounded-full bg-primary/60 shrink-0" />
+                                <p className="text-[10px] uppercase tracking-widest text-primary/70 font-medium">
+                                    User Signals
+                                    <span className="ml-1.5 text-primary/40">({theme.user_signals.length})</span>
+                                </p>
+                            </div>
+
+                            <div className="divide-y divide-border-solid">
+                                {theme.user_signals.map((signal, i) => (
+                                    <div key={i} className="flex gap-3 px-4 py-3 hover:bg-surface-card transition-colors">
+
+                                        {/* Left accent bar — the primary signal that this is a human voice */}
+                                        <div className="w-0.5 rounded-full bg-primary/30 shrink-0 self-stretch min-h-[2rem]" />
+
+                                        <div className="min-w-0 flex-1">
+                                            {/* Quoted user text — italic to signal "verbatim human voice" */}
+                                            <p className="text-sm italic text-muted leading-relaxed">
+                                                "{signal.text}"
+                                            </p>
+
+                                            {/* Footer: source attribution + tags */}
+                                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2">
+                                                {signal.source && (
+                                                    <span className="font-mono text-[10px] text-subtle">
+                                                        {signal.source}
+                                                    </span>
+                                                )}
+                                                {signal.author && (
+                                                    <span className="font-mono text-[10px] text-subtle">
+                                                        — {signal.author}
+                                                    </span>
+                                                )}
+                                                {signal.tags?.map((tag, ti) => (
+                                                    <span
+                                                        key={ti}
+                                                        className="text-[10px] px-1.5 py-0.5 bg-info-bg text-primary font-medium"
+                                                    >
+                                                        {tag}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                 </div>
             )}
         </div>
-    )
+    );
 };
 
 // ── Tab: Signals ──────────────────────────────────────────
@@ -427,8 +585,10 @@ const MetaTab = ({ data }) => {
     )
 };
 
+
 // ── Tab: Sources ──────────────────────────────────────────
 const SourcesTab = ({ sources = [], approvedCount = 0, maxApproved = 10, onToggle }) => {
+
     if (!sources.length) return (
         <p className="text-sm text-muted py-8 text-center">No sources found.</p>
     );
@@ -460,7 +620,7 @@ const SourcesTab = ({ sources = [], approvedCount = 0, maxApproved = 10, onToggl
                             onClick={() => !atMax && onToggle?.(source.id)}
                             disabled={atMax}
                             className={`w-full text-left border p-4 transition-all ${selected
-                                ? 'border-primary bg-info-bg'
+                                ? 'border-border bg-info-bg'
                                 : atMax
                                     ? 'border-border-solid bg-surface opacity-40 cursor-not-allowed'
                                     : 'border-border-solid bg-surface hover:bg-surface-card cursor-pointer'
@@ -497,11 +657,20 @@ const SourcesTab = ({ sources = [], approvedCount = 0, maxApproved = 10, onToggl
                             {/* URL */}
                             {source.url && (
                                 <a
-                                    href={source.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="block mt-2 text-xs text-blue-500 underline truncate"
+                                    href={selected ? source.url : undefined}
+                                    target={selected ? "_blank" : undefined}
+                                    rel={selected ? "noopener noreferrer" : undefined}
+                                    onClick={(e) => {
+                                        if (!selected) {
+                                            e.preventDefault();
+                                            return;
+                                        }
+                                        e.stopPropagation();
+                                    }}
+                                    className={`block mt-2 text-xs truncate ${selected
+                                        ? "text-blue-500 underline cursor-pointer"
+                                        : "text-gray-400 cursor-not-allowed no-underline"
+                                        }`}
                                 >
                                     {source.url}
                                 </a>
@@ -523,6 +692,7 @@ const SourcesTab = ({ sources = [], approvedCount = 0, maxApproved = 10, onToggl
 // ── Main Component ────────────────────────────────────────
 export const SummaryResult = ({ data, sources = [], approvedCount = 0, maxApproved = 10, onToggleSource = null }) => {
     // console.log('summary data: ', data);
+    console.log('sources: ', sources);
 
     const tabContainerRef = useRef(null);
     const tabRefs = useRef({});
@@ -602,10 +772,8 @@ export const SummaryResult = ({ data, sources = [], approvedCount = 0, maxApprov
                                 relative
                                 flex items-center justify-center gap-1.5
                                 
-                                /* 📱 Mobile */
-                                shrink-0 px-3 py-2.5 text-[12px]
+                                shrink-0 px-5 py-2.5 text-[12px]
                                 
-                                /* 💻 Desktop */
                                 md:flex-1 md:shrink md:px-0 md:py-3
                                 
                                 whitespace-nowrap

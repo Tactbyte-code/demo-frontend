@@ -9,12 +9,13 @@
   --navbar-border: rgba(0, 0, 0, 0);
 
   /* Surfaces */
-  --background: #F0F4F8;
-  --surface: #FFFFFF;
-  --surface-card: #EBF3F9;
-  --surface-raised: #DEEDF7;
+  --background: #f8fafc;
+  --surface: #e6eef7;
+  --surface-card: #eff6fa;
+  --surface-raised: #ddedf7;
   --input-background: #E4F2FB;
   --surface-hover: #e8f1f8;
+  --navbar-bg: #cfe5f8;
 
   /* Sidebar */
   --sidebar-bg: #FFFFFF;
@@ -26,13 +27,14 @@
 
   /* Text */
   --text-main: #0D1F2D;
-  --text-muted: #4A6275;
+  --text-muted: #3d5161;
   --text-subtle: #6A8396;
   --text-light: #FFFFFF;
+  --text-header: #000;
 
   /* Border */
   --border: #C4D6E2;
-  --border-solid: #B4CEDE;
+  --border-solid: #71a2c1;
   --border-input: #A8C8DE;
 
   /* Status */
@@ -60,20 +62,21 @@
 
 .dark {
   /* Brand */
-  --primary: #2484C8;
+  /* --primary: #2484C8; */
+  --primary: #9acdf1;
   --primary-hover: #1A6EAA;
   --secondary: #3A6A88;
   --accent: #7fe8ff;
   --navbar-border: #1A3D54;
 
   /* Surfaces */
-  /* inside .dark */
   --background: #000000;
-  --surface: #0E1C28;
-  --surface-card: #0c1722;
-  --surface-raised: #152534;
+  --surface: #122433;
+  --surface-card: #0e1c29;
+  --surface-raised: #0c151e;
   --input-background: #0B3650;
   --surface-hover: #04080c;
+  --navbar-bg: #030c13;
 
   /* Sidebar */
   --sidebar-bg: #000000;
@@ -81,13 +84,14 @@
   --sidebar-item-hover: #0C1E2E;
   --sidebar-item-active-bg: #0A2D46;
   --sidebar-item-active-text: #2484C8;
-  --sidebar-muted: #284860;
+  --sidebar-muted: #27475e;
 
   /* Text */
   --text-main: #C8E2EE;
   --text-muted: #447a96;
   --text-subtle: #376283;
   --text-light: #000;
+  --text-header: #5693b2;
 
   /* Border */
   --border: #1c5376;
@@ -134,6 +138,7 @@
   --color-surface: var(--surface);
   --color-surface-raised: var(--surface-raised);
   --color-input-background: var(--input-background);
+  --color-navbar-bg: var(--navbar-bg);
 
   /* Sidebar */
   --color-sidebar: var(--sidebar-bg);
@@ -148,6 +153,7 @@
   --color-muted: var(--text-muted);
   --color-subtle: var(--text-subtle);
   --color-light: var(--text-light);
+  --color-header: var(--text-header);
 
   /* Border */
   --color-border: var(--border);
@@ -193,7 +199,8 @@ section {
 /* Mobile */
 @media (max-width: 768px) {
   section {
-    scroll-margin-top: 90px; /* adjust as needed */
+    scroll-margin-top: 90px;
+    /* adjust as needed */
   }
 }
 
@@ -230,6 +237,7 @@ section {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;

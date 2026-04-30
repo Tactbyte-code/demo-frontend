@@ -5,7 +5,7 @@ import { Clock, Sparkles } from "lucide-react";
 
 const Page = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-100 px-6">
+    <div className="min-h-screen flex items-center justify-center bg-surface px-6">
       <div className="max-w-xl w-full text-center">
         
         {/* Icon */}
@@ -16,7 +16,7 @@ const Page = () => {
         </div>
 
         {/* Heading */}
-        <h1 className="text-3xl md:text-4xl font-semibold text-gray-900 mb-3">
+        <h1 className="text-3xl md:text-4xl font-semibold text-foreground mb-3">
           Coming Soon
         </h1>
 

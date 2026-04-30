@@ -22,7 +22,7 @@ const AVATARS = ["#3B82F6", "#8B5CF6", "#10B981", "#F59E0B", "#EF4444"];
 
 export default function Hero() {
     return (
-        <section className="relative min-h-screen flex items-center justify-center pt-32 pb-5 lg:pt-20 overflow-hidden">
+        <section className="relative min-h-screen flex items-center justify-center pt-32 pb-5 lg:pt-30 overflow-hidden">
             {/* Grid texture */}
             <div
                 className="absolute inset-0 -z-20"
@@ -127,7 +127,7 @@ export default function Hero() {
                 >
                     <Link
                         href="/dashboard"
-                        className="group w-full sm:w-auto flex items-center justify-center gap-2.5 px-8 py-4 text-sm font-bold uppercase tracking-widest text-white transition-all duration-300 hover:brightness-110 active:scale-95"
+                        className="group w-full sm:w-auto flex items-center justify-center gap-2.5 px-8 py-4 text-base font-bold uppercase tracking-wide text-light transition-all duration-300 hover:brightness-110 active:scale-95"
                         style={{ backgroundColor: "var(--primary)" }}
                     >
                         Get Early Access

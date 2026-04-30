@@ -101,14 +101,14 @@ export default function ComparisonSection() {
                     <div className="flex items-center justify-center gap-2.5 px-6">
                         <div className="w-2 h-2 rounded-full bg-destructive/50" />
                         <span className="text-xs text-center font-bold text-subtle uppercase tracking-[0.25em]">
-                            Without Demo
+                            Without Problem Pulse
                         </span>
                     </div>
                     <div />
                     <div className="flex items-center gap-2.5 px-6 justify-center">
                         <div className="w-2 h-2 rounded-full bg-success" />
                         <span className="text-xs font-bold text-primary uppercase tracking-[0.25em]">
-                            With Demo
+                            With Problem Pulse
                         </span>
                     </div>
                 </motion.div>
@@ -158,7 +158,7 @@ export default function ComparisonSection() {
                                 </div>
                                 <div>
                                     <span className="block text-[10px] font-black text-primary uppercase tracking-widest mb-2">
-                                        With Demo
+                                        With Problem Pulse
                                     </span>
                                     <p className="text-foreground text-sm leading-relaxed font-medium">
                                         {item.after}

@@ -14,7 +14,17 @@ import { useQueryClient } from "@tanstack/react-query";
 // import AILoader from "@/components/shared/AiLoader";
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
-const EXAMPLES = ["gym culture in Mumbai", "solo travel north east India", "EV adoption challenges India", "street food safety Delhi", "remote work culture Bangalore", "startup funding climate 2024"];
+const EXAMPLES = [
+    "What problems do people face with existing invoicing tools?",
+    "Why do customers abandon WhatsApp-based businesses?",
+    "Why do clients fire their digital marketing agency?",
+    "What are CEOs most frustrated about with business consultants?",
+    "Why do people uninstall productivity apps within a week?",
+    // "How safe is street food in Delhi according to locals?",
+    // "How do people in India manage work-life balance in tech jobs?",
+    // "Is Zomato/Swiggy delivery work sustainable long-term in India?",
+    // "What are common scams or issues faced by tourists in India?"
+];
 
 const REFRESH_INTERVAL_MS = 5000;
 
@@ -176,7 +186,7 @@ export default function RedditIntelligencePage() {
                                         onKeyDown={handleKeyDown}
                                         rows={3}
                                         disabled={isOnCooldown}
-                                        placeholder={isOnCooldown ? "Please wait for the cooldown to finish..." : "Describe the topic you want to analyze..."}
+                                        placeholder={isOnCooldown ? "Please wait for the cooldown to finish..." : "What topic (market, product, pain point) should we dig into?"}
                                         className="flex-1 w-full bg-transparent outline-none resize-none text-sm leading-relaxed disabled:cursor-not-allowed"
                                         style={{ color: "var(--text-main)" }}
                                     />
@@ -189,10 +199,10 @@ export default function RedditIntelligencePage() {
                                     <button
                                         type="submit"
                                         disabled={!canSubmit}
-                                        className="flex items-center gap-2 px-5 h-9 text-[11px] font-bold uppercase tracking-widest transition-all"
+                                        className="flex items-center gap-2 px-5 h-10 text-[11px] font-bold uppercase tracking-widest transition-all border border-input"
                                         style={{
-                                            background: canSubmit ? "var(--primary)" : "var(--surface-raised)",
-                                            color: canSubmit ? "#fff" : "var(--text-subtle)",
+                                            background: canSubmit ? "var(--primary)" : "var(--surface)",
+                                            color: canSubmit ? "var(--text-light)" : "var(--text-subtle)",
                                             cursor: canSubmit ? "pointer" : "not-allowed",
                                         }}
                                     >
@@ -266,28 +276,24 @@ export default function RedditIntelligencePage() {
                     {EXAMPLES.map((s, i) => (
                         <motion.button
                             key={s}
-                            initial={{ opacity: 0, y: 4 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.04 }}
-                            type="button"
-                            onClick={() => !isOnCooldown && setQuery(s)}
-                            disabled={isOnCooldown}
-                            className="px-3 py-1 cursor-pointer text-[11px] font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                            style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border-solid)", color: "var(--text-muted)" }}
-                            onMouseEnter={(e) => {
-                                if (!isOnCooldown) {
-                                    e.currentTarget.style.borderColor = "var(--primary)";
-                                    e.currentTarget.style.color = "var(--primary)";
-                                    e.currentTarget.style.backgroundColor = "var(--info-bg)";
-                                }
+                            onClick={() => {
+                                setQuery(s);
+                                textareaRef.current?.focus();
                             }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.borderColor = "var(--border-solid)";
-                                e.currentTarget.style.color = "var(--text-muted)";
-                                e.currentTarget.style.backgroundColor = "var(--surface)";
+                            whileHover={{ scale: 1.02, y: -2 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="relative px-4 py-1.5 cursor-pointer rounded-full text-[11px] font-medium transition-colors"
+                            style={{
+                                backgroundColor: "var(--surface)",
+                                border: "1px solid var(--border-subtle)",
+                                boxShadow: "0 2px 10px -4px rgba(0,0,0,0.1)"
                             }}
                         >
-                            {s}
+                            <span className="relative z-10">{s}</span>
+                            <motion.div
+                                className="absolute inset-0 rounded-full bg-linear-to-tr from-primary/10 to-transparent opacity-0"
+                                whileHover={{ opacity: 1 }}
+                            />
                         </motion.button>
                     ))}
                 </motion.div>

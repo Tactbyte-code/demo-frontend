@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, X, Zap, ArrowRight, Sparkles } from "lucide-react";
 import { plans } from "@/utils/data";
 import { useRouter } from "next/navigation";
-import { auth } from '@/lib/firebase';           // ← was missing
-import { Loader2 } from 'lucide-react';             // ← was missing
+import { auth } from '@/lib/firebase';
+import { Loader2 } from 'lucide-react';
+import { initiatePayment } from "@/lib/razorpay";
 
 const containerVariants = {
     hidden: {},
@@ -22,75 +23,83 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export default function PricingPage() {
     const [yearly, setYearly] = useState(false);
+    const [user, setUser] = useState(false);
     const [hoveredPlan, setHoveredPlan] = useState(null);
+
+    useEffect(() => {
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+            setUser(JSON.parse(storedUser));
+        }
+    }, [])
 
     // Inside the component:
     const router = useRouter();
     const [purchasingPlan, setPurchasingPlan] = useState(null);
     const [error, setError] = useState("");
 
-    const handlePurchase = async (planId) => {
-        console.log('entered the function', planId);
-        setError("");
-        setPurchasingPlan(planId);
+    // const handlePurchase = async (planId) => {
+    //     console.log('entered the function', planId);
+    //     setError("");
+    //     setPurchasingPlan(planId);
 
-        try {
-            const firebaseUser = auth.currentUser;
-            if (!firebaseUser) { router.replace("/login"); return; }
+    //     try {
+    //         const firebaseUser = auth.currentUser;
+    //         if (!firebaseUser) { router.replace("/login"); return; }
 
-            const token = await firebaseUser.getIdToken();
-            console.log('token:', token);
+    //         const token = await firebaseUser.getIdToken();
+    //         console.log('token:', token);
 
-            // Get credits for this plan from the plans data
-            const selectedPlan = plans.find(p => p.id === planId);
-            console.log('selectedplan: ', selectedPlan);
-            const credits = selectedPlan?.credits?.monthly ?? 0;  // ← use credits.monthly
+    //         // Get credits for this plan from the plans data
+    //         const selectedPlan = plans.find(p => p.id === planId);
+    //         console.log('selectedplan: ', selectedPlan);
+    //         const credits = selectedPlan?.credits?.monthly ?? 0;  // ← use credits.monthly
 
-            console.log('plan credits: ', credits);
+    //         console.log('plan credits: ', credits);
 
-            const response = await fetch(`${apiUrl}/users/purchase-plan`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    plan: planId,
-                    credits: credits       // ← send credits too
-                })
-            });
+    //         const response = await fetch(`${apiUrl}/users/purchase-plan`, {
+    //             method: "POST",
+    //             headers: {
+    //                 "Content-Type": "application/json",
+    //                 "Authorization": `Bearer ${token}`
+    //             },
+    //             body: JSON.stringify({
+    //                 plan: planId,
+    //                 credits: credits       // ← send credits too
+    //             })
+    //         });
 
-            console.log('purchase response: ', response);
+    //         console.log('purchase response: ', response);
 
-            if (!response.ok) {
-                const err = await response.json();
-                console.log('error: ', err);
-                throw new Error(err.detail || "Purchase failed");
-            }
+    //         if (!response.ok) {
+    //             const err = await response.json();
+    //             console.log('error: ', err);
+    //             throw new Error(err.detail || "Purchase failed");
+    //         }
 
-            const data = await response.json();
-            console.log('purchase data: ', data);
+    //         const data = await response.json();
+    //         console.log('purchase data: ', data);
 
-            const storedUser = localStorage.getItem("user");
-            if (storedUser) {
-                const user = JSON.parse(storedUser);
-                localStorage.setItem("user", JSON.stringify({
-                    ...user,
-                    credits: data.credits,
-                    plan: data.plan
-                }));
-                window.dispatchEvent(new Event("userUpdated"));
-            }
+    //         const storedUser = localStorage.getItem("user");
+    //         if (storedUser) {
+    //             const user = JSON.parse(storedUser);
+    //             localStorage.setItem("user", JSON.stringify({
+    //                 ...user,
+    //                 credits: data.credits,
+    //                 plan: data.plan
+    //             }));
+    //             window.dispatchEvent(new Event("userUpdated"));
+    //         }
 
-            router.replace("/dashboard");
+    //         router.replace("/dashboard");
 
-        } catch (err) {
-            console.error('Purchase error:', err);
-            setError(err.message);
-        } finally {
-            setPurchasingPlan(null);
-        }
-    };
+    //     } catch (err) {
+    //         console.error('Purchase error:', err);
+    //         setError(err.message);
+    //     } finally {
+    //         setPurchasingPlan(null);
+    //     }
+    // };
 
     return (
         <div
@@ -107,7 +116,7 @@ export default function PricingPage() {
                     style={{ backgroundColor: "var(--warning)" }} />
             </div>
 
-            <div className="relative z-10 max-w-7xl mx-auto px-6 py-24">
+            <div className="relative z-10 max-w-7xl mx-auto px-6 py-35">
                 {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
@@ -118,8 +127,8 @@ export default function PricingPage() {
                     <h1 className="text-5xl font-black tracking-tight mb-5 leading-tight"
                         style={{ color: "var(--text-main)" }}>
                         Invest in your
-                        <span className="block italic" style={{ color: "var(--primary)" }}>
-                            growth.
+                        <span className="italic" style={{ color: "var(--primary)" }}>
+                            {" "} growth.
                         </span>
                     </h1>
 
@@ -219,6 +228,8 @@ export default function PricingPage() {
                             <h2 className="text-2xl font-black mb-1" style={{ color: "var(--text-main)" }}>
                                 {plan.name}
                             </h2>
+
+                            {/* Plan description */}
                             <p className="text-xs font-medium leading-relaxed mb-6" style={{ color: "var(--text-muted)" }}>
                                 {plan.description}
                             </p>
@@ -256,7 +267,23 @@ export default function PricingPage() {
 
                             {/* CTA Button */}
                             <button
-                                onClick={() => handlePurchase(plan.id)}
+                                // onClick={() => handlePurchase(plan.id)}
+                                onClick={() => {
+                                    if (plan.monthlyPrice === 0) {
+                                        router.push("/dashboard");
+                                        return;
+                                    }
+                                    initiatePayment({
+                                        amount: 49900,
+                                        userEmail: user?.email,
+                                        userName: user?.full_name,
+                                        onSuccess: (data) => {
+                                            console.log("Payment successful!");
+                                            router.push("/dashboard");
+                                        },
+                                        onFailure: () => console.error("Payment failed or cancelled"),
+                                    });
+                                }}
                                 disabled={purchasingPlan === plan.id}
                                 className="w-full py-3.5 rounded-none font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] mb-6 disabled:opacity-70"
                                 style={{

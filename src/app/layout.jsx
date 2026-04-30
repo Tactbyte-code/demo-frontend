@@ -3,8 +3,9 @@ import "./globals.css";
 import { Providers } from "@/providers/Providers";
 import AuthGuard from "@/middleware/AuthGuard";
 import { cn } from "@/lib/utils";
+import Script from "next/script";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -12,14 +13,49 @@ const poppins = Poppins({
   variable: "--font-poppins",
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://problempulse.ai";
+
 export const metadata = {
   title: "Problem Pulse",
-  description: "Problem Discovery System",
+  description: "AI Problem Discovery System",
 };
 
 export default function RootLayout({ children }) {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "ProblemPulse",
+    alternateName: ["ProblemPulse", "ProblemPulseAI"],
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Web",
+    url: siteUrl,
+    description:
+      "ProblemPulse helps businesses discover customer pain points, competitor weaknesses, and market opportunities using Reddit and Play Store data.",
+    brand: {
+      "@type": "Brand",
+      name: "ProblemPulse",
+    },
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+    },
+  };
+
   return (
-    <html lang="en" className={cn("scroll-smooth", "font-sans", geist.variable)} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={cn("scroll-smooth", "font-sans", geist.variable)}
+      suppressHydrationWarning
+    >
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(structuredData),
+          }}
+        />
+      </head>
       <body
         className={`
             ${poppins.variable}
@@ -32,10 +68,11 @@ export default function RootLayout({ children }) {
         `}
       >
         <Providers>
-          <AuthGuard>
-            {children}
-          </AuthGuard>
+          <AuthGuard>{children}</AuthGuard>
         </Providers>
+
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+
       </body>
     </html>
   );
