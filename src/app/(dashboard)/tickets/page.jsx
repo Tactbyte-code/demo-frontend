@@ -383,6 +383,59 @@ function ForwardedNote({ reply }) {
   );
 }
 
+// ─── Waiting auto-message shown until first admin reply ───────────────────────
+function WaitingMessage({ userName }) {
+  return (
+    <motion.div
+      key="waiting-banner"
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -4 }}
+      transition={{ duration: 0.25 }}
+      className="flex flex-col gap-1 items-start"
+    >
+      <span
+        className="text-[9px] font-bold uppercase tracking-widest px-1"
+        style={{ color: "var(--sidebar-muted)" }}
+      >
+        Support
+      </span>
+      <div className="flex items-start gap-2 max-w-[82%]">
+        <div
+          className="w-5 h-5 rounded-full flex items-center justify-center shrink-0 text-[8px] font-black text-white mt-0.5"
+          style={{ background: "var(--primary)" }}
+        >
+          S
+        </div>
+        <div
+          className="px-3 py-2 rounded-2xl text-sm leading-relaxed"
+          style={{
+            background: "color-mix(in srgb, var(--primary) 10%, transparent)",
+            border:
+              "1px solid color-mix(in srgb, var(--primary) 20%, transparent)",
+            color: "var(--text-main)",
+            borderTopLeftRadius: 4,
+          }}
+        >
+          Hi <span className="font-semibold">{userName || "there"}</span>, our
+          executives are currently engaged. One of our team members will connect
+          with you shortly.
+        </div>
+      </div>
+      <div className="flex items-center gap-1 px-6">
+        <Loader2
+          size={9}
+          className="animate-spin"
+          style={{ color: "var(--sidebar-muted)" }}
+        />
+        <span className="text-[9px]" style={{ color: "var(--sidebar-muted)" }}>
+          Waiting for a team member…
+        </span>
+      </div>
+    </motion.div>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared inner panel content
 // ─────────────────────────────────────────────────────────────────────────────
@@ -687,6 +740,14 @@ function PanelContent({
                 pending={false}
                 sent={true}
               />
+
+              {/* ── Auto-waiting message: visible until first admin reply ── */}
+              <AnimatePresence>
+                {!activeTicket.replies?.some((r) => r.is_admin === 1) && (
+                  <WaitingMessage userName={activeTicket.user_name} />
+                )}
+              </AnimatePresence>
+
               {activeTicket.replies?.map((r) =>
                 r.reply_type === "forwarded" ? (
                   <ForwardedNote key={r.id} reply={r} />
@@ -878,11 +939,6 @@ export default function TicketChatPopup({
     return unsub;
   }, []);
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // FIX: loadTickets — res.json() was called TWICE before.
-  // The second call threw (body already consumed), the catch ran setTickets([]),
-  // wiping all tickets on every poll. Removed the duplicate call entirely.
-  // ─────────────────────────────────────────────────────────────────────────
   const loadTickets = useCallback(
     async (silent = false) => {
       if (!userEmail) return [];
@@ -899,7 +955,6 @@ export default function TicketChatPopup({
           return [];
         }
 
-        // ✅ Parse the body exactly once
         const data = await res.json();
         const list = Array.isArray(data) ? data : [];
         const sorted = [...list].sort(
@@ -909,7 +964,6 @@ export default function TicketChatPopup({
 
         setTickets(sorted);
 
-        // Keep the active ticket's replies in sync with poll data
         setActive((prev) => {
           if (!prev) return prev;
           const fresh = sorted.find((t) => String(t.id) === String(prev.id));
@@ -924,7 +978,6 @@ export default function TicketChatPopup({
 
         return sorted;
       } catch {
-        // Network error — don't wipe tickets, just return empty for callers
         return [];
       } finally {
         if (!silent) setLoading(false);
@@ -1007,7 +1060,6 @@ export default function TicketChatPopup({
               );
             });
           } else if (event.type === "ticket_update") {
-            // ✅ Admin reply arrives here — applyTicketUpdate merges it into state
             applyTicketUpdate(event.ticket);
           } else if (event.type === "agent_viewing") {
             setAgentViewing(true);
@@ -1045,7 +1097,6 @@ export default function TicketChatPopup({
     }
   }, []);
 
-  // Connect/disconnect SSE when switching to/from chat view
   useEffect(() => {
     const shouldConnect = view === "chat" && !!activeTicket?.id && !!userEmail;
     if (shouldConnect) {
@@ -1059,7 +1110,6 @@ export default function TicketChatPopup({
     return cancel;
   }, [view, activeTicket?.id, userEmail, connectSSE, disconnectSSE]);
 
-  // Initial load when panel opens
   useEffect(() => {
     if (!open || !userEmail) return;
     return defer(() => {
@@ -1067,8 +1117,6 @@ export default function TicketChatPopup({
     });
   }, [open, userEmail, loadTickets]);
 
-  // ✅ Poll every second — now works correctly because loadTickets no longer
-  // calls res.json() twice (which was clearing tickets every tick)
   useEffect(() => {
     if (!open || !userEmail) return;
     const interval = globalThis.setInterval(() => {
@@ -1077,12 +1125,10 @@ export default function TicketChatPopup({
     return () => globalThis.clearInterval(interval);
   }, [open, userEmail, loadTickets]);
 
-  // Scroll to bottom when new replies arrive
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [activeTicket?.replies?.length, agentViewing]);
 
-  // Focus input when entering chat view
   useEffect(() => {
     if (view !== "chat") return;
     const t = globalThis.setTimeout(() => inputRef.current?.focus(), 150);
@@ -1131,7 +1177,6 @@ export default function TicketChatPopup({
     const tempId = `temp-${Date.now()}`;
     const now = new Date().toISOString();
 
-    // Optimistic update
     const pendingReply = {
       id: tempId,
       ticket_id: ticketId,
@@ -1175,7 +1220,6 @@ export default function TicketChatPopup({
       });
       if (!res.ok) throw new Error("Failed to send reply");
 
-      // ✅ Parse once
       const data = await res.json().catch(() => null);
       if (data && typeof data === "object") {
         setActive((prev) => {
@@ -1195,7 +1239,6 @@ export default function TicketChatPopup({
         );
       }
 
-      // Sync with server state (safe — loadTickets now only calls res.json() once)
       const latestTickets = await loadTickets(true);
       const latest = latestTickets.find(
         (t) => String(t.id) === String(ticketId),
@@ -1220,7 +1263,6 @@ export default function TicketChatPopup({
         );
       }
     } catch {
-      // Roll back optimistic update on failure
       setActive((prev) =>
         prev
           ? {
