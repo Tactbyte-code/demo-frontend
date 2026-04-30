@@ -76,3 +76,8 @@ export const deleteKeyword = async (cid, kid) => {
   );
   return res.data;
 };
+
+export const syncLeads = async (cid) => {
+  const res = await api.post(`/ai-lead-engine/campaigns/${cid}/sync-leads`);
+  return res.data;
+};

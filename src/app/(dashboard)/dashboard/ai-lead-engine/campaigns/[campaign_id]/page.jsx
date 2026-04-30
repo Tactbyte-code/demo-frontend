@@ -20,7 +20,9 @@ import {
   deleteKeyword,
   getLeads,
   updateLeadStatus,
+  syncLeads
 } from "@/lib/api/campaigns";
+import LeadRow from "../_components/LeadRow";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const TABS = ["Leads", "Keywords", "Filters", "AI Reply Settings", "Sync History"];
@@ -64,98 +66,6 @@ function ErrorBanner({ message }) {
       <AlertCircle className="w-3.5 h-3.5 shrink-0" />
       {message}
     </div>
-  );
-}
-
-// ── Lead Row ──────────────────────────────────────────────────────────────────
-function LeadRow({ lead, index, campaignId, onStatusChange }) {
-  const [updating, setUpdating] = useState(false);
-  const statuses = ["New", "Contacted", "Closed"];
-
-  const handleStatus = async (newStatus) => {
-    setUpdating(true);
-    try {
-      await updateLeadStatus(campaignId, lead.id, newStatus);
-      onStatusChange(lead.id, newStatus);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setUpdating(false);
-    }
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 4 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.04 }}
-      className="border-b border-border py-4 px-1"
-    >
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-3 flex-wrap">
-          <input type="checkbox" className="accent-primary w-3.5 h-3.5" />
-
-          {/* Status dropdown */}
-          <div className="relative group">
-            <span className="text-[11px] border border-border px-1.5 py-0.5 text-muted flex items-center gap-1 cursor-pointer hover:border-primary/40 transition select-none">
-              <span className="w-2 h-2 rounded-full bg-primary inline-block" />
-              {lead.status}
-              <ChevronDown className="w-2.5 h-2.5" />
-              {updating && <Spinner />}
-            </span>
-            <div className="absolute top-full left-0 mt-1 z-20 hidden group-hover:flex flex-col bg-background border border-border shadow-lg min-w-[100px]">
-              {statuses.map((s) => (
-                <button key={s} onClick={() => handleStatus(s)}
-                  className="px-3 py-1.5 text-xs text-left hover:bg-primary/10 hover:text-primary transition">
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <span className="text-xs text-muted">{lead.subreddit || lead.platform}</span>
-          <span className="text-xs text-muted">•</span>
-          <span className="text-xs text-muted">{lead.handle || lead.author}</span>
-          <span className="text-xs text-muted">•</span>
-          <span className="text-xs text-muted">{lead.date || lead.created_at}</span>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <ThumbsUp className="w-3.5 h-3.5 text-muted hover:text-primary cursor-pointer transition" />
-          <ThumbsDown className="w-3.5 h-3.5 text-muted hover:text-red-400 cursor-pointer transition" />
-          {lead.url && (
-            <a href={lead.url} target="_blank" rel="noreferrer">
-              <ExternalLink className="w-3.5 h-3.5 text-muted hover:text-primary cursor-pointer transition" />
-            </a>
-          )}
-          <span className="flex items-center gap-1 bg-primary/10 border border-primary/30 text-primary text-[11px] font-bold px-2 py-0.5">
-            <Star className="w-2.5 h-2.5 fill-primary" />
-            {(lead.score ?? 0).toFixed(1)}
-          </span>
-        </div>
-      </div>
-
-      {lead.locked ? (
-        <div className="flex flex-col items-center justify-center py-10 gap-3 text-center">
-          <Lock className="w-8 h-8 text-primary" />
-          <p className="text-sm font-semibold text-foreground">Start Free Trial to View Content</p>
-          <button className="px-4 py-2 text-xs font-bold bg-primary text-white hover:bg-primary/90 transition">
-            Start Free Trial
-          </button>
-        </div>
-      ) : (
-        <div className="mt-2 ml-5">
-          {lead.title && <p className="text-sm font-medium text-foreground mb-1">{lead.title}</p>}
-          {lead.body && <p className="text-xs text-muted leading-relaxed line-clamp-3">{lead.body}</p>}
-          {lead.matched_keyword && (
-            <span className="inline-flex items-center gap-1 mt-2 text-[10px] border border-primary/30 text-primary px-1.5 py-0.5">
-              <Tag className="w-2.5 h-2.5" />
-              {lead.matched_keyword}
-            </span>
-          )}
-        </div>
-      )}
-    </motion.div>
   );
 }
 
@@ -267,6 +177,14 @@ function KeywordsTab({ campaignId }) {
     </div>
   );
 }
+function timeAgo(dateStr) {
+  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (seconds < 60) return "just now";
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
 
 // ── Sync History Tab ──────────────────────────────────────────────────────────
 function SyncHistoryTab({ campaignId }) {
@@ -299,10 +217,17 @@ function SyncHistoryTab({ campaignId }) {
           {history.map((entry) => (
             <div key={entry.id} className="flex items-center justify-between px-4 py-3">
               <div>
-                <p className="text-xs font-medium text-foreground">{entry.label ?? `Sync #${entry.id}`}</p>
-                <p className="text-[11px] text-muted mt-0.5">{entry.created_at}</p>
+                <p className="text-xs font-medium text-foreground">
+                  Sync
+                </p>
+                <p
+                  className="text-[11px] text-muted mt-0.5"
+                  title={new Date(entry.created_at).toLocaleString()}
+                >
+                  {timeAgo(entry.created_at)}
+                </p>
               </div>
-              <div className="flex items-center gap-4 text-xs text-muted">
+              {/* <div className="flex items-center gap-4 text-xs text-muted">
                 <span className="flex items-center gap-1">
                   <span className="w-2 h-2 rounded-full bg-primary inline-block" />
                   {entry.strong_matches ?? 0} strong
@@ -311,7 +236,10 @@ function SyncHistoryTab({ campaignId }) {
                   <span className="w-2 h-2 rounded-full border border-primary inline-block" />
                   {entry.partial_matches ?? 0} partial
                 </span>
-              </div>
+              </div> */}
+              <p className="text-md">
+                {entry.created_at}
+              </p>
             </div>
           ))}
         </div>
@@ -319,7 +247,6 @@ function SyncHistoryTab({ campaignId }) {
     </div>
   );
 }
-
 // ── Filters Tab ───────────────────────────────────────────────────────────────
 function FiltersTab({ campaign, onUpdate }) {
   const [minScore, setMinScore] = useState(campaign?.min_score ?? 5);
@@ -515,6 +442,19 @@ export default function CampaignPage() {
     }
   };
 
+  const handleLeadSync = async () => {
+    try {
+      setSyncing(true);
+      await syncLeads(campaign_id);
+      alert("Syncing started")
+    } catch (e) {
+      setError(e.message);
+    }
+    finally{
+      setSyncing(false);
+    }
+  };
+
   const handleCampaignUpdate = (patch) => setCampaign((prev) => ({ ...prev, ...patch }));
 
   if (loadingCampaign) {
@@ -537,6 +477,43 @@ export default function CampaignPage() {
   }
 
   const platforms = campaign.platforms ?? [];
+
+  // Helper function
+  function getSyncLabel(lastSyncedAt, nextAllowedAt) {
+    if (!lastSyncedAt) return "Never synced";
+
+    const last = new Date(lastSyncedAt);
+    const now = new Date();
+    const diffMs = now - last;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    let lastLabel;
+    if (diffMins < 1) lastLabel = "just now";
+    else if (diffMins < 60) lastLabel = `${diffMins}m ago`;
+    else if (diffHours < 24) lastLabel = `${diffHours}h ago`;
+    else lastLabel = `${diffDays}d ago`;
+
+    if (nextAllowedAt) {
+      const next = new Date(nextAllowedAt);
+      if (next > now) {
+        const waitMs = next - now;
+        const waitMins = Math.ceil(waitMs / 60000);
+        const waitHours = Math.ceil(waitMs / 3600000);
+
+        // Show hours if 60+ minutes remaining, otherwise minutes
+        const waitLabel = waitMins >= 60 ? `${waitHours}h` : `${waitMins}m`;
+
+        return `Last synced ${lastLabel} · Next in ${waitLabel}`;
+      }
+    }
+
+    return `Last synced ${lastLabel}`;
+  }
+  const now = new Date();
+  const nextAllowed = campaign.next_allowed_at ? new Date(campaign.next_allowed_at) : null;
+  const isCoolingDown = nextAllowed && nextAllowed > now;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -562,24 +539,32 @@ export default function CampaignPage() {
           </div>
 
           <div className="flex items-center gap-2 shrink-0 ml-6 flex-wrap">
-            <button
-              disabled={syncing}
-              className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border border-border text-foreground hover:border-primary/40 transition disabled:opacity-50"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${syncing ? "animate-spin" : ""}`} />
-              {syncing ? "Syncing…" : "Sync now"}
-            </button>
-            <button className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border border-primary bg-primary/10 text-primary hover:bg-primary/20 transition">
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-muted-foreground">
+                {getSyncLabel(campaign.last_synced_at, campaign.next_allowed_at)}
+              </span>
+
+              <button
+                onClick={handleLeadSync}
+                disabled={syncing || isCoolingDown}
+                className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border border-border text-foreground hover:border-primary/40 transition disabled:opacity-50"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${syncing ? "animate-spin" : ""}`} />
+                {syncing ? "Syncing…" : "Sync now"}
+              </button>
+
+            </div>
+            {/* <button className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border border-primary bg-primary/10 text-primary hover:bg-primary/20 transition">
               <Sparkles className="w-3.5 h-3.5" />
               Optimize Leads
-            </button>
-            <Link
+            </button> */}
+            {/* <Link
               href={`/dashboard/ai-lead-engine/campaigns/${campaign_id}/edit`}
               className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border border-border text-foreground hover:border-primary/40 transition"
             >
               <Pencil className="w-3.5 h-3.5" />
               Edit
-            </Link>
+            </Link> */}
             <button
               onClick={handleDelete}
               disabled={deleting}
@@ -593,7 +578,7 @@ export default function CampaignPage() {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 border-t border-b border-border">
+      {/* <div className="grid grid-cols-2 md:grid-cols-4 border-t border-b border-border">
         <div className="border-r border-border p-5 flex flex-col gap-2">
           <span className="text-xs text-muted">Strong Matches</span>
           <div className="flex items-center gap-2">
@@ -631,7 +616,7 @@ export default function CampaignPage() {
           </div>
           <span className="text-[11px] text-muted">Start a free trial to enable automatic syncs</span>
         </div>
-      </div>
+      </div> */}
 
       {/* Tabs */}
       <div className="border-b border-border px-8">
@@ -661,7 +646,7 @@ export default function CampaignPage() {
               <div className="flex flex-col gap-4 mb-4">
                 <span className="text-xs text-muted">{leads.length} results</span>
 
-                <div className="flex items-center justify-between flex-wrap gap-3">
+                {/* <div className="flex items-center justify-between flex-wrap gap-3">
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-muted">Match:</span>
                     <div className="flex items-center gap-1.5">
@@ -685,9 +670,9 @@ export default function CampaignPage() {
                       ))}
                     </div>
                   </div>
-                </div>
+                </div> */}
 
-                <div className="flex items-center justify-between">
+                {/* <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs text-muted">Platform:</span>
                     {platforms.map((p) => (
@@ -702,14 +687,14 @@ export default function CampaignPage() {
                   <button className="flex items-center gap-1.5 text-xs border border-border px-3 py-1.5 text-muted hover:border-primary/40 transition">
                     Newest Found <ChevronDown className="w-3 h-3" />
                   </button>
-                </div>
+                </div> */}
               </div>
 
-              <div className="mb-4">
+              {/* <div className="mb-4">
                 <button className="flex items-center gap-1.5 text-xs border border-border px-3 py-1.5 text-muted hover:border-primary/40 transition">
                   <CheckSquare className="w-3.5 h-3.5" /> Select visible
                 </button>
-              </div>
+              </div> */}
 
               <div className="border-t border-border">
                 {loadingLeads ? (
@@ -718,7 +703,14 @@ export default function CampaignPage() {
                   <p className="text-xs text-muted text-center py-16">No leads found for current filters.</p>
                 ) : (
                   leads.map((lead, i) => (
-                    <LeadRow key={lead.id} lead={lead} index={i} campaignId={campaign_id} onStatusChange={handleLeadStatusChange} />
+                    <LeadRow
+                      key={lead.id}
+                      lead={lead}
+                      index={i}
+                      campaignId={campaign_id}
+                      updateLeadStatus={updateLeadStatus}
+                      // onStatusChange={onStatusChange}
+                    />
                   ))
                 )}
               </div>
