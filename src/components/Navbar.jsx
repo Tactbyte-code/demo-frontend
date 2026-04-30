@@ -312,101 +312,108 @@ export default function Navbar() {
               initial={{ opacity: 0, y: -10, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.98 }}
-              className="absolute hidden lg:block rounded-none top-full left-1/2 -translate-x-1/2 w-[93%] bg-navbar-bg backdrop-blur-2xl border border-slate-200/80 shadow-2xl z-50 origin-top overflow-hidden"
+              className="absolute hidden lg:block rounded-none top-full left-1/2 -translate-x-1/2 w-[93%] bg-navbar-bg backdrop-blur-2xl border border-primary shadow-2xl z-50 origin-top overflow-hidden"
             >
-              <div className="flex">
-                {/* ── LEFT: Feature list ── */}
-                <div className="w-[38%] border-r border-slate-100 dark:border-white/8 p-6 flex flex-col gap-4">
-                  {[
-                    {
-                      id: "reddit",
-                      icon: Activity,
-                      title: "Reddit Analysis",
-                      desc: "Mine real user conversations for product insight.",
-                    },
-                    {
-                      id: "playstore",
-                      icon: LayoutGrid,
-                      title: "Playstore Analysis",
-                      desc: "Decode app reviews to find competitor weaknesses.",
-                    },
-                    {
-                      id: "keyword",
-                      icon: Search,
-                      title: "Keyword Tracking",
-                      desc: "Track trending keywords across communities.",
-                    },
-                  ].map((feature) => (
-                    <button
-                      key={feature.id}
-                      onMouseEnter={() => setHoveredFeature(feature.id)}
-                      onMouseLeave={() => setHoveredFeature(null)}
-                      className={`flex items-start gap-3 px-4 py-4 rounded-none text-left transition-all group
-                ${hoveredFeature === feature.id ? "bg-primary/10" : "hover:bg-primary/5"}`}
-                    >
-                      <div className={`p-2 rounded-full mt-0.5 transition-colors
-                ${hoveredFeature === feature.id ? "bg-primary/15 text-primary" : "bg-surface-raised text-muted"}`}>
-                        <feature.icon className="w-4 h-4" />
-                      </div>
-                      <div>
+              {/* ── TOP: Feature cards ── */}
+              <div className="grid grid-cols-3 gap-0 border-b border-primary">
+                {[
+                  {
+                    id: "reddit",
+                    icon: Activity,
+                    title: "Reddit Analysis",
+                    desc: "Mine real user conversations for product insight.",
+                    href: "/dashboard/reddit",
+                  },
+                  {
+                    id: "playstore",
+                    icon: LayoutGrid,
+                    title: "Playstore Analysis",
+                    desc: "Decode app reviews to find competitor weaknesses.",
+                    href: "/dashboard/playstore",
+                  },
+                  {
+                    id: "keyword",
+                    icon: Search,
+                    title: "Keyword Tracking",
+                    desc: "Track trending keywords across communities.",
+                    href: "/dashboard/lead",
+                  },
+                ].map((feature, index) => (
+                  <button
+                    key={feature.id}
+                    onClick={() => { router.push(feature.href); setIsFeaturesOpen(false); }}
+                    onMouseEnter={() => setHoveredFeature(feature.id)}
+                    onMouseLeave={() => setHoveredFeature(null)}
+                    className={`flex items-start gap-4 p-6 text-left transition-all group relative
+              ${index !== 2 ? "border-r border-primary" : ""}
+              ${hoveredFeature === feature.id ? "bg-primary/8" : "hover:bg-primary/5"}`}
+                  >
+                    <div className={`p-2.5 rounded-full transition-colors shrink-0
+              ${hoveredFeature === feature.id ? "bg-primary/15 text-primary" : "bg-surface-raised text-muted"}`}>
+                      <feature.icon className="w-4 h-4" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
                         <p className={`text-sm font-semibold transition-colors
                   ${hoveredFeature === feature.id ? "text-primary" : "text-foreground"}`}>
                           {feature.title}
                         </p>
-                        <p className="text-xs text-muted mt-0.5">{feature.desc}</p>
+                        <ArrowRight className={`w-3.5 h-3.5 transition-all shrink-0
+                  ${hoveredFeature === feature.id ? "opacity-100 translate-x-0 text-primary" : "opacity-0 -translate-x-1"}`} />
                       </div>
-                      <ArrowRight className={`w-3.5 h-3.5 ml-auto mt-1 transition-all
-                ${hoveredFeature === feature.id ? "opacity-100 translate-x-0 text-primary" : "opacity-0 -translate-x-1"}`} />
-                    </button>
-                  ))}
-                </div>
+                      <p className="text-xs text-muted mt-1 leading-relaxed">{feature.desc}</p>
+                    </div>
+                    {/* Active indicator bar */}
+                    <div className={`absolute bottom-0 left-0 right-0 h-0.5 transition-all duration-200
+              ${hoveredFeature === feature.id ? "bg-primary opacity-100" : "opacity-0"}`} />
+                  </button>
+                ))}
+              </div>
 
-                {/* ── RIGHT: Use cases panel ── */}
-                <div className="flex-1 p-6">
-                  <AnimatePresence mode="wait">
-                    {hoveredFeature ? (
-                      <motion.div
-                        key={hoveredFeature}
-                        initial={{ opacity: 0, x: 8 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -8 }}
-                        transition={{ duration: 0.18 }}
-                      >
-                        <p className="text-[11px] font-semibold uppercase tracking-widest text-muted mb-4 px-1">
-                          Use cases
-                        </p>
-                        <div className="grid grid-cols-2 gap-2">
-                          {useCases[hoveredFeature].map((item, i) => (
-                            <div
-                              key={i}
-                              className="px-4 py-3 rounded-none border border-border-solid hover:border-primary/30 hover:bg-primary/5 transition-all group cursor-default"
-                            >
-                              <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
-                                {item.title}
-                              </p>
-                              <p className="text-xs text-muted mt-0.5 leading-relaxed">
-                                {item.desc}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      </motion.div>
-                    ) : (
-                      <motion.div
-                        key="empty"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="h-full flex flex-col items-center justify-center text-center gap-3 py-8"
-                      >
-                        <div className="p-3 rounded-full bg-surface-raised">
-                          <Zap className="w-5 h-5 text-muted" />
-                        </div>
-                        <p className="text-sm text-muted">Hover a feature to explore use cases</p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+              {/* ── BOTTOM: Use cases ── */}
+              <div className="p-6 bg-surface-raised">
+                <AnimatePresence mode="wait">
+                  {hoveredFeature ? (
+                    <motion.div
+                      key={hoveredFeature}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.18 }}
+                      // className="
+                    >
+                      <p className="text-[11px] font-semibold uppercase tracking-widest text-muted mb-4 px-1">
+                        Use cases — {hoveredFeature.charAt(0).toUpperCase() + hoveredFeature.slice(1)}
+                      </p>
+                      <div className="grid grid-cols-4 gap-2">
+                        {useCases[hoveredFeature].map((item, i) => (
+                          <div
+                            key={i}
+                            className="px-4 py-3 rounded-none border border-border-solid bg-primary/10 transition-all group cursor-default"
+                          >
+                            <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                              {item.title}
+                            </p>
+                            <p className="text-xs text-muted mt-0.5 leading-relaxed">{item.desc}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="empty"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="flex items-center justify-center gap-3 py-4"
+                    >
+                      <div className="p-2.5 rounded-full bg-surface-raised">
+                        <Zap className="w-4 h-4 text-muted" />
+                      </div>
+                      <p className="text-sm text-muted">Hover a feature to explore use cases</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </motion.div>
           )}

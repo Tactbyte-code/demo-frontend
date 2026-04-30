@@ -268,17 +268,22 @@ export default function PricingPage() {
                             {/* CTA Button */}
                             <button
                                 // onClick={() => handlePurchase(plan.id)}
-                                onClick={() => initiatePayment({
-                                    amount: 49900,       // ₹499 in paise
-                                    userEmail: user?.email,
-                                    userName: user?.full_name,
-                                    onSuccess: (data) => {
-                                        // Toast.success("Payment successful!");
-                                        console.log("Payment successful!");
+                                onClick={() => {
+                                    if (plan.monthlyPrice === 0) {
                                         router.push("/dashboard");
-                                    },
-                                    onFailure: () => console.error("Payment failed or cancelled"),
-                                })}
+                                        return;
+                                    }
+                                    initiatePayment({
+                                        amount: 49900,
+                                        userEmail: user?.email,
+                                        userName: user?.full_name,
+                                        onSuccess: (data) => {
+                                            console.log("Payment successful!");
+                                            router.push("/dashboard");
+                                        },
+                                        onFailure: () => console.error("Payment failed or cancelled"),
+                                    });
+                                }}
                                 disabled={purchasingPlan === plan.id}
                                 className="w-full py-3.5 rounded-none font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] mb-6 disabled:opacity-70"
                                 style={{
