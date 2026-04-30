@@ -197,7 +197,7 @@ function openSSE(url, getHeaders, onEvent, onStatusChange) {
             const event = JSON.parse(dataLine.slice(6));
             if (event.type !== "heartbeat") onEvent(event);
           } catch {
-            // ignore
+            // ignore malformed JSON
           }
         }
       }
@@ -384,7 +384,7 @@ function ForwardedNote({ reply }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Shared inner panel content (used by both desktop popup & mobile drawer)
+// Shared inner panel content
 // ─────────────────────────────────────────────────────────────────────────────
 function PanelContent({
   view,
@@ -418,7 +418,7 @@ function PanelContent({
 }) {
   return (
     <>
-      {/* ── Header ────────────────────────────────────────────────────────── */}
+      {/* ── Header ── */}
       <div
         className="flex items-center justify-between px-4 shrink-0"
         style={{
@@ -427,11 +427,9 @@ function PanelContent({
           borderBottom: "1px solid var(--sidebar-border)",
           background:
             "linear-gradient(135deg, color-mix(in srgb, var(--primary) 10%, transparent), color-mix(in srgb, var(--accent) 8%, transparent))",
-          // Mobile: add top drag handle spacing
           borderRadius: isMobile ? "20px 20px 0 0" : undefined,
         }}
       >
-        {/* Drag handle — mobile only */}
         {isMobile && (
           <div
             className="absolute top-2.5 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full"
@@ -493,7 +491,7 @@ function PanelContent({
         </div>
       </div>
 
-      {/* ── Body ──────────────────────────────────────────────────────────── */}
+      {/* ── Body ── */}
       <div className="flex-1 overflow-hidden flex flex-col">
         {/* LIST VIEW */}
         {view === "list" && (
@@ -812,20 +810,13 @@ function PanelContent({
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TicketChatPopup
-//
-//  Props:
-//    open / setOpen       — visibility state (lifted to parent)
-//    hasUnread / setHasUnread
-//    closeSidebar         — NEW: called on mobile to collapse the sidebar
-//                           when the drawer opens.  Pass `() => setSidebarOpen(false)`
-//                           (or whatever your sidebar state setter is) from your layout.
 // ─────────────────────────────────────────────────────────────────────────────
 export default function TicketChatPopup({
   open,
   setOpen,
   hasUnread,
   setHasUnread,
-  closeSidebar, // ← new prop: () => void
+  closeSidebar,
 }) {
   const isMobile = useIsMobile();
 
@@ -857,14 +848,14 @@ export default function TicketChatPopup({
     openRef.current = open;
   }, [open]);
 
-  // ── Auto-close sidebar on mobile when drawer opens ──────────────────────
+  // Auto-close sidebar on mobile when drawer opens
   useEffect(() => {
     if (open && isMobile && typeof closeSidebar === "function") {
       closeSidebar();
     }
   }, [open, isMobile, closeSidebar]);
 
-  // ── Prevent body scroll when mobile drawer is open ───────────────────────
+  // Prevent body scroll when mobile drawer is open
   useEffect(() => {
     if (isMobile && open) {
       document.body.style.overflow = "hidden";
@@ -887,6 +878,11 @@ export default function TicketChatPopup({
     return unsub;
   }, []);
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // FIX: loadTickets — res.json() was called TWICE before.
+  // The second call threw (body already consumed), the catch ran setTickets([]),
+  // wiping all tickets on every poll. Removed the duplicate call entirely.
+  // ─────────────────────────────────────────────────────────────────────────
   const loadTickets = useCallback(
     async (silent = false) => {
       if (!userEmail) return [];
@@ -897,22 +893,23 @@ export default function TicketChatPopup({
           headers,
           cache: "no-store",
         });
+
         if (!res.ok) {
-          setTickets([]);
+          if (!silent) setLoading(false);
           return [];
         }
 
+        // ✅ Parse the body exactly once
         const data = await res.json();
         const list = Array.isArray(data) ? data : [];
         const sorted = [...list].sort(
           (a, b) =>
             new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
         );
-        const sdata = await res.json();
-        console.log('tickets: ', data);
 
         setTickets(sorted);
 
+        // Keep the active ticket's replies in sync with poll data
         setActive((prev) => {
           if (!prev) return prev;
           const fresh = sorted.find((t) => String(t.id) === String(prev.id));
@@ -927,7 +924,7 @@ export default function TicketChatPopup({
 
         return sorted;
       } catch {
-        setTickets([]);
+        // Network error — don't wipe tickets, just return empty for callers
         return [];
       } finally {
         if (!silent) setLoading(false);
@@ -1010,6 +1007,7 @@ export default function TicketChatPopup({
               );
             });
           } else if (event.type === "ticket_update") {
+            // ✅ Admin reply arrives here — applyTicketUpdate merges it into state
             applyTicketUpdate(event.ticket);
           } else if (event.type === "agent_viewing") {
             setAgentViewing(true);
@@ -1047,6 +1045,7 @@ export default function TicketChatPopup({
     }
   }, []);
 
+  // Connect/disconnect SSE when switching to/from chat view
   useEffect(() => {
     const shouldConnect = view === "chat" && !!activeTicket?.id && !!userEmail;
     if (shouldConnect) {
@@ -1060,6 +1059,7 @@ export default function TicketChatPopup({
     return cancel;
   }, [view, activeTicket?.id, userEmail, connectSSE, disconnectSSE]);
 
+  // Initial load when panel opens
   useEffect(() => {
     if (!open || !userEmail) return;
     return defer(() => {
@@ -1067,6 +1067,8 @@ export default function TicketChatPopup({
     });
   }, [open, userEmail, loadTickets]);
 
+  // ✅ Poll every second — now works correctly because loadTickets no longer
+  // calls res.json() twice (which was clearing tickets every tick)
   useEffect(() => {
     if (!open || !userEmail) return;
     const interval = globalThis.setInterval(() => {
@@ -1075,10 +1077,12 @@ export default function TicketChatPopup({
     return () => globalThis.clearInterval(interval);
   }, [open, userEmail, loadTickets]);
 
+  // Scroll to bottom when new replies arrive
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [activeTicket?.replies?.length, agentViewing]);
 
+  // Focus input when entering chat view
   useEffect(() => {
     if (view !== "chat") return;
     const t = globalThis.setTimeout(() => inputRef.current?.focus(), 150);
@@ -1126,6 +1130,8 @@ export default function TicketChatPopup({
     const msgToSend = msg.trim();
     const tempId = `temp-${Date.now()}`;
     const now = new Date().toISOString();
+
+    // Optimistic update
     const pendingReply = {
       id: tempId,
       ticket_id: ticketId,
@@ -1136,6 +1142,7 @@ export default function TicketChatPopup({
       pending: true,
       _optimistic: true,
     };
+
     setMsg("");
     setActive((prev) =>
       prev
@@ -1157,6 +1164,7 @@ export default function TicketChatPopup({
           : t,
       ),
     );
+
     setSending(true);
     try {
       const headers = await getAuthHeaders();
@@ -1166,6 +1174,8 @@ export default function TicketChatPopup({
         body: JSON.stringify({ message: msgToSend }),
       });
       if (!res.ok) throw new Error("Failed to send reply");
+
+      // ✅ Parse once
       const data = await res.json().catch(() => null);
       if (data && typeof data === "object") {
         setActive((prev) => {
@@ -1184,6 +1194,8 @@ export default function TicketChatPopup({
             ),
         );
       }
+
+      // Sync with server state (safe — loadTickets now only calls res.json() once)
       const latestTickets = await loadTickets(true);
       const latest = latestTickets.find(
         (t) => String(t.id) === String(ticketId),
@@ -1208,6 +1220,7 @@ export default function TicketChatPopup({
         );
       }
     } catch {
+      // Roll back optimistic update on failure
       setActive((prev) =>
         prev
           ? {
@@ -1273,7 +1286,6 @@ export default function TicketChatPopup({
     setView("new");
   }, [teams, disconnectSSE]);
 
-  // ── Shared panel props ────────────────────────────────────────────────────
   const panelProps = {
     view,
     setView,
@@ -1310,7 +1322,6 @@ export default function TicketChatPopup({
       <AnimatePresence>
         {open && (
           <>
-            {/* Blurred backdrop */}
             <motion.div
               key="mobile-backdrop"
               initial={{ opacity: 0 }}
@@ -1325,8 +1336,6 @@ export default function TicketChatPopup({
               }}
               onClick={handleClose}
             />
-
-            {/* Bottom drawer */}
             <motion.div
               key="mobile-drawer"
               initial={{ y: "100%" }}
@@ -1340,7 +1349,6 @@ export default function TicketChatPopup({
                 borderTop: "1px solid var(--sidebar-border)",
                 borderRadius: "20px 20px 0 0",
                 boxShadow: "0 -8px 40px rgba(0,0,0,0.35)",
-                // Extra top padding for drag handle
                 paddingTop: 16,
               }}
               onClick={(e) => e.stopPropagation()}
@@ -1348,12 +1356,10 @@ export default function TicketChatPopup({
               onTouchEnd={(e) => e.stopPropagation()}
               onPointerDown={(e) => e.stopPropagation()}
             >
-              {/* Drag handle pill */}
               <div
                 className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full"
                 style={{ background: "var(--sidebar-border)" }}
               />
-
               <PanelContent {...panelProps} />
             </motion.div>
           </>
@@ -1362,9 +1368,6 @@ export default function TicketChatPopup({
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════════════
-  //  DESKTOP / TABLET  — floating popup (original, untouched)
-  // ══════════════════════════════════════════════════════════════════════════
   return (
     <AnimatePresence>
       {open && (
@@ -1393,7 +1396,7 @@ export default function TicketChatPopup({
   );
 }
 
-// ── Sidebar trigger button — unchanged ────────────────────────────────────────
+// ── Sidebar trigger button ─────────────────────────────────────────────────────
 export function SidebarTrigger({ open, setOpen, hasUnread }) {
   return (
     <button
