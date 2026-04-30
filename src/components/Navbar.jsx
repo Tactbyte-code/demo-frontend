@@ -468,42 +468,6 @@ export default function Navbar() {
               </div>
 
               <div className="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-4">
-                <p className="text-xs font-semibold text-muted uppercase tracking-wide px-1 mb-2">
-                  Main Menu
-                </p>
-
-                {navItems.map((item) =>
-                  item.name === "How It Works" ? (
-                    <a
-                      key={item.name}
-                      href={item.href}
-                      onClick={(e) => {
-                        handleHowItWorksClick(e);
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="flex items-center gap-3 text-[16px] py-1.5 px-3 text-foreground font-medium hover:bg-surface-card transition-colors group"
-                    >
-                      <div className="p-2 bg-surface-raised border border-border rounded-full group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                        <item.icon className="w-4 h-4" />
-                      </div>
-                      {item.name}
-                    </a>
-                  ) : (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex items-center gap-3 px-3 py-1.5 text-foreground text-[16px] font-medium hover:bg-surface-card transition-colors group"
-                    >
-                      <div className="p-2 bg-surface-raised border border-border rounded-full group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                        <item.icon className="w-4 h-4" />
-                      </div>
-                      {item.name}
-                    </Link>
-                  )
-                )}
-
-                <div className="h-px my-4" />
 
                 <div className="mt-2 mb-8">
                   {/* Trigger */}
@@ -635,8 +599,43 @@ export default function Navbar() {
                     )}
                   </AnimatePresence>
                 </div>
+                <p className="text-xs font-semibold text-muted uppercase tracking-wide px-1 mb-2">
+                  Main Menu
+                </p>
 
-                <Link
+                {navItems.map((item) =>
+                  item.name === "How It Works" ? (
+                    <a
+                      key={item.name}
+                      href={item.href}
+                      onClick={(e) => {
+                        handleHowItWorksClick(e);
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="flex items-center gap-3 text-[16px] py-1.5 px-3 text-foreground font-medium hover:bg-surface-card transition-colors group"
+                    >
+                      <div className="p-2 bg-surface-raised border border-border rounded-full group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                        <item.icon className="w-4 h-4" />
+                      </div>
+                      {item.name}
+                    </a>
+                  ) : (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-3 py-1.5 text-foreground text-[16px] font-medium hover:bg-surface-card transition-colors group"
+                    >
+                      <div className="p-2 bg-surface-raised border border-border rounded-full group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                        <item.icon className="w-4 h-4" />
+                      </div>
+                      {item.name}
+                    </Link>
+                  )
+                )}
+
+                <div className="h-px my-4" />
+                {/* <Link
                   href="/dashboard/reddit"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="flex items-center justify-between p-4 bg-surface-card border border-border-solid/20 group active:scale-[0.98] transition-all mb-2"
@@ -662,7 +661,7 @@ export default function Navbar() {
                     </span>
                   </div>
                   <ArrowRight className="w-4 h-4 text-muted group-hover:translate-x-1 transition-transform" />
-                </Link>
+                </Link> */}
               </div>
 
               {!isLoggedIn && (
