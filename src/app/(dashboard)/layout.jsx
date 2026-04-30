@@ -9,6 +9,10 @@ import {
     PanelLeftOpen,
     X,
     Search,
+    MessageSquare,
+    Sparkles
+} from 'lucide-react';
+import { BsRobot } from "react-icons/bs";
     Sparkles,
 } from "lucide-react";
 import { FaReddit } from "react-icons/fa";
@@ -89,12 +93,9 @@ export default function DashboardLayout({ children }) {
     ];
 
     const engineItems = [
-        { name: "Reddit Analysis", icon: FaReddit, href: "/dashboard/reddit" },
-        {
-            name: "Playstore Analysis",
-            icon: FaGooglePlay,
-            href: "/dashboard/playstore",
-        },
+        { name: 'AI Lead Engine', icon: BsRobot, href: '/dashboard/ai-lead-engine/campaigns' },
+        { name: 'Reddit Analysis', icon: FaReddit, href: '/dashboard/reddit' },
+        { name: 'Playstore Analysis', icon: FaGooglePlay, href: '/dashboard/playstore' },
     ];
 
     const leadGenerationItems = [
@@ -364,14 +365,7 @@ function NavGroup({ label, items, pathname }) {
                                 <item.icon
                                     className="w-5 h-5"
                                     style={{
-                                        color:
-                                            item.name === "Reddit Analysis"
-                                                ? "#FF4500"
-                                                : item.name === "Playstore Analysis"
-                                                    ? "#4285F4"
-                                                    : isActive
-                                                        ? "var(--sidebar-item-active-text)"
-                                                        : "var(--sidebar-main)",
+                                        color: item.name === "Reddit Analysis" ? "#FF4500" : item.name === "Playstore Analysis" ? "#4285F4" : item.name === "AI Lead Engine" ? "#10b981" : isActive ? "var(--sidebar-item-active-text)" : "var(--sidebar-main)"
                                     }}
                                 />
                                 <span className="tracking-tight">{item.name}</span>
