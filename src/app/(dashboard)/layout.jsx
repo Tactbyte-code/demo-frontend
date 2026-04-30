@@ -21,7 +21,11 @@ import { auth } from "@/lib/firebase";
 import { useSidebarStore } from "@/context/useSidebarStore";
 import Image from "next/image";
 import FeedbackModal from "@/components/shared/FeedbackModal";
-import TicketChatPopup from "@/app/(dashboard)/tickets/page";
+
+// ✅ FIX: Import BOTH the popup (default) AND the trigger button (named)
+import TicketChatPopup, {
+    SidebarTrigger,
+} from "@/app/(dashboard)/tickets/page";
 
 export default function DashboardLayout({ children }) {
     const pathname = usePathname();
@@ -29,6 +33,9 @@ export default function DashboardLayout({ children }) {
     const [userPlan, setUserPlan] = useState(null);
     const [loading, setLoading] = useState(true);
     const [hasUnread, setHasUnread] = useState(false);
+
+    // ✅ FIX: Add ticketOpen state to control the popup open/close
+    const [ticketOpen, setTicketOpen] = useState(false);
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
@@ -51,8 +58,6 @@ export default function DashboardLayout({ children }) {
         }
     }, [pathname, setSidebarOpen]);
 
-    // Wrap in useCallback so it can be listed as a stable dep below.
-    // This also satisfies react-hooks/exhaustive-deps.
     const loadCredits = useCallback(async () => {
         try {
             const firebaseUser = auth.currentUser;
@@ -71,8 +76,6 @@ export default function DashboardLayout({ children }) {
         }
     }, [apiUrl]);
 
-    // Wrap in async IIFE so setState is never called synchronously in the effect body.
-    // Also include loadCredits in the dep array (now stable via useCallback).
     useEffect(() => {
         void (async () => {
             await loadCredits();
@@ -95,7 +98,7 @@ export default function DashboardLayout({ children }) {
     ];
 
     const leadGenerationItems = [
-        { name: "Lead Generation", icon: Search, beta: true },
+        { name: "Keyword Search", icon: Search, beta: true },
     ];
 
     return (
@@ -151,10 +154,9 @@ export default function DashboardLayout({ children }) {
                                 <div className="mb-8">
                                     <Link
                                         href="/"
-                                        className="relative inline-block no-underline group"
+                                        className="flex flex-row items-center no-underline group gap-2"
                                     >
-                                        {/* Logo */}
-                                        <div className="relative h-14 w-40">
+                                        <div className="relative h-10 w-40">
                                             <Image
                                                 src="/images/logo_with_text_2.png"
                                                 alt="Logo"
@@ -163,10 +165,13 @@ export default function DashboardLayout({ children }) {
                                                 priority
                                             />
                                         </div>
-
-                                        {/* 🔥 Beta Badge (top-left attached) */}
                                         <span
-                                            className="absolute -top-3.5 -left-0 flex bg-green-300 items-center gap-1 px-2 py-1 text-[9px] text-black tracking-wide font-bold uppercase border border-border"
+                                            className="mt-1 sm:mt-0 shrink-0 flex items-center gap-1 px-2 py-1 text-[10px] tracking-wide font-bold uppercase rounded-full"
+                                            style={{
+                                                background: "linear-gradient(135deg, #16a34a, #22c55e)",
+                                                color: "white",
+                                                boxShadow: "0 2px 8px rgba(34, 197, 94, 0.25)",
+                                            }}
                                         >
                                             <Sparkles className="w-3 h-3" />
                                             Beta
@@ -190,7 +195,7 @@ export default function DashboardLayout({ children }) {
 
                                 <div className="mt-7">
                                     <NavGroup
-                                        label="Keyword Search"
+                                        label="Lead Generation"
                                         items={leadGenerationItems}
                                         pathname={pathname}
                                     />
@@ -202,10 +207,16 @@ export default function DashboardLayout({ children }) {
                                 className="mt-auto px-4 py-5 space-y-3"
                                 style={{ borderTop: "1px solid var(--sidebar-border)" }}
                             >
-                                {/* Support / ticket popup trigger */}
-                                <TicketChatPopup
+                                {/*
+                  ✅ FIX: Use SidebarTrigger here (the visible button in the sidebar).
+                  It receives ticketOpen + setTicketOpen so it can toggle the popup.
+                  The actual popup (TicketChatPopup) is rendered OUTSIDE the sidebar
+                  below so it survives sidebar close/open on mobile.
+                */}
+                                <SidebarTrigger
+                                    open={ticketOpen}
+                                    setOpen={setTicketOpen}
                                     hasUnread={hasUnread}
-                                    setHasUnread={setHasUnread}
                                 />
 
                                 {/* Made in India */}
@@ -241,7 +252,7 @@ export default function DashboardLayout({ children }) {
                         <button
                             onClick={toggleSidebar}
                             title={sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
-                            className="flex items-center justify-center w-9 h-9 transition-colors cursor-pointer border border-border-solid text-subtle hover:bg-sidebar-hover hover:text-foreground hover:border-primary rounded-full"
+                            className="flex items-center justify-center w-9 h-9 md:w-8 md:h-8 transition-colors cursor-pointer border border-border-solid text-subtle hover:bg-sidebar-hover hover:text-foreground hover:border-primary rounded-md"
                         >
                             {sidebarOpen ? (
                                 <PanelLeftClose className="w-4 h-4" />
@@ -264,7 +275,21 @@ export default function DashboardLayout({ children }) {
                 <main className="flex-1 overflow-y-auto">{children}</main>
             </div>
 
+            {/* ── FEEDBACK MODAL ── */}
             <FeedbackModal />
+
+            {/*
+        ✅ FIX: TicketChatPopup lives HERE — at the root level of the layout,
+        completely OUTSIDE the sidebar <AnimatePresence> block.
+        This means the popup stays alive even when the sidebar closes on mobile.
+        It uses fixed positioning (z-[9999]) so it floats above everything.
+      */}
+            <TicketChatPopup
+                open={ticketOpen}
+                setOpen={setTicketOpen}
+                hasUnread={hasUnread}
+                setHasUnread={setHasUnread}
+            />
         </div>
     );
 }
@@ -273,31 +298,12 @@ export default function DashboardLayout({ children }) {
 function NavGroup({ label, items, pathname }) {
     return (
         <div>
-            {/* LABEL ROW */}
-            <div className="flex items-center justify-between mb-1.5 px-1">
-                <p
-                    className="text-xs font-semibold uppercase tracking-wide font-mono text-sidebar-muted"
-                    // style={{ color: "var(--sidebar-muted)" }}
-                >
-                    {label}
-                </p>
-
-                {label === "Keyword Search" && (
-                    <span
-                        className="text-[8px] font-bold uppercase tracking-wide px-1.5 py-0.5"
-                        style={{
-                            backgroundColor:
-                                "color-mix(in srgb, #f59e0b 15%, transparent)",
-                            color: "#f59e0b",
-                            border:
-                                "1px solid color-mix(in srgb, #f59e0b 30%, transparent)",
-                        }}
-                    >
-                        Coming Soon
-                    </span>
-                )}
-            </div>
-
+            <p
+                className="px-1 text-[9px] font-black uppercase tracking-[0.2em] mb-1.5 font-mono"
+                style={{ color: "var(--sidebar-muted)" }}
+            >
+                {label}
+            </p>
             <nav className="flex flex-col gap-2">
                 {items.map((item) => {
                     const isActive = pathname === item.href;
@@ -319,10 +325,20 @@ function NavGroup({ label, items, pathname }) {
                                         className="w-4 h-4 shrink-0"
                                         style={{ color: "var(--sidebar-main)" }}
                                     />
-                                    <span className="tracking-tight truncate">
-                                        {item.name}
-                                    </span>
+                                    <span className="tracking-tight truncate">{item.name}</span>
                                 </div>
+                                <span
+                                    className="shrink-0 text-[8px] font-bold uppercase tracking-wide px-1.5 py-0.5 ml-2"
+                                    style={{
+                                        backgroundColor:
+                                            "color-mix(in srgb, #f59e0b 15%, transparent)",
+                                        color: "#f59e0b",
+                                        border:
+                                            "1px solid color-mix(in srgb, #f59e0b 30%, transparent)",
+                                    }}
+                                >
+                                    Soon
+                                </span>
                             </div>
                         );
                     }
