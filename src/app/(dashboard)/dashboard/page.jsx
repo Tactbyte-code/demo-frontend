@@ -2,8 +2,6 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import {
-    TrendingUp,
-    ArrowUpRight,
     MessageSquare,
     Star,
     CheckCircle2,
@@ -215,7 +213,6 @@ export default function DashboardPage() {
     return (
         <div className="min-h-screen bg-background text-foreground">
 
-            {/* ✅ MOBILE STICKY HEADER */}
             <div className="xl:hidden sticky top-0 z-20 bg-background border-b border-border">
                 <QuickActions isMobile />
             </div>
@@ -288,4 +285,4 @@ export default function DashboardPage() {
             </div>
         </div>
     );
-}
+};
