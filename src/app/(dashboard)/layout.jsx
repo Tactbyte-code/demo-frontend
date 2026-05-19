@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { BsRobot } from "react-icons/bs";
 
-import { FaReddit } from "react-icons/fa";
+import { FaCheckCircle, FaReddit } from "react-icons/fa";
 import { FaGooglePlay } from "react-icons/fa";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -25,7 +25,6 @@ import { useSidebarStore } from "@/context/useSidebarStore";
 import Image from "next/image";
 import FeedbackModal from "@/components/shared/FeedbackModal";
 
-// ✅ FIX: Import BOTH the popup (default) AND the trigger button (named)
 import TicketChatPopup, {
     SidebarTrigger,
 } from "@/app/(dashboard)/tickets/page";
@@ -37,7 +36,6 @@ export default function DashboardLayout({ children }) {
     const [loading, setLoading] = useState(true);
     const [hasUnread, setHasUnread] = useState(false);
 
-    // ✅ FIX: Add ticketOpen state to control the popup open/close
     const [ticketOpen, setTicketOpen] = useState(false);
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -92,13 +90,15 @@ export default function DashboardLayout({ children }) {
     ];
 
     const engineItems = [
-        { name: 'AI Lead Engine', icon: BsRobot, href: '/dashboard/ai-lead-engine/campaigns' },
+        // { name: 'AI Lead Engine', icon: BsRobot, href: '/dashboard/ai-lead-engine/campaigns' },
         { name: 'Reddit Analysis', icon: FaReddit, href: '/dashboard/reddit' },
         { name: 'Playstore Analysis', icon: FaGooglePlay, href: '/dashboard/playstore' },
+        { name: 'Validate Idea', icon: FaCheckCircle, href: '/dashboard/validate-idea' },
     ];
 
     const leadGenerationItems = [
-        { name: "Keyword Search", icon: Search, beta: true },
+        { name: 'AI Lead Engine', icon: BsRobot, href: '/dashboard/ai-lead-engine/campaigns' },
+        // { name: "Keyword Search", icon: Search, beta: true },
     ];
 
     return (
@@ -207,12 +207,6 @@ export default function DashboardLayout({ children }) {
                                 className="mt-auto px-4 py-5 space-y-3"
                                 style={{ borderTop: "1px solid var(--sidebar-border)" }}
                             >
-                                {/*
-                  ✅ FIX: Use SidebarTrigger here (the visible button in the sidebar).
-                  It receives ticketOpen + setTicketOpen so it can toggle the popup.
-                  The actual popup (TicketChatPopup) is rendered OUTSIDE the sidebar
-                  below so it survives sidebar close/open on mobile.
-                */}
                                 <SidebarTrigger
                                     open={ticketOpen}
                                     setOpen={setTicketOpen}
@@ -278,12 +272,6 @@ export default function DashboardLayout({ children }) {
             {/* ── FEEDBACK MODAL ── */}
             <FeedbackModal />
 
-            {/*
-        ✅ FIX: TicketChatPopup lives HERE — at the root level of the layout,
-        completely OUTSIDE the sidebar <AnimatePresence> block.
-        This means the popup stays alive even when the sidebar closes on mobile.
-        It uses fixed positioning (z-[9999]) so it floats above everything.
-      */}
             <TicketChatPopup
                 open={ticketOpen}
                 setOpen={setTicketOpen}

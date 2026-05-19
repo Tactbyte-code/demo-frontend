@@ -66,7 +66,7 @@
   --primary: #9acdf1;
   --primary-hover: #1A6EAA;
   --secondary: #3A6A88;
-  --accent: #7fe8ff;
+  --accent: #7ae3fa;
   --navbar-border: #1A3D54;
 
   /* Surfaces */
@@ -89,9 +89,9 @@
   /* Text */
   --text-main: #C8E2EE;
   --text-muted: #447a96;
-  --text-subtle: #376283;
+  --text-subtle: #284c67;
   --text-light: #000;
-  --text-header: #5693b2;
+  --text-header: #00aaff;
 
   /* Border */
   --border: #1c5376;
