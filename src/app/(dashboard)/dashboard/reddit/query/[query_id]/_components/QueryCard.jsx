@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { CardHeader } from "@/components/ui/card";
-import { SectionLabel } from "@/features/reddit/components/SectionLabel";
+import { SectionLabel } from "@/app/(dashboard)/dashboard/reddit/query/[query_id]/_components/SectionLabel";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Pencil, Check, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
