@@ -1,11 +1,10 @@
-import { Link2 } from "lucide-react";
+import { File, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
-export function SectionLabel({ icon, label }) {
+export function SectionLabel({ data, icon, label }) {
     return (
         <div className="flex items-center justify-between w-full animate-in fade-in slide-in-from-left-2 duration-400 mb-4">
-
             {/* Left side: icon + label */}
             <div className="flex items-center gap-2">
                 <div
@@ -28,8 +27,9 @@ export function SectionLabel({ icon, label }) {
                 initial={{ opacity: 0.8 }}
                 animate={{ opacity: [0.8, 1, 0.8] }}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="relative inline-flex"
+                className="relative inline-flex gap-2"
             >
+
                 <Button
                     size="sm"
                     disabled
@@ -37,7 +37,7 @@ export function SectionLabel({ icon, label }) {
                         bg-info-bg text-foreground
                         border border-primary/20
                         cursor-not-allowed opacity-80"
-                    >
+                >
                     <Link2 className="w-3.5 h-3.5 shrink-0" />
                     Connect to Jira
                 </Button>

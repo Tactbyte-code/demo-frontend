@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { CheckCircle, CheckCircle2, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ActionsTab } from './summary/ActionsTab';
+import { SummaryExport } from "./SummaryExport";
 
 // panel variants
 const panelVariants = {
@@ -737,8 +738,10 @@ export const SummaryResult = ({ data, sources = [], approvedCount = 0, maxApprov
 
     return (
         <div className="py-4 space-y-4">
-
             {/* ── Header ── */}
+            <div className='mb-4'>
+                <SummaryExport  data={data} />
+            </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                     <p className="font-mono text-[10px] uppercase tracking-widest text-subtle mb-1">
