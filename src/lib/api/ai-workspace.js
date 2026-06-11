@@ -19,27 +19,6 @@ export const createWorkspace = async (body) => {
   return res.data;
 };
 
-/* =========================
-   Sources
-========================= */
-export const getSources = async (workspaceId) => {
-  const res = await api.get(`/ai-workspace/${workspaceId}/sources`);
-  return res.data;
-};
-
-export const uploadSource = async (workspaceId, file) => {
-  const formData = new FormData();
-  formData.append("file", file);
-  const res = await api.post(`/ai-workspace/${workspaceId}/sources`, formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
-  return res.data;
-};
-
-export const deleteSource = async (workspaceId, sourceId) => {
-  const res = await api.delete(`/ai-workspace/${workspaceId}/sources/${sourceId}`);
-  return res.data;
-};
 
 /* =========================
    Chat
@@ -66,5 +45,41 @@ export const createChatSession = async (workspaceId) => {
 
 export const deleteChatSession = async (workspaceId, sessionId) => {
   const res = await api.delete(`/ai-workspace/${workspaceId}/sessions/${sessionId}`);
+  return res.data;
+};
+
+
+/* =========================
+   Sources
+========================= */
+export const getSources = async (workspaceId) => {
+  const res = await api.get(`/ai-workspace/${workspaceId}/sources`);
+  return res.data;
+};
+
+// step 1 — get signed url + create source record
+export const requestUploadUrl = async (workspaceId, filename) => {
+  const res = await api.post(`/ai-workspace/${workspaceId}/sources/upload-url`, { filename });
+  return res.data; // { source, upload_url, token, path }
+};
+
+// step 2 — upload directly to supabase
+export const uploadToSupabase = async (uploadUrl, file) => {
+  const res = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: { "Content-Type": file.type },
+    body: file,
+  });
+  if (!res.ok) throw new Error("Upload to storage failed");
+};
+
+// step 3 — confirm
+export const confirmUpload = async (workspaceId, sourceId) => {
+  const res = await api.post(`/ai-workspace/${workspaceId}/sources/${sourceId}/confirm`);
+  return res.data;
+};
+
+export const deleteSource = async (workspaceId, sourceId) => {
+  const res = await api.delete(`/ai-workspace/${workspaceId}/sources/${sourceId}`);
   return res.data;
 };

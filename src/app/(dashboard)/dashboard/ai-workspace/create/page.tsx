@@ -4,8 +4,10 @@ import { createWorkspace } from "@/lib/api/ai-workspace";
 import { ArrowLeft, Loader2, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Page() {
+  const router = useRouter();
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -23,7 +25,7 @@ export default function Page() {
 
       console.log(res);
 
-      // window.location.href = "/dashboard/ai-workspace";
+      router.push(`/dashboard/ai-workspace/${res.id}`);
     } catch (err) {
       console.error(err);
     } finally {
