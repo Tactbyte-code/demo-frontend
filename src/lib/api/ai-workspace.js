@@ -44,8 +44,13 @@ export const deleteSource = async (workspaceId, sourceId) => {
 /* =========================
    Chat
 ========================= */
-export const sendMessage = async (workspaceId, content) => {
-  const res = await api.post(`/ai-workspace/${workspaceId}/chat`, { message: content });
+export const getMessages = async (workspaceId, sessionId) => {
+  const res = await api.get(`/ai-workspace/${workspaceId}/sessions/${sessionId}/messages`);
+  return res.data;
+};
+
+export const sendMessage = async (workspaceId, sessionId, message) => {
+  const res = await api.post(`/ai-workspace/${workspaceId}/sessions/${sessionId}/messages`, { message });
   return res.data;
 };
 
@@ -56,5 +61,10 @@ export const getChatSessions = async (workspaceId) => {
 
 export const createChatSession = async (workspaceId) => {
   const res = await api.post(`/ai-workspace/${workspaceId}/sessions`);
+  return res.data;
+};
+
+export const deleteChatSession = async (workspaceId, sessionId) => {
+  const res = await api.delete(`/ai-workspace/${workspaceId}/sessions/${sessionId}`);
   return res.data;
 };

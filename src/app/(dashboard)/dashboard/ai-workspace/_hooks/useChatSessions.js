@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { getChatSessions, createChatSession } from "@/lib/api/ai-workspace";
+import { getChatSessions, createChatSession, deleteChatSession } from "@/lib/api/ai-workspace";
 
 export function useChatSessions(workspaceId) {
   const [sessions, setSessions] = useState([]);
@@ -31,5 +31,14 @@ export function useChatSessions(workspaceId) {
     }
   }
 
-  return { sessions, loading, createSession };
+  async function deleteSession(sessionId) {
+    try {
+      await deleteChatSession(workspaceId, sessionId);
+      setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  return { sessions, loading, createSession, deleteSession };
 }

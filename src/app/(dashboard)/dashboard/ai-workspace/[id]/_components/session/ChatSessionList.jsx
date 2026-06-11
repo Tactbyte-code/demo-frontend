@@ -1,6 +1,6 @@
 import ChatSessionItem from "./ChatSessionItem";
 
-export default function ChatSessionList({ sessions, activeChatId, onSelect }) {
+export default function ChatSessionList({ sessions, activeChatId, onSelect, onDelete }) {
   if (!sessions || sessions.length === 0) {
     return (
       <p className="text-xs text-muted px-4 py-2">No chats yet. Start a new one.</p>
@@ -20,6 +20,7 @@ export default function ChatSessionList({ sessions, activeChatId, onSelect }) {
               session={session}
               active={session.id === activeChatId}
               onSelect={onSelect}
+              onDelete={onDelete}
             />
           ))}
         </li>

@@ -5,7 +5,7 @@ import { useChatSessions } from "../../../_hooks/useChatSessions";
 import { ChevronLeft, ChevronRight, SquarePen } from "lucide-react";
 
 export default function SessionSidebar({ workspaceId, activeChatId, onSelectChat }) {
-  const { sessions, loading, createSession } = useChatSessions(workspaceId);
+  const { sessions, loading, createSession, deleteSession } = useChatSessions(workspaceId);
   const [collapsed, setCollapsed] = useState(false);
 
   return (
@@ -58,6 +58,7 @@ export default function SessionSidebar({ workspaceId, activeChatId, onSelectChat
               sessions={sessions}
               activeChatId={activeChatId}
               onSelect={onSelectChat}
+              onDelete={deleteSession}
             />
           )}
         </div>
