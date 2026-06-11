@@ -10,7 +10,8 @@ import {
     X,
     Search,
     MessageSquare,
-    Sparkles
+    Sparkles,
+    Target
 } from 'lucide-react';
 import { BsRobot } from "react-icons/bs";
 
@@ -91,13 +92,14 @@ export default function DashboardLayout({ children }) {
 
     const engineItems = [
         // { name: 'AI Lead Engine', icon: BsRobot, href: '/dashboard/ai-lead-engine/campaigns' },
-        { name: 'Reddit Analysis', icon: FaReddit, href: '/dashboard/reddit' },
-        { name: 'Playstore Analysis', icon: FaGooglePlay, href: '/dashboard/playstore' },
-        { name: 'Validate Idea', icon: FaCheckCircle, href: '/dashboard/validate-idea' },
+        { name: 'Reddit Analysis', icon: FaReddit, href: '/dashboard/reddit', color: "#FF4500"},
+        { name: 'Playstore Analysis', icon: FaGooglePlay, href: '/dashboard/playstore', color: "#4285F4" },
+        { name: 'Validate Idea', icon: FaCheckCircle, href: '/dashboard/validate-idea', color: "#10b981" },
+        { name: 'AI Workspace', icon: BsRobot, href: '/dashboard/ai-workspace', color: "#FF4500" },
     ];
 
     const leadGenerationItems = [
-        { name: 'AI Lead Engine', icon: BsRobot, href: '/dashboard/ai-lead-engine/campaigns' },
+        { name: 'AI Lead Engine', icon: Target, href: '/dashboard/ai-lead-engine/campaigns', color: "#10b981" },
         // { name: "Keyword Search", icon: Search, beta: true },
     ];
 
@@ -351,9 +353,7 @@ function NavGroup({ label, items, pathname }) {
                             <div className="flex items-center gap-2.5">
                                 <item.icon
                                     className="w-5 h-5"
-                                    style={{
-                                        color: item.name === "Reddit Analysis" ? "#FF4500" : item.name === "Playstore Analysis" ? "#4285F4" : item.name === "AI Lead Engine" ? "#10b981" : isActive ? "var(--sidebar-item-active-text)" : "var(--sidebar-main)"
-                                    }}
+                                    style={{ color: item.color }}
                                 />
                                 <span className="tracking-tight">{item.name}</span>
                             </div>

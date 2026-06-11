@@ -35,7 +35,7 @@
     "**/*.mts",
     "**/*.ts",
     "**/*.tsx"
-  ],
+, "src/app/(dashboard)/dashboard/ai-workspace/[id]/Layout.jsx"  ],
   "exclude": [
     "node_modules"
   ]
