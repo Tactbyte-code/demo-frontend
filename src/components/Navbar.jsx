@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   ChevronDown,
+  ChevronRight,
   LogIn,
   Activity,
   Zap,
@@ -315,116 +316,174 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* ── DESKTOP FEATURES MEGA MENU ── */}
         <AnimatePresence>
           {isFeaturesOpen && (
             <motion.div
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
-              initial={{ opacity: 0, y: -10, scale: 0.98 }}
+              initial={{ opacity: 0, y: 8, scale: 0.99 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.98 }}
-              className="absolute hidden lg:block rounded-none top-full left-1/2 -translate-x-1/2 w-[680px] bg-navbar-bg backdrop-blur-2xl border border-primary shadow-2xl z-50 origin-top overflow-hidden"
+              exit={{ opacity: 0, y: 6, scale: 0.99 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+              className="absolute hidden lg:block top-full left-1/2 -translate-x-1/2 w-[720px] bg-popover/90 backdrop-blur-xl border border-border/60 shadow-2xl rounded-2xl z-50 origin-top overflow-hidden ring-1 ring-black/[0.03] dark:ring-white/[0.05]"
             >
-              <div className="flex">
+              <div className="flex divide-x divide-border/40">
 
-                {/* ── LEFT: vertical feature list ── */}
-                <div className="w-[220px] shrink-0 border-r border-primary p-3 flex flex-col gap-1">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-muted px-3 pb-2 pt-1">
-                    Features
-                  </p>
+                {/* ── LEFT: Navigation Rail (Solid Background) ── */}
+                <div className="w-[260px] shrink-0 p-3 bg-muted dark:bg-primary flex flex-col gap-1">
+                  <span className="text-[10px] font-semibold tracking-wider text-light/60 uppercase px-2.5 pt-1.5 pb-2">
+                    Core Platform
+                  </span>
+
                   {[
                     { id: "reddit", icon: Activity, title: "Reddit Analysis", desc: "Mine real user conversations.", href: "/dashboard/reddit" },
                     { id: "playstore", icon: LayoutGrid, title: "Playstore Analysis", desc: "Decode app reviews.", href: "/dashboard/playstore" },
                     { id: "keyword", icon: Search, title: "Keyword Tracking", desc: "Track trending keywords.", href: "/dashboard/lead" },
-                  ].map((feature) => (
-                    <button
-                      key={feature.id}
-                      onMouseEnter={() => setHoveredFeature(feature.id)}
-                      onClick={() => { router.push(feature.href); setIsFeaturesOpen(false); }}
-                      className={`flex items-center gap-3 px-3 py-3 text-left transition-all relative
-                ${hoveredFeature === feature.id
-                          ? "bg-primary/10 text-primary"
-                          : "text-foreground hover:bg-primary/5"
-                        }`}
-                    >
-                      {/* active left bar */}
-                      <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary transition-all duration-200
-                ${hoveredFeature === feature.id ? "opacity-100" : "opacity-0"}`} />
-                      <div className={`p-1.5 rounded-full transition-colors shrink-0
-                ${hoveredFeature === feature.id ? "bg-primary/15 text-primary" : "bg-surface-raised text-muted"}`}>
-                        <feature.icon className="w-3.5 h-3.5" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-xs font-semibold truncate transition-colors
-                  ${hoveredFeature === feature.id ? "text-primary" : "text-foreground"}`}>
-                          {feature.title}
-                        </p>
-                        <p className="text-[10px] text-muted truncate mt-0.5">{feature.desc}</p>
-                      </div>
-                    </button>
-                  ))}
+                  ].map((feature) => {
+                    const currentSelected = hoveredFeature || "reddit";
+                    const isActive = currentSelected === feature.id;
+                    const Icon = feature.icon;
 
-                  {/* CTA */}
-                  <button
-                    onClick={() => {
-                      const href = { reddit: "/dashboard/reddit", playstore: "/dashboard/playstore", keyword: "/dashboard/lead" }[hoveredFeature];
-                      if (href) { router.push(href); setIsFeaturesOpen(false); }
-                    }}
-                    className="mt-3 mx-2 flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-bold bg-primary text-white hover:opacity-90 transition-all"
-                  >
-                    Want to try? <ArrowRight className="w-3 h-3" />
-                  </button>
-                </div>
-
-                {/* ── RIGHT: use cases ── */}
-                <div className="flex-1 p-4 bg-surface-raised">
-                  <AnimatePresence mode="wait">
-                    {hoveredFeature ? (
-                      <motion.div
-                        key={hoveredFeature}
-                        initial={{ opacity: 0, x: 8 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -8 }}
-                        transition={{ duration: 0.15 }}
+                    return (
+                      <button
+                        key={feature.id}
+                        onMouseEnter={() => setHoveredFeature(feature.id)}
+                        onClick={() => {
+                          router.push(feature.href);
+                          setIsFeaturesOpen(false);
+                        }}
+                        className="group relative flex items-start gap-3 p-2.5 rounded-xl text-left transition-colors duration-150 outline-none select-none"
                       >
-                        <p className="text-[10px] font-black uppercase tracking-widest text-muted px-1 pb-3">
-                          Use Cases
-                        </p>
-                        <div className="flex flex-col gap-0.5">
-                          {useCases[hoveredFeature].map((item, i) => (
-                            <div
-                              key={i}
-                              className="flex items-center gap-3 px-3 py-2.5 hover:bg-primary/5 transition-all group cursor-default"
+                        {/* Fluid Active Background */}
+                        {isActive && (
+                          <motion.div
+                            layoutId="activeFeatureIndicator"
+                            className="absolute inset-0 rounded-xl bg-background shadow-xs border border-border/70"
+                            transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                          />
+                        )}
+
+                        <div
+                          className={`relative z-10 p-2 rounded-lg transition-colors shrink-0 ${isActive
+                            ? "bg-primary/10 text-primary"
+                            : "bg-background/80 text-muted-foreground group-hover:text-foreground"
+                            }`}
+                        >
+                          <Icon className="w-4 h-4" />
+                        </div>
+
+                        <div className="relative z-10 flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <p
+                              className={`text-xs font-medium tracking-tight truncate ${isActive ? "text-foreground font-semibold" : "text-light group-hover:text-foreground"
+                                }`}
                             >
-                              <item.icon className="w-3.5 h-3.5 text-primary shrink-0" />
-                              <div>
-                                <p className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors leading-tight">
-                                  {item.title}
-                                </p>
-                                <p className="text-[10px] text-muted mt-0.5">{item.desc}</p>
-                              </div>
-                            </div>
-                          ))}
+                              {feature.title}
+                            </p>
+                            <ChevronRight
+                              className={`w-3 h-3 text-muted-foreground/60 transition-transform ${isActive ? "translate-x-0 opacity-100" : "-translate-x-1 opacity-0"
+                                }`}
+                            />
+                          </div>
+                          <p className={`text-[11px] line-clamp-1 mt-0.5 ${isActive ? "text-subtle" : "text-light/60 group-hover:text-muted-foreground"}`}>
+                            {feature.desc}
+                          </p>
                         </div>
-                      </motion.div>
-                    ) : (
-                      <motion.div
-                        key="empty"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="flex items-center justify-center gap-3 h-full py-8"
-                      >
-                        <div className="p-2.5 rounded-full bg-surface-raised">
-                          <Zap className="w-4 h-4 text-muted" />
-                        </div>
-                        <p className="text-sm text-muted">Hover a feature to explore</p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                      </button>
+                    );
+                  })}
                 </div>
 
+                {/* ── RIGHT: Dynamic Context Panel ── */}
+                <div className="flex-1 p-4 bg-background/50 flex flex-col justify-between min-h-[260px]">
+                  <div>
+                    <p className="text-[10px] font-semibold tracking-wider text-muted-foreground uppercase px-1 pb-2.5">
+                      Applications & Solutions
+                    </p>
+
+                    <AnimatePresence mode="wait">
+                      {useCases[hoveredFeature || "reddit"] ? (
+                        <motion.div
+                          key={hoveredFeature || "reddit"}
+                          initial={{ opacity: 0, y: 4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -4 }}
+                          transition={{ duration: 0.12 }}
+                          className="grid grid-cols-1 gap-2"
+                        >
+                          {useCases[hoveredFeature || "reddit"].map((item, i) => {
+                            const CaseIcon = item.icon || Zap;
+                            const currentTarget = hoveredFeature || "reddit";
+                            const routeMap = {
+                              reddit: "/dashboard/reddit",
+                              playstore: "/dashboard/playstore",
+                              keyword: "/dashboard/ai-lead-engine/campaigns",
+                            };
+
+                            return (
+                              <div
+                                key={i}
+                                onClick={() => {
+                                  router.push(routeMap[currentTarget] || "/dashboard/reddit");
+                                  setIsFeaturesOpen(false);
+                                }}
+                                className="group flex items-start gap-3 p-2.5 rounded-xl border border-transparent hover:border-border/50 hover:bg-muted/8 transition-all cursor-pointer"
+                              >
+                                <div className="mt-0.5 p-1.5 rounded-md bg-primary/5 text-primary shrink-0 group-hover:bg-primary/10 transition-colors">
+                                  <CaseIcon className="w-3.5 h-3.5" />
+                                </div>
+                                <div>
+                                  <p className="text-xs font-medium text-foreground tracking-tight group-hover:text-primary transition-colors flex items-center gap-1">
+                                    {item.title}
+                                    <span className="inline-block transition-transform duration-150 group-hover:translate-x-0.5 text-[10px]">
+                                      &rarr;
+                                    </span>
+                                  </p>
+                                  <p className="text-[11px] text-muted-foreground leading-relaxed mt-0.5">
+                                    {item.desc}
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </motion.div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center h-48 gap-2 text-center">
+                          <div className="p-2.5 rounded-full bg-muted/60 text-muted-foreground">
+                            <Zap className="w-4 h-4" />
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Select an engine to inspect use cases
+                          </p>
+                        </div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── BOTTOM: SaaS Micro-Bar ── */}
+              <div className="px-4 py-2.5 bg-muted/40 border-t border-border/40 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-[11px]">Real-time analytics engine active</span>
+                </div>
+
+                <button
+                  onClick={() => {
+                    const activeHref = {
+                      reddit: "/dashboard/reddit",
+                      playstore: "/dashboard/playstore",
+                      keyword: "/dashboard/lead",
+                    }[hoveredFeature || "reddit"] || "/dashboard/reddit";
+                    router.push(activeHref);
+                    setIsFeaturesOpen(false);
+                  }}
+                  className="inline-flex items-center gap-1.5 font-medium text-[11px] text-primary hover:underline group"
+                >
+                  Explore this module
+                  <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
+                </button>
               </div>
             </motion.div>
           )}
@@ -695,7 +754,7 @@ function FeatureItem({ icon: Icon, title, desc }) {
       <p className="text-xs text-muted ml-8">{desc}</p>
     </div>
   );
-}
+};
 
 function MegaMenuCard({ href, img, label, title }) {
   return (
@@ -708,4 +767,4 @@ function MegaMenuCard({ href, img, label, title }) {
       </div>
     </Link>
   );
-}
+};
