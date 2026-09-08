@@ -147,7 +147,7 @@ const ScoreRing = ({ score }) => {
         score >= 70 ? "text-emerald-600" : score >= 40 ? "text-amber-500" : "text-rose-500"
 
     return (
-        <div className="relative w-36 h-36 flex items-center justify-center">
+        <div className="relative w-50 h-42 flex items-center justify-center">
             <svg className="w-full h-full -rotate-90" viewBox="0 0 128 128">
                 <circle
                     cx="64"
