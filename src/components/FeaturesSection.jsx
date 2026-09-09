@@ -9,6 +9,7 @@ import {
     Lightbulb,
     CheckCircle2,
     ArrowRight,
+    ChevronRight,
 } from "lucide-react";
 
 const features = [
@@ -113,10 +114,16 @@ export default function FeaturesTabsSection() {
                 </div>
 
                 {/* Container */}
-                <div className="border border-border overflow-hidden shadow-sm rounded-lg sm:rounded-none">
+                <div className="border border-border overflow-hidden shadow-sm rounded-lg sm:rounded-none relative">
+                    {/* Floating Mobile Swipe Hint (Fixed to the container wrapper so it stays in place when scrolling tabs) */}
+                    <div className="absolute right-3 top-3 md:hidden pointer-events-none z-20 flex items-center gap-1 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full text-white text-[10px] font-medium animate-pulse shadow-md">
+                        <span>swipe</span>
+                        <ChevronRight className="w-3 h-3 animate-bounce" />
+                    </div>
+
                     {/* Navigation Tabs - Swipeable on Mobile/Tablet */}
                     <div className="border-b border-border bg-primary overflow-x-auto scrollbar-none">
-                        <div className="flex md:grid md:grid-cols-4 w-full min-w-max md:min-w-0">
+                        <div className="flex md:grid md:grid-cols-4 w-full min-w-max md:min-w-0 pr-16 md:pr-0">
                             {features.map((feature) => {
                                 const TabIcon = feature.icon;
                                 const isSelected = selectedFeatureId === feature.id;
