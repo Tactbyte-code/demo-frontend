@@ -1,99 +1,139 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import Link from "next/link";
 import {
-    Database,
-    Zap,
-    BrainCircuit,
-    Download,
-    Terminal,
+    MessageSquare,
+    Play,
+    Sparkles,
+    Lightbulb,
+    CheckCircle2,
+    ArrowRight,
 } from "lucide-react";
 
 const features = [
     {
-        id: "db",
-        title: "Intelligent Database",
-        shortTitle: "Database",
+        id: "reddit",
+        featureNumber: "Feature 01",
+        title: "Reddit Pain Point Analyzer",
+        shortTitle: "Reddit Analyzer",
+        tag: "Social Intelligence",
         description:
-            "A centralized repository of millions of global conversations, indexed and ready for deep-dive research.",
-        icon: Database,
-        tag: "Data Ingestion",
-        stats: "2.4B Records Indexed",
+            "Discover recurring customer frustrations, feature requests, and unmet needs from thousands of Reddit discussions using AI-powered clustering and summarization.",
+        videoSrc: "/videos/reddit.mp4",
+        ctaText: "Explore Reddit Analyzer",
+        ctaHref: "/dashboard/reddit",
+        highlights: [
+            "Summarizes thousands of discussions effectively",
+            "Groups similar customer pain points",
+            "Find hidden startup opportunities",
+        ],
+        icon: MessageSquare,
     },
     {
-        id: "signals",
-        title: "Demand Signals",
-        shortTitle: "Signals",
+        id: "playstore",
+        featureNumber: "Feature 02",
+        title: "Google Play Review Intelligence",
+        shortTitle: "Play Store Insights",
+        tag: "App Store Analytics",
         description:
-            "Identify high-velocity trends before they hit the mainstream. See what users are asking for in real-time.",
-        icon: Zap,
-        tag: "Trend Analysis",
-        stats: "Real-time Detection",
+            "Analyze app reviews at scale to uncover bugs, feature requests, usability issues, and user sentiment without reading every review manually.",
+        videoSrc: "/videos/play.mp4",
+        ctaText: "Explore Play Store Insights",
+        ctaHref: "/dashboard/playstore",
+        highlights: [
+            "AI-generated review summaries",
+            "Developer-friendly bug and feature reports",
+            "Prioritize features users actually request",
+        ],
+        icon: Play,
     },
     {
-        id: "ai",
-        title: "AI Sentiment Analysis",
-        shortTitle: "AI Sentiment",
+        id: "validate-idea",
+        featureNumber: "Feature 03",
+        title: "Validate Startup Idea",
+        shortTitle: "Validate Idea",
+        tag: "Idea Validation",
         description:
-            "Our proprietary models categorize raw feedback into actionable emotional insights.",
-        icon: BrainCircuit,
-        tag: "NLP Engine",
-        stats: "99.2% Accuracy",
+            "Test and validate your product concepts against authentic market demand signals, real customer pain points, and competitive gaps in minutes.",
+        videoSrc: "/videos/validate-idea.mp4",
+        ctaText: "Validate Your Idea",
+        ctaHref: "/dashboard/validate-idea",
+        highlights: [
+            "Real-time market demand scoring",
+            "Competitor gap and risk breakdown",
+            "Instant AI-driven viability report",
+        ],
+        icon: Lightbulb,
     },
     {
-        id: "export",
-        title: "Instant Data Export",
-        shortTitle: "Export",
+        id: "lead-engine",
+        featureNumber: "Feature 04",
+        title: "AI Lead Engine",
+        shortTitle: "Lead Engine",
+        tag: "Growth & Conversion",
         description:
-            "Export clean CSV/JSON outputs directly into your engineering workflow.",
-        icon: Download,
-        tag: "Portability",
-        stats: "REST API v2",
-    }
+            "Identify businesses and users actively discussing problems related to your product. Turn customer conversations into qualified sales opportunities.",
+        videoSrc: "/videos/lead.mp4",
+        ctaText: "Launch Lead Engine",
+        ctaHref: "/dashboard/ai-lead-engine/campaigns",
+        highlights: [
+            "Intent-based lead discovery",
+            "Find prospects before competitors",
+            "Generate high-quality outreach lists",
+        ],
+        icon: Sparkles,
+    },
 ];
 
 export default function FeaturesTabsSection() {
-    const [activeTab, setActiveTab] = useState("db");
+    const [selectedFeatureId, setSelectedFeatureId] = useState("reddit");
 
-    const activeFeature = features.find(f => f.id === activeTab);
+    const selectedFeature =
+        features.find((f) => f.id === selectedFeatureId) || features[0];
+
+    const IconComponent = selectedFeature.icon;
 
     return (
-        <section className="pt-8 pb-16 md:pb-24 bg-background">
-            <div className="max-w-7xl mx-auto px-5 md:px-6">
-
+        <section className="py-12 sm:py-16 md:py-24 bg-background">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6">
                 {/* Header */}
-                <div className="mb-10 md:mb-14 max-w-2xl">
-                    <p className="text-[10px] md:text-xs uppercase tracking-[0.3em] text-primary font-bold mb-4">
-                        System Capabilities
+                <div className="mb-8 sm:mb-12 md:mb-14 max-w-2xl">
+                    <p className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-primary font-black mb-3">
+                        Key Features
                     </p>
-                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight text-foreground leading-tight md:leading-none">
-                        High-fidelity <br />
-                        <span className="text-primary">market decoding.</span>
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black tracking-tight text-foreground leading-tight sm:leading-none">
+                        Powerful AI. <br />
+                        <span className="text-primary font-black">Actionable Insights.</span>
                     </h2>
+                    <p className="mt-3 sm:mt-4 text-xs sm:text-sm md:text-base text-muted-foreground font-normal leading-relaxed">
+                        Every feature is designed to help teams discover opportunities,
+                        understand customers, and make better product decisions.
+                    </p>
                 </div>
 
                 {/* Container */}
-                <div className="border border-border overflow-hidden shadow-sm">
-                    {/* Tabs (Scrollable on mobile, Grid on desktop) */}
-                    <div className="border-b border-border bg-primary overflow-x-auto scrollbar-hide">
+                <div className="border border-border overflow-hidden shadow-sm rounded-lg sm:rounded-none">
+                    {/* Navigation Tabs - Swipeable on Mobile/Tablet */}
+                    <div className="border-b border-border bg-primary overflow-x-auto scrollbar-none">
                         <div className="flex md:grid md:grid-cols-4 w-full min-w-max md:min-w-0">
                             {features.map((feature) => {
-                                const Icon = feature.icon;
-                                const isActive = activeTab === feature.id;
+                                const TabIcon = feature.icon;
+                                const isSelected = selectedFeatureId === feature.id;
 
                                 return (
                                     <button
                                         key={feature.id}
-                                        onClick={() => setActiveTab(feature.id)}
-                                        className={`flex-1 cursor-pointer px-4 md:px-6 py-4 flex items-center justify-center gap-2 border-r border-white/10 last:border-r-0 transition-all
-                                                ${isActive
-                                                ? "bg-white/10 text-white"
-                                                : "text-white/70 hover:bg-white/5 hover:text-white"
-                                            }`}
+                                        type="button"
+                                        onClick={() => setSelectedFeatureId(feature.id)}
+                                        className={`flex-1 cursor-pointer px-4 sm:px-5 py-3.5 sm:py-4 flex items-center justify-center gap-2 border-r border-white/20 last:border-r-0 transition-all ${
+                                            isSelected
+                                                ? "bg-primary text-white"
+                                                : "text-white/60 bg-border-solid hover:bg-primary/70 hover:text-white"
+                                        }`}
                                     >
-                                        <Icon className="w-4 h-4 shrink-0" />
-                                        <span className="text-sm md:text-base font-semibold whitespace-nowrap">
-                                            {/* Show shorter title on mobile if needed, or stick to full title */}
+                                        <TabIcon className="w-4 h-4 shrink-0" />
+                                        <span className="text-xs sm:text-sm md:text-base font-semibold whitespace-nowrap">
                                             {feature.title}
                                         </span>
                                     </button>
@@ -102,66 +142,86 @@ export default function FeaturesTabsSection() {
                         </div>
                     </div>
 
-                    {/* Content */}
-                    <div className="p-6 md:p-10 bg-surface">
-                        {activeFeature && (
-                            <div className="flex flex-col lg:flex-row lg:items-start gap-8 lg:gap-12">
-                                {/* Text Content */}
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-4 mb-6">
-                                        <div className="p-3 border border-border bg-background text-primary rounded-full shrink-0">
-                                            <activeFeature.icon className="w-5 h-5 md:w-6 md:h-6" />
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] md:text-xs uppercase tracking-[0.2em] text-primary font-bold">
-                                                {activeFeature.tag}
-                                            </p>
-                                            <h3 className="text-lg md:text-xl font-bold text-foreground">
-                                                {activeFeature.title}
-                                            </h3>
-                                        </div>
-                                    </div>
-
-                                    <p className="text-muted-foreground mb-8 max-w-lg text-sm md:text-base leading-relaxed">
-                                        {activeFeature.description}
-                                    </p>
+                    {/* Content Panel */}
+                    <div className="p-4 sm:p-6 md:p-10 bg-surface">
+                        <div className="flex flex-col lg:flex-row lg:items-center gap-8 lg:gap-12">
+                            {/* Text Content Column */}
+                            <div className="flex-1 flex items-start gap-3 sm:gap-4 md:gap-5">
+                                {/* Left: Fixed Icon */}
+                                <div className="p-2.5 sm:p-3 border border-border bg-background text-primary rounded-full shrink-0">
+                                    <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
                                 </div>
 
-                                {/* Terminal Panel */}
-                                <div className="flex-1 bg-black text-white font-mono text-[11px] md:text-xs p-5 md:p-6 border border-white/10 relative rounded-none shadow-2xl">
-                                    <div className="flex gap-2 mb-4 border-b border-white/10 pb-3">
-                                        <div className="w-2.5 h-2.5 bg-[#FF5F56] rounded-full" />
-                                        <div className="w-2.5 h-2.5 bg-[#FFBD2E] rounded-full" />
-                                        <div className="w-2.5 h-2.5 bg-[#27C93F] rounded-full" />
+                                {/* Right: Aligned Metadata, Title, Description, Highlights, and CTA */}
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-[10px] md:text-xs uppercase tracking-[0.2em] text-primary font-bold mb-1">
+                                        {selectedFeature.featureNumber} • {selectedFeature.tag}
+                                    </p>
+                                    <h3 className="text-lg sm:text-xl md:text-2xl font-extrabold text-foreground tracking-tight mb-2 sm:mb-3">
+                                        {selectedFeature.title}
+                                    </h3>
+
+                                    <p className="text-muted-foreground mb-4 sm:mb-6 text-xs sm:text-sm md:text-base font-normal leading-relaxed">
+                                        {selectedFeature.description}
+                                    </p>
+
+                                    {/* Highlights List */}
+                                    <div className="space-y-2.5 sm:space-y-3 pt-3 sm:pt-4 mb-6 sm:mb-8 border-t border-border">
+                                        {selectedFeature.highlights.map((highlight) => (
+                                            <div
+                                                key={highlight}
+                                                className="flex items-center gap-2.5 sm:gap-3 text-xs sm:text-sm"
+                                            >
+                                                <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                                                <span className="text-foreground font-medium">
+                                                    {highlight}
+                                                </span>
+                                            </div>
+                                        ))}
                                     </div>
 
-                                    <div className="space-y-2.5 text-white/70">
-                                        <p>
-                                            <span className="text-primary font-bold">status:</span>{" "}
-                                            <span className="text-green-400">"operational"</span>
-                                        </p>
-                                        <p>
-                                            <span className="text-primary font-bold">metric:</span>{" "}
-                                            <span className="text-yellow-200">"{activeFeature.stats}"</span>
-                                        </p>
-                                        <p>
-                                            <span className="text-primary font-bold">
-                                                integrity_check:
-                                            </span>{" "}
-                                            <span className="text-blue-400">true</span>
-                                        </p>
-                                        <p>
-                                            <span className="text-primary font-bold">
-                                                last_sync:
-                                            </span>{" "}
-                                            "{new Date().toLocaleTimeString()}"
-                                        </p>
+                                    {/* Dynamic Route CTA */}
+                                    <div>
+                                        <Link
+                                            href={selectedFeature.ctaHref}
+                                            className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 bg-primary text-white font-semibold text-xs sm:text-sm hover:opacity-95 transition-opacity rounded-sm"
+                                        >
+                                            <span>{selectedFeature.ctaText}</span>
+                                            <ArrowRight className="w-4 h-4" />
+                                        </Link>
                                     </div>
-
-                                    <Terminal className="absolute bottom-4 right-4 w-6 h-6 opacity-10" />
                                 </div>
                             </div>
-                        )}
+
+                            {/* Video Player Showcase */}
+                            <div className="flex-1 w-full bg-black border border-white/10 overflow-hidden shadow-xl sm:shadow-2xl rounded-sm relative">
+                                <div className="flex items-center justify-between px-3 sm:px-4 py-1.5 border-b border-white/10 bg-black/80">
+                                    <div className="flex gap-1.5 sm:gap-2">
+                                        <div className="w-2 h-2 bg-[#FF5F56] rounded-full" />
+                                        <div className="w-2 h-2 bg-[#FFBD2E] rounded-full" />
+                                        <div className="w-2 h-2 bg-[#27C93F] rounded-full" />
+                                    </div>
+                                    <span className="font-mono text-[9px] sm:text-[10px] text-white/50 truncate max-w-[200px]">
+                                        {selectedFeature.title}
+                                    </span>
+                                </div>
+
+                                <div className="relative aspect-video w-full bg-black/40 flex items-center justify-center">
+                                    <video
+                                        key={selectedFeature.videoSrc}
+                                        autoPlay
+                                        loop
+                                        muted
+                                        playsInline
+                                        preload="metadata"
+                                        className="w-full h-full object-cover"
+                                    >
+                                        <source src={selectedFeature.videoSrc} type="video/mp4" />
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
