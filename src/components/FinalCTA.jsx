@@ -69,7 +69,7 @@ export default function FinalCTA() {
                             </Link>
 
                             <Link
-                                href="/demo"
+                                href="/contact"
                                 className="group flex items-center gap-2 bg-white/5 border border-white/10 text-white px-10 py-5 rounded-none font-black text-sm uppercase tracking-widest hover:bg-white/10 transition-all"
                             >
                                 Book a Demo
