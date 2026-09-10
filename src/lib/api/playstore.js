@@ -63,6 +63,7 @@ export const triggerFetch = async (queryId) => {
  * Call only when status === "FETCHED".
  */
 export const triggerSummarize = async (queryId) => {
+    console.log('trigger summarize called');
     const response = await api.post(`/playstore/query/${queryId}/summarize`);
     return response.data;
 };

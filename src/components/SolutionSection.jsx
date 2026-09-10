@@ -180,16 +180,16 @@ export default function SolutionSection() {
                 features instantly.
               </p>
               <div className="flex flex-wrap gap-3">
-                <div className="flex items-center gap-2 bg-white/5 hover:bg-white/10 px-4 py-2.5 border border-white/10 hover:border-white/20 transition-all duration-300 cursor-pointer">
+                {/* <div className="flex items-center gap-2 bg-white/5 hover:bg-white/10 px-4 py-2.5 border border-white/10 hover:border-white/20 transition-all duration-300 cursor-pointer">
                   <FileJson className="w-4 h-4 text-accent" />
                   <span className="text-xs font-bold text-white uppercase tracking-wide">
                     JSON Output
                   </span>
-                </div>
-                <div className="flex items-center gap-2 bg-white/5 hover:bg-white/10 px-4 py-2.5 border border-white/10 hover:border-white/20 transition-all duration-300 cursor-pointer">
+                </div> */}
+                <div className="flex items-center gap-2 bg-white/20 px-4 py-2.5 border border-white/20 transition-all duration-300">
                   <FileSpreadsheet className="w-4 h-4 text-accent" />
                   <span className="text-xs font-bold text-white uppercase tracking-wide">
-                    CSV Dataset
+                    Excel Dataset
                   </span>
                 </div>
               </div>
