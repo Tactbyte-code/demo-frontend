@@ -504,7 +504,7 @@ function InlineReviewCard({ review, index }) {
                         }}
                     >
                         <span className="font-semibold text-[var(--color-primary)]">
-                            Dev reply ·{" "}
+                            Developer reply - {" "}
                         </span>
                         {review.reply_content}
                     </div>
