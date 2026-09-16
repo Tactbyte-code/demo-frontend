@@ -36,7 +36,6 @@ export const getQuery = async (queryId) => {
 };
 
 // ─── Clarification ────────────────────────────────────────────────────────────
-
 /**
  * POST /reddit/query/:id/clarify
  * Submit answer to a clarifying question.

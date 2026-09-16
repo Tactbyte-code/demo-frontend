@@ -68,8 +68,6 @@ export default function RedditIntelligencePage() {
         setStatus(null);
 
         try {
-            console.log('function entered ...');
-
             const response = await createQuery(query);
 
             if (response) {
@@ -82,7 +80,7 @@ export default function RedditIntelligencePage() {
             if (response.status === "CLARIFYING") {
                 setNavigating(true);
                 router.push(`/dashboard/reddit/query/${response.id}/clarify`);
-            }
+            };
 
             if (response.status === "CLARIFIED") {
                 setNavigating(true);
@@ -305,7 +303,6 @@ export default function RedditIntelligencePage() {
             </div>
 
             <RedditQueryHistoryTable />
-
         </div>
     );
 }
