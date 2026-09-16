@@ -103,8 +103,8 @@ export default function ClarifyPage({ params }) {
     const finalAnswer = skip
       ? ""
       : selectedOption === "others"
-      ? answer.trim()
-      : selectedOption;
+        ? answer.trim()
+        : selectedOption;
 
     try {
       const response = await submitClarification(query_id, finalAnswer, skip);

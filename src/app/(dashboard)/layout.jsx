@@ -92,7 +92,7 @@ export default function DashboardLayout({ children }) {
 
     const engineItems = [
         // { name: 'AI Lead Engine', icon: BsRobot, href: '/dashboard/ai-lead-engine/campaigns' },
-        { name: 'Reddit Analysis', icon: FaReddit, href: '/dashboard/reddit', color: "#FF4500"},
+        { name: 'Reddit Analysis', icon: FaReddit, href: '/dashboard/reddit', color: "#FF4500" },
         { name: 'Playstore Analysis', icon: FaGooglePlay, href: '/dashboard/playstore', color: "#4285F4" },
         { name: 'Validate Idea', icon: FaCheckCircle, href: '/dashboard/validate-idea', color: "#10b981" },
         { name: 'AI Workspace', icon: BsRobot, href: '/dashboard/ai-workspace', color: "#FF4500" },
@@ -163,6 +163,7 @@ export default function DashboardLayout({ children }) {
                                                 src="/images/logo_with_text_2.png"
                                                 alt="Logo"
                                                 fill
+                                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                                 className="object-contain"
                                                 priority
                                             />
