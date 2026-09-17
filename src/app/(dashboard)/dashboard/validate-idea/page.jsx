@@ -1,14 +1,15 @@
 "use client"
 
 import React, { useState } from "react"
+import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { FaLightbulb, FaSpinner } from "react-icons/fa"
-import { createQuery, triggerSearc, generateContext } from "@/features/validate/api/validate.api"
+import { createQuery } from "@/features/validate/api/validate.api"
 
 const ValidateIdeaPage = () => {
+    const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState(null)
-    const [validationResult, setValidationResult] = useState(null)
 
     const [form, setForm] = useState({
         title: "",
@@ -35,19 +36,29 @@ const ValidateIdeaPage = () => {
         }
 
         try {
+            // Step 1: Create the initial query
             const data = await createQuery(payload)
             console.log("Query created successfully: ", data)
-            setValidationResult(data)
 
-            // Check if status is validating and trigger search
-            if (data?.status === "VALIDATING" && data?.id) {
-                const contextResponse = await generateContext(data.id)
-                console.log("generate context response: ", contextResponse)
+            const queryId = data?.id;
+            const status = data?.status;
+
+            if (!queryId || !status) {
+                throw new Error("No query ID was returned from the server.")
+            };
+
+            // Step 2: Navigate immediately upon creation
+            if (status === "CREATED") {
+                router.push(`/dashboard/validate-idea/${queryId}`)
             }
+
+            // Note: intentionally skipping setLoading(false) here 
+            // so the spinner stays active while Next.js routes to the new page.
+
         } catch (err) {
             setError(err.response?.data?.detail || err.message || "Failed to submit validation query")
             console.error("Submission error:", err)
-        } finally {
+            // Only stop loading if there's an error so the user can try again
             setLoading(false)
         }
     }
