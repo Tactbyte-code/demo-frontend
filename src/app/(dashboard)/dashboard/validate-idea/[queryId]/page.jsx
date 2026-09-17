@@ -62,9 +62,9 @@ const ValidateQueryIdPage = () => {
                         <h2 className="text-xl font-bold text-slate-900 mb-1">
                             Processing Query
                         </h2>
-                        <p className="text-sm font-medium text-slate-500 animate-pulse">
+                        {/* <p className="text-sm font-medium text-slate-500 animate-pulse">
                             {currentStage}
-                        </p>
+                        </p> */}
                     </div>
                 </div>
             </div>
@@ -76,10 +76,10 @@ const ValidateQueryIdPage = () => {
         <div className="min-h-[91vh] flex flex-col items-center px-4 py-8 md:py-12 bg-slate-50 text-slate-900">
             <div className="w-full max-w-2xl bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
                 <h1 className="text-2xl font-bold text-slate-900 mb-4">
-                    Validation Completed
+                    Vertex Search Completed
                 </h1>
                 <p className="text-slate-600 mb-6">
-                    Results successfully loaded for query ID: <span className="font-mono bg-slate-100 px-2 py-1 rounded text-sm">{queryId}</span>
+                    Search results successfully loaded for query ID: <span className="font-mono bg-slate-100 px-2 py-1 rounded text-sm">{queryId}</span>
                 </p>
 
                 {/* Example of rendering the final data */}
@@ -91,6 +91,6 @@ const ValidateQueryIdPage = () => {
             </div>
         </div>
     )
-}
+};
 
-export default ValidateQueryIdPage
+export default ValidateQueryIdPage;
