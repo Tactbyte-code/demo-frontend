@@ -15,6 +15,11 @@ export const triggerSearch = async (queryId) => {
     return response?.data;
 };
 
+export const generateSummary = async (queryId) => {
+    const response = await api.post(`/validate/query/${queryId}/generate-summary`);
+    return response?.data;
+};
+
 export const getStatus = async (queryId) => {
     const response = await api.get(`/validate/query/${queryId}/status`);
     return response?.data;

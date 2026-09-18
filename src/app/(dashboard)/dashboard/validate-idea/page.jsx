@@ -4,7 +4,8 @@ import React, { useState } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { FaLightbulb, FaSpinner } from "react-icons/fa"
-import { createQuery } from "@/features/validate/api/validate.api"
+import { createQuery, triggerSearch } from "@/features/validate/api/validate.api"
+// import { triggerSearch } from "@/lib/api/reddit"
 
 const ValidateIdeaPage = () => {
     const router = useRouter()
@@ -18,7 +19,19 @@ const ValidateIdeaPage = () => {
         stage: "concept",
     })
 
-    const canSubmit = form.title.trim().length > 0 && form.description.trim().length >= 20
+    const canSubmit = form.title.trim().length > 0 && form.description.trim().length >= 20;
+
+    // const handleSubmit = async (e) => {
+    //     e.preventDefault()
+    //     if (!canSubmit || loading) return
+
+    //     setLoading(true)
+    //     setError(null)
+
+    //     const searchData = await triggerSearch("01a0af6f-4e93-7161-876f-ba5c6e2d2ec1");
+    //     console.log("Searched successfully: ", searchData)
+
+    // }
 
     const handleSubmit = async (e) => {
         e.preventDefault()
