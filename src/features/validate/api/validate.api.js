@@ -14,3 +14,8 @@ export const triggerSearch = async (queryId) => {
     const response = await api.post(`/validate/query/${queryId}/search`);
     return response?.data;
 };
+
+export const getStatus = async (queryId) => {
+    const response = await api.get(`/validate/query/${queryId}/status`);
+    return response?.data;
+};
