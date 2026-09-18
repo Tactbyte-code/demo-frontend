@@ -11,6 +11,7 @@ const sans = IBM_Plex_Sans({ subsets: ['latin'], weight: ['400', '500', '600'], 
 
 // Score → conviction tier. Color is functional throughout this page: it
 // always encodes a score or threat level, never decoration.
+// Expects a 0–100 scale.
 const CONVICTION = {
     high: { color: '#3F6C51', tint: '#E4EBE6', label: 'High conviction' },
     mid: { color: '#B9862E', tint: '#F1E8D8', label: 'Moderate conviction' },
@@ -70,7 +71,7 @@ const ScoreGauge = ({ score, color, reduceMotion }) => {
                     strokeLinecap="round"
                     strokeDasharray={circumference}
                     initial={{ strokeDashoffset: circumference }}
-                    animate={{ strokeDashoffset: reduceMotion ? offset : offset }}
+                    animate={{ strokeDashoffset: offset }}
                     transition={{ duration: reduceMotion ? 0 : 1.1, ease: [0.22, 1, 0.36, 1], delay: reduceMotion ? 0 : 0.15 }}
                 />
             </svg>
@@ -84,10 +85,14 @@ const ScoreGauge = ({ score, color, reduceMotion }) => {
     )
 }
 
-const DimensionBar = ({ dimension, index, reduceMotion }) => {
-    const label = dimension?.name || dimension?.dimension || dimension?.parameter || `Dimension ${index + 1}`
-    const score = typeof dimension?.score === 'number' ? dimension.score : 0
-    const tier = getConviction(dimension?.score)
+// Dimension objects arrive as { score, rationale, signal_strength } on a
+// 0–10 scale (e.g. pain_point_severity: 7). The bar fill and conviction
+// tiering below are calibrated for 0–100, so we scale internally — the
+// numeral shown to the user stays in its native 0–10 form.
+const DimensionBar = ({ label, dimension, index, reduceMotion }) => {
+    const rawScore = typeof dimension?.score === 'number' ? dimension.score : null
+    const scaledScore = rawScore !== null ? rawScore * 10 : 0
+    const tier = getConviction(rawScore !== null ? scaledScore : null)
 
     return (
         <div className="py-4 first:pt-0 border-b border-[#D8DBD3] last:border-none">
@@ -98,7 +103,7 @@ const DimensionBar = ({ dimension, index, reduceMotion }) => {
                         <span className="text-xs text-[#5B615C]">{formatLabel(dimension.signal_strength)} signal</span>
                     )}
                     <span className="text-sm font-medium tabular-nums" style={{ color: tier.color }}>
-                        {typeof dimension?.score === 'number' ? dimension.score : '—'}
+                        {rawScore !== null ? rawScore : '—'}
                     </span>
                 </div>
             </div>
@@ -107,7 +112,7 @@ const DimensionBar = ({ dimension, index, reduceMotion }) => {
                     className="h-full rounded-full"
                     style={{ backgroundColor: tier.color }}
                     initial={{ width: 0 }}
-                    animate={{ width: `${score}%` }}
+                    animate={{ width: `${scaledScore}%` }}
                     transition={{ duration: reduceMotion ? 0 : 0.8, ease: [0.22, 1, 0.36, 1], delay: reduceMotion ? 0 : 0.1 * index }}
                 />
             </div>
@@ -162,7 +167,8 @@ const SummaryPage = () => {
             setLoading(true)
             setError(null)
             try {
-                const response = await getSummary(queryId);
+                const response = await getSummary(queryId)
+                console.log("Summary fetched successfully: ", response)
                 if (!cancelled) setSummary(response)
             } catch (err) {
                 console.error("Error fetching summary:", err)
@@ -231,13 +237,13 @@ const SummaryPage = () => {
                             </div>
                         </div>
 
-                        {/* Dimensional scores */}
-                        {Array.isArray(summary?.dimensional_scores) && summary.dimensional_scores.length > 0 && (
+                        {/* Dimensional scores — arrives as an object keyed by dimension name */}
+                        {summary?.dimensional_scores && Object.keys(summary.dimensional_scores).length > 0 && (
                             <section className="mb-14">
                                 <h2 className="font-serif text-xl mb-4">Dimensional scores</h2>
                                 <div>
-                                    {summary.dimensional_scores.map((dim, i) => (
-                                        <DimensionBar key={i} dimension={dim} index={i} reduceMotion={reduceMotion} />
+                                    {Object.entries(summary.dimensional_scores).map(([key, dim], i) => (
+                                        <DimensionBar key={key} label={formatLabel(key)} dimension={dim} index={i} reduceMotion={reduceMotion} />
                                     ))}
                                 </div>
                             </section>
