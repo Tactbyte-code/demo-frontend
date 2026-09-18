@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { FaSpinner } from 'react-icons/fa';
 import { generateContext, triggerSearch, generateSummary, getStatus } from "@/features/validate/api/validate.api";
 
@@ -37,35 +37,27 @@ const STAGE_LABELS = {
 const normalizeStatus = (response) => {
     const raw = typeof response === 'string' ? response : response?.status
     return typeof raw === 'string' ? raw.toUpperCase() : undefined
-}
+};
 
 const ValidateQueryIdPage = () => {
     const params = useParams()
+    const router = useRouter()
     const queryId = params?.queryId
 
-    const [isCompleted, setIsCompleted] = useState(false)
     const [currentStage, setCurrentStage] = useState("Initializing...")
-    const [validationData, setValidationData] = useState(null)
     const [hasError, setHasError] = useState(false)
 
     useEffect(() => {
         if (!queryId) return;
 
-        // All of this is local to a single effect run (i.e. a single queryId).
-        // No refs needed — closures give us fresh state per mount, and
-        // `cancelled` guarantees a stray loop from a previous run (e.g. React
-        // Strict Mode's dev double-invoke) can never take further action.
         let cancelled = false
         let isProcessing = false
         let timeoutId = null
 
-        // Tracks which statuses we've ALREADY dispatched an action for.
-        // This is the key fix: an action is fired at most ONCE per status,
-        // even if the backend is slow to move past that status and repeated
-        // polls keep observing it. Without this, every poll tick that still
-        // sees VALIDATED (because the backend hasn't flipped to SEARCHING
-        // yet) would call triggerSearch again, registering a new RunPod job
-        // each time.
+        // Tracks which statuses we've ALREADY dispatched an action for, so
+        // generateContext / triggerSearch / generateSummary each fire at
+        // most once per queryId, no matter how many poll ticks still see
+        // the same status while the backend catches up.
         const firedActions = new Set()
 
         const stopPolling = () => {
@@ -81,7 +73,6 @@ const ValidateQueryIdPage = () => {
         }
 
         const runOnce = async (statusKey, action) => {
-            // Guard against ever firing the same action twice for this queryId.
             if (firedActions.has(statusKey)) return null
             firedActions.add(statusKey)
             isProcessing = true
@@ -129,17 +120,12 @@ const ValidateQueryIdPage = () => {
 
                 case STATUS.SEARCH_COMPLETED: {
                     try {
+                        // generateSummary's response here is just FastAPI acking
+                        // that the summary job was submitted — RunPod is still
+                        // working on it in the background. So dispatch it once
+                        // and keep polling; do NOT treat this response as terminal.
                         const summaryResponse = await runOnce(STATUS.SEARCH_COMPLETED, () => generateSummary(queryId))
-                        if (summaryResponse) {
-                            console.log("Summary generated response: ", summaryResponse)
-                            setValidationData(summaryResponse)
-                        }
-                        // Only finalize the UI once generateSummary has actually
-                        // been dispatched (runOnce returns null on a repeat call).
-                        if (summaryResponse !== null) {
-                            stopPolling()
-                            setIsCompleted(true)
-                        }
+                        if (summaryResponse) console.log("Summary job response: ", summaryResponse)
                     } catch (error) {
                         console.error("Error generating summary:", error)
                         stopPolling()
@@ -158,8 +144,10 @@ const ValidateQueryIdPage = () => {
                 }
 
                 case STATUS.COMPLETED: {
+                    // The only true terminal state now. Stop polling and hand
+                    // off to the dedicated summary page.
                     stopPolling()
-                    setIsCompleted(true)
+                    router.push(`/dashboard/validate-idea/${queryId}/summary`)
                     break
                 }
 
@@ -179,9 +167,6 @@ const ValidateQueryIdPage = () => {
         const poll = async () => {
             if (cancelled) return
 
-            // Belt-and-suspenders: even though runOnce/firedActions already
-            // prevent duplicate dispatch, skip re-checking status entirely
-            // while an action is mid-flight so we don't do wasted work.
             if (isProcessing) {
                 scheduleNextPoll()
                 return
@@ -211,40 +196,21 @@ const ValidateQueryIdPage = () => {
             cancelled = true
             stopPolling()
         }
-    }, [queryId])
+    }, [queryId, router])
 
-    if (!isCompleted) {
-        return (
-            <div className="min-h-[91vh] flex flex-col items-center justify-center px-4 bg-slate-50 text-slate-900">
-                <div className="flex flex-col items-center space-y-5 text-center">
-                    <FaSpinner className={`animate-spin text-5xl ${hasError ? 'text-red-500' : 'text-indigo-600'}`} />
-                    <div>
-                        <h2 className="text-xl font-bold text-slate-900 mb-1">
-                            Processing Query
-                        </h2>
-                        <p className="text-sm font-medium text-slate-500">
-                            {currentStage}
-                        </p>
-                    </div>
-                </div>
-            </div>
-        )
-    };
-
+    // This page is now a pure loading/redirect screen — navigation to the
+    // summary page happens as soon as status hits COMPLETED.
     return (
-        <div className="min-h-[91vh] flex flex-col items-center px-4 py-8 md:py-12 bg-slate-50 text-slate-900">
-            <div className="w-full max-w-2xl bg-white border border-slate-200 rounded-2xl p-8 shadow-sm">
-                <h1 className="text-2xl font-bold text-slate-900 mb-4">
-                    Vertex Search Completed
-                </h1>
-                <p className="text-slate-600 mb-6">
-                    Search results successfully loaded for query ID: <span className="font-mono bg-slate-100 px-2 py-1 rounded text-sm">{queryId}</span>
-                </p>
-
-                <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 text-sm overflow-auto">
-                    <pre className="text-slate-700 whitespace-pre-wrap">
-                        {JSON.stringify(validationData, null, 2)}
-                    </pre>
+        <div className="min-h-[91vh] flex flex-col items-center justify-center px-4 bg-slate-50 text-slate-900">
+            <div className="flex flex-col items-center space-y-5 text-center">
+                <FaSpinner className={`animate-spin text-5xl ${hasError ? 'text-red-500' : 'text-indigo-600'}`} />
+                <div>
+                    <h2 className="text-xl font-bold text-slate-900 mb-1">
+                        Processing Query
+                    </h2>
+                    <p className="text-sm font-medium text-slate-500">
+                        {currentStage}
+                    </p>
                 </div>
             </div>
         </div>
