@@ -1,11 +1,10 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { FaLightbulb, FaSpinner } from "react-icons/fa"
-import { createQuery, triggerSearch } from "@/features/validate/api/validate.api"
-// import { triggerSearch } from "@/lib/api/reddit"
+import { createQuery, triggerSearch, generateSummary, getSummary } from "@/features/validate/api/validate.api"
 
 const ValidateIdeaPage = () => {
     const router = useRouter()
@@ -25,13 +24,13 @@ const ValidateIdeaPage = () => {
     //     e.preventDefault()
     //     if (!canSubmit || loading) return
 
-    //     setLoading(true)
-    //     setError(null)
+    //     setLoading(true);
+    //     setError(null);
 
-    //     const searchData = await triggerSearch("01a0af6f-4e93-7161-876f-ba5c6e2d2ec1");
-    //     console.log("Searched successfully: ", searchData)
+    //     const summaryData = await generateSummary("01a0af6f-4e93-7161-876f-ba5c6e2d2ec1");
+    //     console.log("Summary generated successfully: ", summaryData)
 
-    // }
+    // };
 
     const handleSubmit = async (e) => {
         e.preventDefault()
