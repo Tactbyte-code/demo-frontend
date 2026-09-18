@@ -27,8 +27,8 @@ const ValidateIdeaPage = () => {
     //     setLoading(true);
     //     setError(null);
 
-    //     const summaryData = await generateSummary("01a0af6f-4e93-7161-876f-ba5c6e2d2ec1");
-    //     console.log("Summary generated successfully: ", summaryData)
+    //     const summaryData = await getSummary("01a0af6f-4e93-7161-876f-ba5c6e2d2ec1");
+    //     console.log("Summary fetched successfully: ", summaryData);
 
     // };
 
