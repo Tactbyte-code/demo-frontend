@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { FaLightbulb, FaSpinner } from "react-icons/fa"
 import { createQuery, triggerSearch, generateSummary, getSummary } from "@/features/validate/api/validate.api"
+import ValidateIdeaListPage from "@/features/validate/components/ValidateIdeaListPage"
 
 const ValidateIdeaPage = () => {
     const router = useRouter()
@@ -73,7 +74,7 @@ const ValidateIdeaPage = () => {
             // Only stop loading if there's an error so the user can try again
             setLoading(false)
         }
-    }
+    };
 
     return (
         <div className="min-h-[91vh] flex flex-col items-center justify-center px-4 py-8 md:py-12 bg-slate-50 text-slate-900">
@@ -181,8 +182,10 @@ const ValidateIdeaPage = () => {
                     </button>
                 </form>
             </motion.div>
+
+            <ValidateIdeaListPage />
         </div>
     )
 }
 
-export default ValidateIdeaPage
+export default ValidateIdeaPage;

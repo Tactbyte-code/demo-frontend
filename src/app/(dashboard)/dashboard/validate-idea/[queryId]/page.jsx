@@ -40,8 +40,8 @@ const normalizeStatus = (response) => {
 };
 
 const ValidateQueryIdPage = () => {
-    const params = useParams()
-    const router = useRouter()
+    const params = useParams();
+    const router = useRouter();
     const queryId = params?.queryId
 
     const [currentStage, setCurrentStage] = useState("Initializing...")
