@@ -29,3 +29,8 @@ export const getSummary = async (queryId) => {
     const response = await api.get(`/validate/query/${queryId}/summary`);
     return response?.data;
 };
+
+export const getQueries = async () => {
+    const response = await api.get("/validate/query");
+    return response?.data;
+};
