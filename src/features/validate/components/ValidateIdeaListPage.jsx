@@ -151,7 +151,7 @@ const ValidateIdeaListPage = () => {
                     </div>
 
                     {/* Table Body */}
-                    <div className="w-full flex flex-col min-h-[200px]">
+                    <div className="w-full flex flex-col">
                         {error ? (
                             <div className="py-20 text-center flex-1 flex flex-col justify-center bg-[var(--sidebar-bg)] w-full">
                                 <p className="text-[var(--destructive)] font-medium mb-1">Ideas unavailable</p>
