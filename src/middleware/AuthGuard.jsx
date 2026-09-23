@@ -59,39 +59,22 @@ export default function AuthGuard({ children }) {
 
             // ✅ ONBOARDED USERS
             if (user.is_onboarded) {
-                const isAuthPage = ["/login", "/signup"].includes(pathname);
-
-                const isExternalEntry =
-                    typeof document !== "undefined" &&
-                    (!document.referrer ||
-                        !document.referrer.includes(window.location.origin));
-
-                if (user.is_onboarded) {
-                    // 🚫 Block auth pages ALWAYS
-                    if (isAuthPage) {
-                        router.replace("/dashboard");
-                        setChecking(false);
-                        return;
-                    }
-
-                    // 🚀 ONLY run this on FIRST LOAD
-                    if (isInitialLoad.current && isExternalEntry) {
-                        router.replace("/dashboard");
-                        setChecking(false);
-                        isInitialLoad.current = false;
-                        return;
-                    }
+                // 🚫 If an onboarded user tries to hit login/signup,
+                // push them to the dashboard. Otherwise, let them go to their requested path.
+                if (isAuthPage) {
+                    router.replace("/dashboard");
+                    setChecking(false);
+                    return;
                 }
             }
 
-            // ✅ allow everything else (including public routes)
+            // ✅ allow everything else (including nested routes like /dashboard/validate-idea/...)
             setChecking(false);
-
             isInitialLoad.current = false;
         });
 
         return () => unsubscribe();
-    }, [pathname]);
+    }, [pathname, router]);
 
     return (
         <AnimatePresence mode="wait">
