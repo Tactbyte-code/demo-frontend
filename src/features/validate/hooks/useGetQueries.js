@@ -7,4 +7,4 @@ export const useGetQueries = (userId) => {
         queryFn: getQueries,
         staleTime: 60 * 1000,
     });
-};
+}
