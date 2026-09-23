@@ -1,10 +1,10 @@
 "use client"
 
-import React, { useEffect, useState } from 'react'
+import React, { useMemo } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
-import { getQueries } from "@/features/validate/api/validate.api"
 import { Lightbulb } from 'lucide-react'
+import { useGetQueries } from '../hooks/useGetQueries'
 
 // Collapses the full ValidateQueryStatus enum into four display tiers mapped to the theme
 const STATUS_TIER = {
@@ -91,38 +91,27 @@ const QueryRow = ({ query, index, reduceMotion }) => {
 const ValidateIdeaListPage = () => {
     const reduceMotion = useReducedMotion()
 
-    const [queries, setQueries] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
+    // Safely parse localStorage for Next.js SSR to avoid hydration errors
+    const userId = typeof window !== 'undefined'
+        ? JSON.parse(localStorage.getItem('user') || '{}')?.firebase_uid
+        : null;
 
-    useEffect(() => {
-        let cancelled = false
+    const {
+        data,
+        isLoading,
+        isError,
+        error
+    } = useGetQueries(userId);
 
-        const fetchQueries = async () => {
-            setLoading(true)
-            setError(null)
-            try {
-                const response = await getQueries();
-                if (cancelled) return;
-
-                const list = Array.isArray(response) ? response : []
-                const sorted = [...list].sort((a, b) => {
-                    const dateA = a?.created_at ? new Date(a.created_at).getTime() : 0
-                    const dateB = b?.created_at ? new Date(b.created_at).getTime() : 0
-                    return dateB - dateA
-                })
-                setQueries(sorted)
-            } catch (err) {
-                console.error("Error fetching queries:", err)
-                if (!cancelled) setError("Your ideas couldn't be loaded. Try refreshing the page.")
-            } finally {
-                if (!cancelled) setLoading(false)
-            }
-        }
-
-        fetchQueries();
-        return () => { cancelled = true }
-    }, []);
+    // Sort queries by created_at descending using useMemo to avoid recalculation on every render
+    const sortedQueries = useMemo(() => {
+        const list = Array.isArray(data) ? data : []
+        return [...list].sort((a, b) => {
+            const dateA = a?.created_at ? new Date(a.created_at).getTime() : 0
+            const dateB = b?.created_at ? new Date(b.created_at).getTime() : 0
+            return dateB - dateA
+        })
+    }, [data])
 
     return (
         <div className={`w-full min-h-[91vh] bg-[var(--background)] text-[var(--text-main)]`}>
@@ -152,25 +141,27 @@ const ValidateIdeaListPage = () => {
 
                     {/* Table Body */}
                     <div className="w-full flex flex-col">
-                        {error ? (
+                        {isError ? (
                             <div className="py-20 text-center flex-1 flex flex-col justify-center bg-[var(--sidebar-bg)] w-full">
                                 <p className="text-[var(--destructive)] font-medium mb-1">Ideas unavailable</p>
-                                <p className="text-[var(--text-muted)] text-sm">{error}</p>
+                                <p className="text-[var(--text-muted)] text-sm">
+                                    {error?.message || "Your ideas couldn't be loaded. Try refreshing the page."}
+                                </p>
                             </div>
-                        ) : loading ? (
+                        ) : isLoading ? (
                             <div className="w-full flex flex-col">
                                 {[...Array(5)].map((_, i) => (
                                     <SkeletonRow key={i} />
                                 ))}
                             </div>
-                        ) : queries.length === 0 ? (
+                        ) : sortedQueries.length === 0 ? (
                             <div className="py-24 text-center flex-1 flex flex-col justify-center bg-[var(--sidebar-bg)] w-full">
                                 <p className="text-[var(--text-main)] font-medium mb-2 text-lg">No ideas yet</p>
                                 <p className="text-[var(--text-subtle)] text-sm">Ideas you submit for validation will show up here.</p>
                             </div>
                         ) : (
                             <AnimatePresence>
-                                {queries.map((query, i) => (
+                                {sortedQueries.map((query, i) => (
                                     <QueryRow key={query.id} query={query} index={i} reduceMotion={reduceMotion} />
                                 ))}
                             </AnimatePresence>
