@@ -4,7 +4,7 @@ import ScrollButton from "@/components/ScrollButton";
 
 export default function MarketingLayout({ children }) {
     return (
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col min-h-screen scroll-smooth">
             <Navbar />
             <main className="grow">
                 {children}
