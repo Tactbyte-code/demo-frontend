@@ -31,6 +31,10 @@ import {
   Navigation,
   MapPin,
   Rss,
+  Lightbulb,
+  ShieldCheck,
+  DollarSign,
+  Rocket,
 } from "lucide-react";
 import {
   motion,
@@ -40,6 +44,7 @@ import {
 } from "framer-motion";
 import { useRouter, usePathname } from "next/navigation";
 import UserProfileButton from "@/components/ui/UserProfileButton";
+import { scrollToSection } from "@/lib/scrollToSection";
 
 export default function Navbar() {
 
@@ -105,20 +110,21 @@ export default function Navbar() {
       isFeaturesOpen || isMobileMenuOpen ? "hidden" : "unset";
   }, [isFeaturesOpen, isMobileMenuOpen]);
 
-  const handleHowItWorksClick = (e) => {
+  const handleScrollToSection = (e, path) => {
     e.preventDefault();
+
     if (pathname === "/") {
-      const el = document.getElementById("how-it-works");
+      const el = document.getElementById(path);
       if (el) el.scrollIntoView({ behavior: "smooth" });
     } else {
-      router.push("/#how-it-works");
+      router.push(`/#${path}`);
     }
   };
 
   const navItems = [
-    { name: "How It Works", href: "/#how-it-works", icon: Briefcase },
-    { name: "Market Friction", href: "#market-friction", icon: AlertTriangle },
-    { name: "Who Is It For", href: "#who-for", icon: Users },
+    { name: "How It Works", path: "how-it-works", href: "/#how-it-works", icon: Briefcase },
+    { name: "Market Friction", path: "market-friction", href: "/#market-friction", icon: AlertTriangle },
+    { name: "Who Is It For", path: "who-for", href: "/#who-for", icon: Users },
     { name: "Pricing", href: "/pricing", icon: Tag },
   ];
 
@@ -136,6 +142,13 @@ export default function Navbar() {
       { icon: TrendingUp, title: "Track sentiment over time", desc: "See if ratings are improving" },
       { icon: Target, title: "Validate before building", desc: "Check if your idea already exists" },
       { icon: ShoppingBag, title: "Improve your app listing", desc: "Learn what language converts users" },
+    ],
+    validate: [
+      { icon: Lightbulb, title: "Test market willingness", desc: "Gauge if people actually need your solution" },
+      { icon: ShieldCheck, title: "De-risk your MVP", desc: "Avoid spending months building the wrong thing" },
+      { icon: Users, title: "Define target audience", desc: "Identify exact buyer personas and demographics" },
+      { icon: DollarSign, title: "Assess monetization potential", desc: "Determine if users will pay for a solution" },
+      { icon: Rocket, title: "Accelerate go-to-market", desc: "Launch with data-backed positioning from day 1" },
     ],
     keyword: [
       { icon: Flame, title: "Spot trends early", desc: "Find problems gaining traction first" },
@@ -194,12 +207,13 @@ export default function Navbar() {
             {/* Center nav */}
             <div className="flex items-center gap-2 text-[13px] font-medium">
               {navItems.map((item) =>
-                item.name === "How It Works" ? (
-                  <a
+                item.name != "Pricing" ? (
+                  <div
                     key={item.name}
-                    href={item.href}
-                    onClick={handleHowItWorksClick}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-none transition-all
+                    // href={item.href}
+                    // onClick={e => handleScrollToSection(e, item.path)}
+                    onClick={() => scrollToSection(item.path)}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-none transition-all cursor-pointer
                       ${isScrolled
                         ? "text-foreground hover:bg-primary/10 font-semibold"
                         : "hover:bg-primary/10 drop-shadow-sm text-foreground font-semibold"
@@ -207,12 +221,12 @@ export default function Navbar() {
                   >
                     <item.icon className="w-4 h-4 opacity-70" />
                     <span>{item.name}</span>
-                  </a>
+                  </div>
                 ) : (
                   <Link
                     key={item.name}
                     href={item.href}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-none transition-all
+                    className={`flex items-center gap-2 px-3 py-2 rounded-none transition-all cursor-pointer
                       ${isScrolled
                         ? "text-foreground hover:bg-primary/10 font-semibold"
                         : "hover:bg-primary/10 drop-shadow-sm text-foreground font-semibold"
@@ -325,12 +339,12 @@ export default function Navbar() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 6, scale: 0.99 }}
               transition={{ duration: 0.18, ease: "easeOut" }}
-              className="absolute hidden lg:block top-full left-1/2 -translate-x-1/2 w-[720px] bg-popover/90 backdrop-blur-xl border border-border/60 shadow-2xl rounded-2xl z-50 origin-top overflow-hidden ring-1 ring-black/[0.03] dark:ring-white/[0.05]"
+              className="absolute hidden lg:block top-full left-1/2 -translate-x-1/2 w-180 bg-popover/90 backdrop-blur-xl border border-border/60 shadow-2xl rounded-2xl z-50 origin-top overflow-hidden ring-1 ring-black/[0.03] dark:ring-white/[0.05]"
             >
               <div className="flex divide-x divide-border/40">
 
                 {/* ── LEFT: Navigation Rail (Solid Background) ── */}
-                <div className="w-[260px] shrink-0 p-3 bg-muted dark:bg-primary flex flex-col gap-1">
+                <div className="w-65 shrink-0 p-3 bg-muted dark:bg-primary flex flex-col gap-1">
                   <span className="text-[10px] font-semibold tracking-wider text-light/60 uppercase px-2.5 pt-1.5 pb-2">
                     Core Platform
                   </span>
@@ -338,6 +352,7 @@ export default function Navbar() {
                   {[
                     { id: "reddit", icon: Activity, title: "Reddit Analysis", desc: "Mine real user conversations.", href: "/dashboard/reddit" },
                     { id: "playstore", icon: LayoutGrid, title: "Playstore Analysis", desc: "Decode app reviews.", href: "/dashboard/playstore" },
+                    { id: "validate", icon: Lightbulb, title: "Validate Idea", desc: "Analyze market demand & feasibility.", href: "/dashboard/validate-idea" },
                     { id: "keyword", icon: Search, title: "Keyword Tracking", desc: "Track trending keywords.", href: "/dashboard/lead" },
                   ].map((feature) => {
                     const currentSelected = hoveredFeature || "reddit";
@@ -417,6 +432,7 @@ export default function Navbar() {
                             const routeMap = {
                               reddit: "/dashboard/reddit",
                               playstore: "/dashboard/playstore",
+                              validate: "/dashboard/validate-idea",
                               keyword: "/dashboard/ai-lead-engine/campaigns",
                             };
 
@@ -474,6 +490,7 @@ export default function Navbar() {
                     const activeHref = {
                       reddit: "/dashboard/reddit",
                       playstore: "/dashboard/playstore",
+                      validate: "/dashboard/validate-idea",
                       keyword: "/dashboard/lead",
                     }[hoveredFeature || "reddit"] || "/dashboard/reddit";
                     router.push(activeHref);

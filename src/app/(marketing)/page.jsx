@@ -17,9 +17,9 @@ const page = () => {
       <AuthVerificationHandler />
       <Hero />
 
-      <section id="market-friction">
-        <ProblemSection />
-      </section>
+      <ProblemSection />
+      {/* <section id="market-friction">
+      </section> */}
 
       <section id="how-it-works">
         <SolutionSection />

@@ -1,6 +1,5 @@
 "use client";
 
-import { divide } from "firebase/firestore/lite/pipelines";
 import { motion } from "framer-motion";
 import {
   Target,
@@ -8,7 +7,6 @@ import {
   BarChart3,
   MessageSquare,
   PlayCircle,
-  FileJson,
   FileSpreadsheet,
   ArrowRight,
 } from "lucide-react";
