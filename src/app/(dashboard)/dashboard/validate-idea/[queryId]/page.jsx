@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { FaSpinner } from 'react-icons/fa';
 import { generateContext, triggerSearch, generateSummary, getStatus } from "@/features/validate/api/validate.api";
+import { useGenerateContext } from '@/features/validate/hooks/useGenerateContext';
 
 const POLL_INTERVAL_MS = 3000;
 
@@ -46,6 +47,9 @@ const ValidateQueryIdPage = () => {
 
     const [currentStage, setCurrentStage] = useState("Initializing...")
     const [hasError, setHasError] = useState(false)
+
+    // 1. Initialize the mutation hook
+    const { mutateAsync: triggerGenerateContext } = useGenerateContext();
 
     useEffect(() => {
         if (!queryId) return;
@@ -94,7 +98,8 @@ const ValidateQueryIdPage = () => {
             switch (status) {
                 case STATUS.CREATED: {
                     try {
-                        const contextResponse = await runOnce(STATUS.CREATED, () => generateContext(queryId))
+                        // 2. Call the mutation function instead of the raw API call
+                        const contextResponse = await runOnce(STATUS.CREATED, () => triggerGenerateContext(queryId))
                         if (contextResponse) console.log("Context generated response: ", contextResponse)
                     } catch (error) {
                         console.error("Error generating context:", error)

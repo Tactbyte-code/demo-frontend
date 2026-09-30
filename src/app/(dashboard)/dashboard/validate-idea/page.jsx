@@ -1,17 +1,20 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { motion } from "framer-motion"
-import { FaLightbulb, FaSpinner } from "react-icons/fa"
-import { createQuery, triggerSearch, generateSummary, getSummary } from "@/features/validate/api/validate.api"
-import ValidateIdeaListPage from "@/features/validate/components/ValidateIdeaListPage"
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { FaLightbulb, FaSpinner } from "react-icons/fa";
+import ValidateIdeaListPage from "@/features/validate/components/ValidateIdeaListPage";
+import { useCreateQuery } from "@/features/validate/hooks/useCreateQuery";
 
 const ValidateIdeaPage = () => {
-    const router = useRouter()
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState(null)
-
+    const router = useRouter();
+    
+    // Replace manual loading states with the mutation hook
+    // Note: use `isPending` for React Query v5. If you are on v4, change `isPending` to `isLoading`.
+    const { mutateAsync: submitIdea, isPending: loading } = useCreateQuery();
+    
+    const [localError, setLocalError] = useState(null)
     const [form, setForm] = useState({
         title: "",
         description: "",
@@ -21,36 +24,23 @@ const ValidateIdeaPage = () => {
 
     const canSubmit = form.title.trim().length > 0 && form.description.trim().length >= 20;
 
-    // const handleSubmit = async (e) => {
-    //     e.preventDefault()
-    //     if (!canSubmit || loading) return
-
-    //     setLoading(true);
-    //     setError(null);
-
-    //     const summaryData = await getSummary("01a0af6f-4e93-7161-876f-ba5c6e2d2ec1");
-    //     console.log("Summary fetched successfully: ", summaryData);
-
-    // };
-
     const handleSubmit = async (e) => {
         e.preventDefault()
         if (!canSubmit || loading) return
 
-        setLoading(true)
-        setError(null)
+        setLocalError(null)
 
         const payload = {
             title: form.title,
             description: form.description,
             industry: form.industry,
             stage: form.stage,
-            profile: {}, // Optional custom metadata or user context if required
+            profile: {}, 
         }
 
         try {
-            // Step 1: Create the initial query
-            const data = await createQuery(payload)
+            // Use the mutation hook instead of calling the API directly
+            const data = await submitIdea(payload)
             console.log("Query created successfully: ", data)
 
             const queryId = data?.id;
@@ -60,19 +50,14 @@ const ValidateIdeaPage = () => {
                 throw new Error("No query ID was returned from the server.")
             };
 
-            // Step 2: Navigate immediately upon creation
+            // Navigate immediately upon creation
             if (status === "CREATED") {
                 router.push(`/dashboard/validate-idea/${queryId}`)
             }
 
-            // Note: intentionally skipping setLoading(false) here 
-            // so the spinner stays active while Next.js routes to the new page.
-
         } catch (err) {
-            setError(err.response?.data?.detail || err.message || "Failed to submit validation query")
+            setLocalError(err.response?.data?.detail || err.message || "Failed to submit validation query")
             console.error("Submission error:", err)
-            // Only stop loading if there's an error so the user can try again
-            setLoading(false)
         }
     };
 
@@ -96,9 +81,9 @@ const ValidateIdeaPage = () => {
                     </p>
                 </div>
 
-                {error && (
+                {localError && (
                     <div className="mb-4 p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs">
-                        {error}
+                        {localError}
                     </div>
                 )}
 

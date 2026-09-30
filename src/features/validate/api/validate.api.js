@@ -30,7 +30,8 @@ export const getSummary = async (queryId) => {
     return response?.data;
 };
 
-export const getQueries = async () => {
-    const response = await api.get("/validate/query");
+export const getQueries = async (page = 1, pageSize = 10) => {
+    const response = await api.get(`/validate/query?page=${page}&page_size=${pageSize}`);
+    if (response.statusText !== 'OK') throw new Error('Failed to fetch queries');
     return response?.data;
 };

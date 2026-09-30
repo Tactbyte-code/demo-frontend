@@ -401,3 +401,15 @@ export const plans = [
         ],
     },
 ];
+
+export const STATUS_TIER = {
+    INITIALIZED: { label: 'Queued', color: 'var(--info)', tint: 'var(--info-bg)' },
+    CREATED: { label: 'Queued', color: 'var(--info)', tint: 'var(--info-bg)' },
+    VALIDATING: { label: 'In progress', color: 'var(--warning)', tint: 'var(--warning-bg)' },
+    VALIDATED: { label: 'In progress', color: 'var(--warning)', tint: 'var(--warning-bg)' },
+    SEARCHING: { label: 'In progress', color: 'var(--warning)', tint: 'var(--warning-bg)' },
+    SEARCH_COMPLETED: { label: 'In progress', color: 'var(--warning)', tint: 'var(--warning-bg)' },
+    SCORING: { label: 'In progress', color: 'var(--warning)', tint: 'var(--warning-bg)' },
+    COMPLETED: { label: 'Completed', color: 'var(--success)', tint: 'var(--success-bg)' },
+    FAILED: { label: 'Failed', color: 'var(--destructive)', tint: 'var(--destructive-bg)' },
+}
