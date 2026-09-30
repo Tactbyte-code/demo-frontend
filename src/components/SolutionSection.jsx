@@ -44,7 +44,7 @@ const workflowSteps = [
 
 export default function SolutionSection() {
   return (
-    <section className="pb-24 bg-background relative overflow-hidden">
+    <section id="how-it-works" className="pb-24 bg-background relative overflow-hidden">
       {/* Background blobs */}
       <div className="absolute inset-0 pointer-events-none -z-10">
         <div className="absolute top-[10%] left-[5%] w-[35%] h-[35%] bg-primary/8 blur-[140px]" />

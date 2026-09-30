@@ -1,18 +1,19 @@
 "use client"
-import React from 'react'
-import { motion } from 'framer-motion'
-import { getConviction, getTierColor, formatLabel, getHostname } from '@/lib/utils'
+
+import React from 'react';
+import { motion } from 'framer-motion';
+import { getConviction, getTierColor, formatLabel, getHostname } from '@/lib/utils';
 import {
     AlertTriangle, ShieldAlert, ShieldCheck, Link2,
     ExternalLink, FileText, LayoutDashboard, Inbox
-} from 'lucide-react'
+} from 'lucide-react';
 
 export const EmptyPanel = ({ text }) => (
     <div className="py-16 flex flex-col items-center justify-center text-center">
         <Inbox className="w-12 h-12 text-[var(--text-subtle)] mb-4 opacity-50" />
         <p className="text-sm font-medium text-[var(--text-subtle)]">{text}</p>
     </div>
-)
+);
 
 export const VerdictPanel = ({ summary }) => (
     <div className="flex gap-4 p-2">
@@ -21,7 +22,7 @@ export const VerdictPanel = ({ summary }) => (
             {summary?.executive_verdict || "No executive verdict is available for this query yet."}
         </p>
     </div>
-)
+);
 
 export const DimensionsPanel = ({ summary, reduceMotion }) => {
     const entries = summary?.dimensional_scores ? Object.entries(summary.dimensional_scores) : []
@@ -71,7 +72,7 @@ export const DimensionsPanel = ({ summary, reduceMotion }) => {
             })}
         </div>
     )
-}
+};
 
 export const CompetitorsPanel = ({ summary }) => {
     const list = Array.isArray(summary?.competitive_landscape) ? summary.competitive_landscape : []
@@ -105,7 +106,7 @@ export const CompetitorsPanel = ({ summary }) => {
             })}
         </div>
     )
-}
+};
 
 export const VulnerabilitiesPanel = ({ summary }) => {
     const list = Array.isArray(summary?.critical_vulnerabilities) ? summary.critical_vulnerabilities : []
@@ -124,7 +125,7 @@ export const VulnerabilitiesPanel = ({ summary }) => {
             ))}
         </ul>
     )
-}
+};
 
 export const NextStepsPanel = ({ summary }) => {
     const list = Array.isArray(summary?.actionable_next_steps) ? summary.actionable_next_steps : []
@@ -144,7 +145,7 @@ export const NextStepsPanel = ({ summary }) => {
             ))}
         </ol>
     )
-}
+};
 
 export const SourcesPanel = ({ summary }) => {
     const evidentiary = Array.isArray(summary?.evidentiary_sources) ? summary.evidentiary_sources : []
@@ -227,7 +228,7 @@ export const SourcesPanel = ({ summary }) => {
 
         </div>
     )
-}
+};
 
 export const MetaPanel = ({ summary }) => {
     const entries = summary?.meta ? Object.entries(summary.meta).filter(([, v]) => v !== null && v !== undefined) : []
@@ -246,4 +247,4 @@ export const MetaPanel = ({ summary }) => {
             ))}
         </dl>
     )
-}
+};

@@ -1,11 +1,9 @@
 "use client"
+
 import React, { useState, useMemo, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
-import { getSummary } from "@/features/validate/api/validate.api"
 import { getConviction, formatDate } from '@/lib/utils'
-// import { CircularScore } from '@/components/ui/CircularScore'
-// import { SkeletonSummary } from '@/components/ui/Skeletons'
 import {
     VerdictPanel, DimensionsPanel, CompetitorsPanel,
     VulnerabilitiesPanel, NextStepsPanel, SourcesPanel, MetaPanel
@@ -16,6 +14,8 @@ import {
 } from 'lucide-react'
 import { CircularScore } from '@/features/validate/components/CircularScore'
 import { SkeletonSummary } from '@/features/validate/components/Skeletons'
+import { useGetSummary } from '@/features/validate/hooks/useGetSummary'
+import { DownloadPdfButton } from '@/features/validate/components/DownloadPdfButton'
 
 const TABS = [
     { id: 'verdict', label: 'Verdict', Icon: CheckCircle, Component: VerdictPanel },
@@ -25,7 +25,7 @@ const TABS = [
     { id: 'nextSteps', label: 'Next steps', Icon: ListTodo, Component: NextStepsPanel },
     { id: 'sources', label: 'Sources', Icon: Globe, Component: SourcesPanel },
     { id: 'meta', label: 'Details', Icon: Info, Component: MetaPanel },
-]
+];
 
 const SWIPE_THRESHOLD = 60
 const BACK_ROUTE = '/dashboard/validate-idea'
@@ -36,15 +36,11 @@ export default function SummaryPage() {
     const queryId = params?.queryId
     const reduceMotion = useReducedMotion()
 
-    const [summary, setSummary] = useState(null)
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
     const [activeIndex, setActiveIndex] = useState(0)
     const [direction, setDirection] = useState(0)
 
     // Handle Browser Back Button (PopState)
     useEffect(() => {
-        // Push current state so the browser has a history entry to "go back" from
         window.history.pushState(null, '', window.location.href)
 
         const handlePopState = (e) => {
@@ -56,27 +52,14 @@ export default function SummaryPage() {
         return () => window.removeEventListener('popstate', handlePopState)
     }, [router])
 
-    // Data Fetching
-    useEffect(() => {
-        if (!queryId) return
-        let cancelled = false
+    const {
+        data: summary,
+        isPending,
+        isError,
+        error
+    } = useGetSummary(queryId);
 
-        const fetchSummary = async () => {
-            setLoading(true)
-            setError(null)
-            try {
-                const response = await getSummary(queryId)
-                if (!cancelled) setSummary(response)
-            } catch (err) {
-                if (!cancelled) setError("This report couldn't be loaded. Try refreshing the page.")
-            } finally {
-                if (!cancelled) setLoading(false)
-            }
-        }
-
-        fetchSummary()
-        return () => { cancelled = true }
-    }, [queryId])
+    console.log('summary: ', summary);
 
     const conviction = useMemo(() => getConviction(summary?.aggregate_score), [summary])
 
@@ -84,20 +67,20 @@ export default function SummaryPage() {
         if (index < 0 || index >= TABS.length) return
         setDirection(index > activeIndex ? 1 : -1)
         setActiveIndex(index)
-    }
+    };
 
     const handleDragEnd = (_, info) => {
         if (info.offset.x < -SWIPE_THRESHOLD) goToTab(activeIndex + 1)
         else if (info.offset.x > SWIPE_THRESHOLD) goToTab(activeIndex - 1)
-    }
+    };
 
-    if (error) {
+    if (isError) {
         return (
             <div className="min-h-[91vh] flex items-center justify-center bg-[var(--background)] px-6">
                 <div className="max-w-md text-center">
                     <AlertOctagon className="w-12 h-12 text-[var(--destructive)] mx-auto mb-4" />
                     <p className="text-[var(--destructive)] font-semibold text-lg mb-2">Report unavailable</p>
-                    <p className="text-[var(--text-muted)] text-sm mb-6">{error}</p>
+                    <p className="text-[var(--text-muted)] text-sm mb-6">{error?.message || "Your summary couldn't be loaded. Try refreshing the page."}</p>
                     <button
                         onClick={() => router.push(BACK_ROUTE)}
                         className="px-4 py-2 bg-[var(--primary)] text-white rounded-[var(--radius)] font-medium"
@@ -107,26 +90,31 @@ export default function SummaryPage() {
                 </div>
             </div>
         )
-    }
+    };
 
-    if (loading) return <div className="min-h-[91vh] bg-[var(--background)]"><SkeletonSummary /></div>
+    if (isPending) return <div className="min-h-[91vh] bg-[var(--background)]"><SkeletonSummary /></div>;
 
-    const ActivePanel = TABS[activeIndex].Component
+    const ActivePanel = TABS[activeIndex].Component;
 
     return (
         <div className="min-h-[91vh] bg-[var(--background)] text-[var(--foreground)]">
             <div className="max-w-full mx-auto p-6 md:p-16">
 
-                {/* Back Button */}
-                <button
-                    onClick={() => router.push(BACK_ROUTE)}
-                    className="group flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors mb-8 font-medium text-sm"
-                >
-                    <div className="p-1.5 rounded-full bg-[var(--surface-raised)] group-hover:bg-[var(--border)] transition-colors">
-                        <ArrowLeft className="w-4 h-4" />
-                    </div>
-                    Back to validation
-                </button>
+                {/* Top Actions Bar */}
+                <div className="flex items-center justify-between mb-8">
+                    <button
+                        onClick={() => router.push(BACK_ROUTE)}
+                        className="group flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors font-medium text-sm"
+                    >
+                        <div className="p-1.5 rounded-full bg-[var(--surface-raised)] group-hover:bg-[var(--border)] transition-colors">
+                            <ArrowLeft className="w-4 h-4" />
+                        </div>
+                        Back to validation
+                    </button>
+
+                    {/* Download PDF Button */}
+                    {summary && <DownloadPdfButton summary={summary} conviction={conviction} />}
+                </div>
 
                 {/* Header */}
                 <motion.div

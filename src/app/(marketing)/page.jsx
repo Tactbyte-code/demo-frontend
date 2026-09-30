@@ -18,18 +18,12 @@ const page = () => {
       <Hero />
 
       <ProblemSection />
-      {/* <section id="market-friction">
-      </section> */}
 
-      <section id="how-it-works">
-        <SolutionSection />
-      </section>
+      <SolutionSection />
 
       <FeaturesSection />
 
-      <section id="who-for">
-        <TargetAudience />
-      </section>
+      <TargetAudience />
 
       <SampleInsights />
       <ComparisonSection />
