@@ -187,7 +187,6 @@ export default function PlaystoreQueryHistoryTable() {
             <div
                 className="border border-border overflow-hidden"
                 style={{
-                    // backgroundColor: "var(--surface)",
                     boxShadow: "var(--shadow-sm)",
                 }}
             >

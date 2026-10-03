@@ -1,5 +1,5 @@
-import React from 'react'
-import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
+import React from 'react';
+import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 
 // Print-ready PDF styles
 const styles = StyleSheet.create({
@@ -109,14 +109,14 @@ const styles = StyleSheet.create({
         borderTopColor: '#f1f5f9',
         paddingTop: 8,
     },
-})
+});
 
 // Helper to format string keys like "pain_point_severity" into "Pain Point Severity"
 const formatLabel = (key) => {
     return key
         .replace(/_/g, ' ')
         .replace(/\b\w/g, (char) => char.toUpperCase())
-}
+};
 
 export const ReportPdfDocument = ({ summary, conviction }) => {
     // Transform dimensional_scores object into an array for easy mapping
@@ -228,4 +228,4 @@ export const ReportPdfDocument = ({ summary, conviction }) => {
             </Page>
         </Document>
     )
-}
+};

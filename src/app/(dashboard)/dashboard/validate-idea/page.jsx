@@ -62,11 +62,11 @@ const ValidateIdeaPage = () => {
     };
 
     return (
-        <div className="min-h-[91vh] flex flex-col items-center justify-center px-4 py-8 md:py-12 bg-slate-50 text-slate-900">
+        <div className="min-h-[91vh] flex flex-col items-center justify-center px-4 py-8 md:p-10 bg-slate-50 text-slate-900">
             <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-xl"
+                className="w-full max-w-xl mb-15"
             >
                 <div className="text-center mb-8">
                     <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center mx-auto mb-4 text-indigo-600 text-xl shadow-sm">
