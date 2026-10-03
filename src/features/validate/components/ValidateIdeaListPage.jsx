@@ -54,10 +54,10 @@ const QueryRow = ({ query, index, serialNumber, reduceMotion }) => {
                 href={getHrefForQuery(query)}
                 className="grid grid-cols-[40px_1fr_110px_90px] md:grid-cols-[60px_1fr_120px_100px] items-center gap-4 px-4 py-4 group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--primary)] transition-all hover:bg-[var(--surface-hover)] w-full"
             >
-                <span className="text-sm font-medium text-[var(--text-subtle)] text-center md:text-left">
+                <span className="text-xs font-medium text-[var(--text-subtle)] text-center md:text-left">
                     {String(serialNumber).padStart(2, '0')}
                 </span>
-                <h3 className="font-medium text-[var(--text-main)] truncate pr-4">
+                <h3 className="text-[15px] font-medium text-[var(--text-main)] truncate pr-4">
                     {query?.title || 'Untitled idea'}
                 </h3>
                 <div>
@@ -68,7 +68,7 @@ const QueryRow = ({ query, index, serialNumber, reduceMotion }) => {
                         {tier.label}
                     </span>
                 </div>
-                <span className="text-sm text-[var(--text-muted)] text-right whitespace-nowrap">
+                <span className="text-xs text-[var(--text-muted)] text-right whitespace-nowrap">
                     {date || '-'}
                 </span>
             </Link>
@@ -101,15 +101,18 @@ const ValidateIdeaListPage = () => {
 
     return (
         <div className={`w-full min-h-[91vh] bg-[var(--background)] text-[var(--text-main)]`}>
-            <div className="w-full mx-auto px-10 py-16">
-                <div className="mb-10 flex items-start gap-2">
-                    <Lightbulb className="w-6 h-6 mt-1 text-[var(--accent)] shrink-0" strokeWidth={2} />
+            <div className="w-full mx-auto">
+                {/* Header */}
+                <div className="flex items-end justify-between mb-5 mt-4">
                     <div>
-                        <h1 className="text-2xl mb-0.5 text-[var(--text-header)] tracking-tight font-medium">
-                            Your recent ideas
-                        </h1>
-                        <p className="text-sm text-[var(--text-muted)]">
-                            Track the validation status and review reports for your submitted ideas.
+                        <div className="flex items-center gap-2 mb-1">
+                            <div className="w-0.75 h-5" style={{ backgroundColor: "var(--primary)" }} />
+                            <h2 className="text-xl font-black tracking-tight" style={{ color: "var(--text-main)" }}>
+                                Recent Analysis
+                            </h2>
+                        </div>
+                        <p className="text-xs pl-2.75" style={{ color: "var(--text-muted)" }}>
+                            Your analysis history and current status
                         </p>
                     </div>
                 </div>
@@ -167,7 +170,7 @@ const ValidateIdeaListPage = () => {
                     {/* Pagination Controls */}
                     {!isLoading && !isError && totalPages > 1 && (
                         <div className="w-full flex items-center justify-between px-4 py-3 bg-[var(--surface)] border-t border-[var(--border)]">
-                            <span className="text-sm text-[var(--text-muted)]">
+                            <span className="text-xs text-[var(--text-muted)]">
                                 Page <span className="font-medium text-[var(--text-main)]">{page}</span> of {totalPages}
                             </span>
 
@@ -175,18 +178,18 @@ const ValidateIdeaListPage = () => {
                                 <button
                                     onClick={() => setPage(old => Math.max(old - 1, 1))}
                                     disabled={page === 1}
-                                    className="p-1.5 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--sidebar-bg)] hover:bg-[var(--surface-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-[var(--text-main)]"
+                                    className="p-1.5 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--sidebar-bg)] hover:bg-[var(--surface-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-[var(--text-main)] cursor-pointer"
                                     aria-label="Previous page"
                                 >
-                                    <ChevronLeft className="w-4 h-4" />
+                                    <ChevronLeft className="w-3 h-3" />
                                 </button>
                                 <button
                                     onClick={() => setPage(old => (old < totalPages ? old + 1 : old))}
                                     disabled={page === totalPages || isPlaceholderData}
-                                    className="p-1.5 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--sidebar-bg)] hover:bg-[var(--surface-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-[var(--text-main)]"
+                                    className="p-1.5 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--sidebar-bg)] hover:bg-[var(--surface-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-[var(--text-main)] cursor-pointer"
                                     aria-label="Next page"
                                 >
-                                    <ChevronRight className="w-4 h-4" />
+                                    <ChevronRight className="w-3 h-3" />
                                 </button>
                             </div>
                         </div>

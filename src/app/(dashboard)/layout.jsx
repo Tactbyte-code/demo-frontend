@@ -8,13 +8,10 @@ import {
     PanelLeftClose,
     PanelLeftOpen,
     X,
-    Search,
-    MessageSquare,
     Sparkles,
     Target
 } from 'lucide-react';
 import { BsRobot } from "react-icons/bs";
-
 import { FaCheckCircle, FaReddit } from "react-icons/fa";
 import { FaGooglePlay } from "react-icons/fa";
 import Link from "next/link";
@@ -25,10 +22,7 @@ import { auth } from "@/lib/firebase";
 import { useSidebarStore } from "@/context/useSidebarStore";
 import Image from "next/image";
 import FeedbackModal from "@/components/shared/FeedbackModal";
-
-import TicketChatPopup, {
-    SidebarTrigger,
-} from "@/app/(dashboard)/tickets/page";
+import TicketChatPopup, { SidebarTrigger } from "@/app/(dashboard)/tickets/page";
 
 export default function DashboardLayout({ children }) {
     const pathname = usePathname();
@@ -91,7 +85,6 @@ export default function DashboardLayout({ children }) {
     ];
 
     const engineItems = [
-        // { name: 'AI Lead Engine', icon: BsRobot, href: '/dashboard/ai-lead-engine/campaigns' },
         { name: 'Reddit Analysis', icon: FaReddit, href: '/dashboard/reddit', color: "#FF4500" },
         { name: 'Playstore Analysis', icon: FaGooglePlay, href: '/dashboard/playstore', color: "#4285F4" },
         { name: 'Validate Idea', icon: FaCheckCircle, href: '/dashboard/validate-idea', color: "#10b981" },
@@ -100,7 +93,6 @@ export default function DashboardLayout({ children }) {
 
     const leadGenerationItems = [
         { name: 'AI Lead Engine', icon: Target, href: '/dashboard/ai-lead-engine/campaigns', color: "#10b981" },
-        // { name: "Keyword Search", icon: Search, beta: true },
     ];
 
     return (
@@ -232,7 +224,7 @@ export default function DashboardLayout({ children }) {
                                         className="text-[9px] font-bold uppercase tracking-[0.18em] font-mono"
                                         style={{ color: "var(--sidebar-muted)" }}
                                     >
-                                        Made in India with ❤️
+                                        Made with ❤️ in India
                                     </span>
                                 </div>
                             </div>
@@ -376,4 +368,4 @@ function NavGroup({ label, items, pathname }) {
             </nav>
         </div>
     );
-}
+};

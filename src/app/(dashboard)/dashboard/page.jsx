@@ -8,15 +8,17 @@ import {
     Clock,
     XCircle,
     Activity,
-    ChevronRight
+    ChevronRight,
+    Lightbulb
 } from "lucide-react";
-import { FaReddit } from "react-icons/fa";
+import { FaLightbulb, FaReddit } from "react-icons/fa";
 import { FaGooglePlay } from "react-icons/fa";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { getToken } from "@/utils/getToken";
 import RedditQueryHistoryTable from "./reddit/_components/RedditQueryHistoryTable";
 import PlaystoreQueryHistoryTable from "./playstore/_components/PlaystoreQueryHistoryTable";
+import ValidateIdeaListPage from "@/features/validate/components/ValidateIdeaListPage";
 
 const formatDate = (iso) =>
     new Date(iso).toLocaleDateString("en-US", {
@@ -48,7 +50,7 @@ function StatCard({ label, value, icon: Icon, colorClass, bgClass, delay = 0 }) 
             </span>
         </motion.div>
     );
-}
+};
 
 /* ── QUICK ACTIONS ───────────────────── */
 function QuickActions({ isMobile = false }) {
@@ -64,7 +66,13 @@ function QuickActions({ isMobile = false }) {
             href: "/dashboard/playstore",
             icon: FaGooglePlay,
             color: "#4285F4"
-        }
+        },
+        {
+            label: "Validate Idea",
+            href: "/dashboard/validate-idea",
+            icon: FaLightbulb,
+            color: "#4285F4"
+        },
     ];
 
     return (
@@ -110,7 +118,7 @@ function QuickActions({ isMobile = false }) {
             </div>
         </div>
     );
-}
+};
 
 /* ── ACTIVITY FEED ───────────────────── */
 function ActivityFeed({ jobs }) {
@@ -155,12 +163,13 @@ function ActivityFeed({ jobs }) {
             )}
         </div>
     );
-}
+};
 
 /* ── TABS ───────────────────────────── */
 const TABS = [
-    { id: "reddit", label: "Reddit", icon: MessageSquare },
-    { id: "playstore", label: "Playstore Review", icon: Star }
+    { id: "reddit", label: "Reddit Analysis", icon: MessageSquare },
+    { id: "playstore", label: "Playstore Review", icon: Star },
+    { id: "validate", label: "Validate Idea", icon: Lightbulb }
 ];
 
 /* ── MAIN ───────────────────────────── */
@@ -262,12 +271,19 @@ export default function DashboardPage() {
 
                         {/* Tab content */}
                         <AnimatePresence mode="wait">
-                            {activeTab === "reddit" ? (
+                            {activeTab === "reddit" && (
                                 <RedditQueryHistoryTable />
-                            ) : (
+                            )}
+
+                            {activeTab === "playstore" && (
                                 <motion.div key="playstore" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.2 }}>
-                                    {/* <PlaystoreComingSoon /> */}
                                     <PlaystoreQueryHistoryTable />
+                                </motion.div>
+                            )}
+
+                            {activeTab === "validate" && (
+                                <motion.div key="validate" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.2 }}>
+                                    <ValidateIdeaListPage />
                                 </motion.div>
                             )}
                         </AnimatePresence>
