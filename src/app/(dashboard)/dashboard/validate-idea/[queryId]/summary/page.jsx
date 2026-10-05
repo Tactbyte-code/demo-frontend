@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React, { useState, useMemo, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
@@ -59,8 +59,6 @@ export default function SummaryPage() {
         error
     } = useGetSummary(queryId);
 
-    console.log('summary: ', summary);
-
     const conviction = useMemo(() => getConviction(summary?.aggregate_score), [summary])
 
     const goToTab = (index) => {
@@ -98,16 +96,16 @@ export default function SummaryPage() {
 
     return (
         <div className="min-h-[91vh] bg-[var(--background)] text-[var(--foreground)]">
-            <div className="max-w-full mx-auto p-6 md:p-16">
+            <div className="max-w-full mx-auto p-6 md:p-12">
 
                 {/* Top Actions Bar */}
                 <div className="flex items-center justify-between mb-8">
                     <button
                         onClick={() => router.push(BACK_ROUTE)}
-                        className="group flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors font-medium text-sm"
+                        className="group flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors font-medium text-xs"
                     >
-                        <div className="p-1.5 rounded-full bg-[var(--surface-raised)] group-hover:bg-[var(--border)] transition-colors">
-                            <ArrowLeft className="w-4 h-4" />
+                        <div className="p-1 rounded-full bg-[var(--surface-raised)] group-hover:bg-[var(--border)] transition-colors">
+                            <ArrowLeft className="w-3 h-3" />
                         </div>
                         Back to validation
                     </button>
@@ -121,11 +119,11 @@ export default function SummaryPage() {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: reduceMotion ? 0 : 0.4, ease: [0.22, 1, 0.36, 1] }}
-                    className="flex flex-col-reverse md:flex-row items-start md:items-center justify-between gap-8 mb-10 pb-10 border-b border-[var(--border)]"
+                    className="flex flex-col-reverse md:flex-row items-start md:items-center justify-between gap-8 mb-6 pb-8 border-b border-[var(--border)]"
                 >
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 flex flex-col gap-2">
                         <div
-                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4 shadow-sm border border-transparent"
+                            className="inline-flex items-center w-max gap-2 px-3 py-1.5 rounded-full mb-4 shadow-sm border border-transparent"
                             style={{
                                 color: conviction.color,
                                 backgroundColor: conviction.tint,
@@ -133,9 +131,9 @@ export default function SummaryPage() {
                             }}
                         >
                             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: conviction.color }} />
-                            <span className="text-xs font-bold uppercase tracking-wide">{conviction.label}</span>
+                            <span className="text-[11px] font-bold uppercase tracking-wide">{conviction.label}</span>
                         </div>
-                        <h1 className="text-3xl font-bold text-[var(--text-header)] mb-2 tracking-tight">
+                        <h1 className="text-2xl     font-bold text-[var(--text-header)] mb-2 tracking-tight">
                             {summary?.title || 'Idea validation report'}
                         </h1>
                         {summary?.created_at && (
@@ -150,7 +148,7 @@ export default function SummaryPage() {
 
                 {/* Tab bar */}
                 <div
-                    className="flex gap-2 overflow-x-auto mb-8 pb-2 -mx-6 px-6 md:mx-0 md:px-0 snap-x snap-mandatory"
+                    className="flex gap-2 overflow-x-auto mb-6 -mx-6 px-6 md:mx-0 md:px-0 snap-x snap-mandatory"
                     style={{ scrollbarWidth: 'none' }}
                 >
                     {TABS.map((tab, i) => {
@@ -160,7 +158,7 @@ export default function SummaryPage() {
                             <button
                                 key={tab.id}
                                 onClick={() => goToTab(i)}
-                                className={`shrink-0 snap-start flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)] ${isActive
+                                className={`shrink-0 snap-start flex items-center gap-2 px-5 py-2.5 rounded-full text-[12px] font-semibold transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)] ${isActive
                                     ? 'bg-[var(--text-header)] text-[var(--background)]'
                                     : 'text-[var(--text-subtle)] bg-[var(--surface-raised)] hover:bg-[var(--surface-hover)]'
                                     }`}
