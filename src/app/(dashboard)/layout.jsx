@@ -23,6 +23,7 @@ import { useSidebarStore } from "@/context/useSidebarStore";
 import Image from "next/image";
 import FeedbackModal from "@/components/shared/FeedbackModal";
 import TicketChatPopup, { SidebarTrigger } from "@/app/(dashboard)/tickets/page";
+import LocationFetcher from "@/components/location/LocationFetcher";
 
 export default function DashboardLayout({ children }) {
     const pathname = usePathname();
@@ -257,6 +258,8 @@ export default function DashboardLayout({ children }) {
                                 ?.name || "Dashboard"}
                         </span>
                     </div>
+
+                    {/* <LocationFetcher /> */}
 
                     <UserProfileButton />
                 </div>

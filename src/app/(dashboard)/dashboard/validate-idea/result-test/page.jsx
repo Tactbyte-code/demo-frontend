@@ -97,20 +97,20 @@ const Page = () => {
                 <div className="flex flex-col gap-3">
                     <button
                         type="button"
-                        onClick={handleSearch}
-                        disabled={isAnyLoading || !queryId.trim()}
-                        className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                        {searchLoading ? 'Searching...' : 'Trigger Search'}
-                    </button>
-
-                    <button
-                        type="button"
                         onClick={handleContext}
                         disabled={isAnyLoading || !queryId.trim()}
                         className="w-full px-4 py-2 bg-amber-600 text-white font-medium rounded-md hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                         {contextLoading ? 'Generating Context...' : 'Generate Context'}
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={handleSearch}
+                        disabled={isAnyLoading || !queryId.trim()}
+                        className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                        {searchLoading ? 'Searching...' : 'Trigger Search'}
                     </button>
 
                     <button
