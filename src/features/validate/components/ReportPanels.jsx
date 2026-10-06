@@ -6,7 +6,7 @@ import { getConviction, getTierColor, formatLabel, getHostname } from '@/lib/uti
 import {
     AlertTriangle, ShieldAlert, ShieldCheck, Link2,
     ExternalLink, FileText, LayoutDashboard, Inbox,
-    Users, Banknote, Crosshair // <-- New icons added here
+    Users, Banknote, Crosshair, MapPin, Globe // <-- New icons added here
 } from 'lucide-react';
 
 export const EmptyPanel = ({ text }) => (
@@ -76,93 +76,176 @@ export const DimensionsPanel = ({ summary, reduceMotion }) => {
 };
 
 export const CompetitorsPanel = ({ summary }) => {
-    const list = Array.isArray(summary?.competitive_landscape) ? summary.competitive_landscape : []
-    if (list.length === 0) return <EmptyPanel text="No competitive landscape data is available yet." />
+    const list = Array.isArray(summary?.competitive_landscape) ? summary.competitive_landscape : [];
+    if (list.length === 0) return <EmptyPanel text="No competitive landscape data is available yet." />;
 
-    return (
-        <div className="grid gap-6 sm:grid-cols-2">
-            {list.map((competitor, i) => {
-                const tier = getTierColor(competitor?.threat_level)
-                return (
-                    <div key={i} className="flex flex-col p-5 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface-card)] shadow-sm transition-shadow hover:shadow-md">
+    // Partition into local/regional challengers and global incumbents
+    const localCompetitors = list.filter((item) =>
+        ['local', 'regional'].includes(item?.scope?.toLowerCase())
+    );
+    const globalCompetitors = list.filter(
+        (item) => !['local', 'regional'].includes(item?.scope?.toLowerCase())
+    );
 
-                        {/* Header: Name & Threat Level */}
-                        <div className="flex items-start justify-between gap-3 mb-3">
-                            <div className="flex items-center gap-2">
-                                <ShieldAlert className="w-5 h-5 text-[var(--text-subtle)]" />
-                                <h3 className="font-bold text-[var(--text-header)] text-lg line-clamp-1">{competitor?.name || 'Unnamed'}</h3>
-                            </div>
-                            {competitor?.threat_level && (
-                                <span
-                                    className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full whitespace-nowrap"
-                                    style={{ color: tier.color, backgroundColor: tier.tint }}
-                                >
-                                    {formatLabel(competitor.threat_level)} Threat
-                                </span>
-                            )}
-                        </div>
+    const CompetitorCard = ({ competitor }) => {
+        const tier = getTierColor(competitor?.threat_level);
+        const isLocal = competitor?.scope?.toLowerCase() === 'local';
+        const isRegional = competitor?.scope?.toLowerCase() === 'regional';
 
-                        {/* Description */}
-                        {competitor?.description && (
-                            <p className="text-sm text-[var(--text-muted)] leading-relaxed mb-5 pb-4 border-b border-[var(--border)]">
-                                {competitor.description}
-                            </p>
+        return (
+            <div className="flex flex-col p-5 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface-card)] shadow-sm transition-shadow hover:shadow-md">
+
+                {/* Header: Name, Scope & Threat Level */}
+                <div className="flex items-start justify-between gap-3 mb-3">
+                    <div className="flex items-center gap-2 min-w-0">
+                        <ShieldAlert className="w-5 h-5 shrink-0 text-[var(--text-subtle)]" />
+                        <h4 className="font-bold text-[var(--text-header)] text-lg line-clamp-1">
+                            {competitor?.name || 'Unnamed'}
+                        </h4>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+                        {competitor?.scope && (
+                            <span
+                                className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${isLocal
+                                    ? 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20'
+                                    : isRegional
+                                        ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20'
+                                        : 'bg-[var(--surface-raised)] text-[var(--text-muted)] border-[var(--border)]'
+                                    }`}
+                            >
+                                {isLocal || isRegional ? (
+                                    <MapPin className="w-3 h-3" />
+                                ) : (
+                                    <Globe className="w-3 h-3" />
+                                )}
+                                {formatLabel(competitor.scope)}
+                            </span>
                         )}
 
-                        {/* Details Grid */}
-                        <div className="flex flex-col gap-4 flex-grow">
-
-                            {/* Target Segment & Pricing (Side by side if space allows, or stacked) */}
-                            <div className="grid grid-cols-2 gap-4">
-                                {competitor?.target_segment && (
-                                    <div>
-                                        <div className="flex items-center gap-1.5 mb-1 text-[var(--text-subtle)]">
-                                            <Users className="w-4 h-4" />
-                                            <span className="text-[10px] font-bold uppercase tracking-wider">Target Segment</span>
-                                        </div>
-                                        <p className="text-sm text-[var(--text-main)] font-medium leading-snug">{competitor.target_segment}</p>
-                                    </div>
-                                )}
-
-                                {competitor?.pricing_model && (
-                                    <div>
-                                        <div className="flex items-center gap-1.5 mb-1 text-[var(--text-subtle)]">
-                                            <Banknote className="w-4 h-4" />
-                                            <span className="text-[10px] font-bold uppercase tracking-wider">Pricing</span>
-                                        </div>
-                                        <p className="text-sm text-[var(--text-main)] font-medium tabular-nums leading-snug">{competitor.pricing_model}</p>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Core Weakness (Highlighted Danger) */}
-                            {competitor?.core_weakness && (
-                                <div className="bg-[var(--destructive-bg)] border border-[var(--destructive)]/30 rounded-lg p-3 mt-2">
-                                    <div className="flex items-center gap-1.5 mb-1.5 text-[var(--destructive)]">
-                                        <AlertTriangle className="w-4 h-4" />
-                                        <span className="text-[10px] font-bold uppercase tracking-wider">Core Weakness</span>
-                                    </div>
-                                    <p className="text-sm text-[var(--text-main)] leading-relaxed">{competitor.core_weakness}</p>
-                                </div>
-                            )}
-
-                            {/* Attack Vector / How to Differentiate (Highlighted Success) */}
-                            {competitor?.how_to_differentiate && (
-                                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3 mt-auto">
-                                    <div className="flex items-center gap-1.5 mb-1.5 text-emerald-600 dark:text-emerald-400">
-                                        <Crosshair className="w-4 h-4" />
-                                        <span className="text-[10px] font-bold uppercase tracking-wider">Attack Vector</span>
-                                    </div>
-                                    <p className="text-sm text-[var(--text-main)] leading-relaxed">{competitor.how_to_differentiate}</p>
-                                </div>
-                            )}
-
-                        </div>
+                        {competitor?.threat_level && (
+                            <span
+                                className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full whitespace-nowrap"
+                                style={{ color: tier.color, backgroundColor: tier.tint }}
+                            >
+                                {formatLabel(competitor.threat_level)} Threat
+                            </span>
+                        )}
                     </div>
-                )
-            })}
+                </div>
+
+                {/* Description */}
+                {competitor?.description && (
+                    <p className="text-sm text-[var(--text-muted)] leading-relaxed mb-5 pb-4 border-b border-[var(--border)]">
+                        {competitor.description}
+                    </p>
+                )}
+
+                {/* Details Grid */}
+                <div className="flex flex-col gap-4 flex-grow">
+                    <div className="grid grid-cols-2 gap-4">
+                        {competitor?.target_segment && (
+                            <div>
+                                <div className="flex items-center gap-1.5 mb-1 text-[var(--text-subtle)]">
+                                    <Users className="w-4 h-4" />
+                                    <span className="text-[10px] font-bold uppercase tracking-wider">Target Segment</span>
+                                </div>
+                                <p className="text-sm text-[var(--text-main)] font-medium leading-snug">
+                                    {competitor.target_segment}
+                                </p>
+                            </div>
+                        )}
+
+                        {competitor?.pricing_model && (
+                            <div>
+                                <div className="flex items-center gap-1.5 mb-1 text-[var(--text-subtle)]">
+                                    <Banknote className="w-4 h-4" />
+                                    <span className="text-[10px] font-bold uppercase tracking-wider">Pricing</span>
+                                </div>
+                                <p className="text-sm text-[var(--text-main)] font-medium tabular-nums leading-snug">
+                                    {competitor.pricing_model}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Core Weakness */}
+                    {competitor?.core_weakness && (
+                        <div className="bg-[var(--destructive-bg)] border border-[var(--destructive)]/30 rounded-lg p-3 mt-2">
+                            <div className="flex items-center gap-1.5 mb-1.5 text-[var(--destructive)]">
+                                <AlertTriangle className="w-4 h-4" />
+                                <span className="text-[10px] font-bold uppercase tracking-wider">Core Weakness</span>
+                            </div>
+                            <p className="text-sm text-[var(--text-main)] leading-relaxed">
+                                {competitor.core_weakness}
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Attack Vector / How to Differentiate */}
+                    {competitor?.how_to_differentiate && (
+                        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3 mt-auto">
+                            <div className="flex items-center gap-1.5 mb-1.5 text-emerald-600 dark:text-emerald-400">
+                                <Crosshair className="w-4 h-4" />
+                                <span className="text-[10px] font-bold uppercase tracking-wider">Attack Vector</span>
+                            </div>
+                            <p className="text-sm text-[var(--text-main)] leading-relaxed">
+                                {competitor.how_to_differentiate}
+                            </p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    };
+
+    return (
+        <div className="space-y-10">
+            {/* Section 1: Local & Regional Challengers */}
+            {localCompetitors.length > 0 && (
+                <section className="space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-[var(--border)]">
+                        <div className="flex items-center gap-2">
+                            <MapPin className="w-5 h-5 text-sky-500" />
+                            <h3 className="text-base font-bold text-[var(--text-header)] tracking-tight">
+                                Local & Regional Challengers
+                            </h3>
+                        </div>
+                        <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
+                            {localCompetitors.length} {localCompetitors.length === 1 ? 'player' : 'players'}
+                        </span>
+                    </div>
+                    <div className="grid gap-6 sm:grid-cols-2">
+                        {localCompetitors.map((competitor, i) => (
+                            <CompetitorCard key={`local-${competitor?.name || i}`} competitor={competitor} />
+                        ))}
+                    </div>
+                </section>
+            )}
+
+            {/* Section 2: Global Incumbents */}
+            {globalCompetitors.length > 0 && (
+                <section className="space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-[var(--border)]">
+                        <div className="flex items-center gap-2">
+                            <Globe className="w-5 h-5 text-indigo-500" />
+                            <h3 className="text-base font-bold text-[var(--text-header)] tracking-tight">
+                                Global Incumbents
+                            </h3>
+                        </div>
+                        <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                            {globalCompetitors.length} {globalCompetitors.length === 1 ? 'player' : 'players'}
+                        </span>
+                    </div>
+                    <div className="grid gap-6 sm:grid-cols-2">
+                        {globalCompetitors.map((competitor, i) => (
+                            <CompetitorCard key={`global-${competitor?.name || i}`} competitor={competitor} />
+                        ))}
+                    </div>
+                </section>
+            )}
         </div>
-    )
+    );
 };
 
 export const VulnerabilitiesPanel = ({ summary }) => {
