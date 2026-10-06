@@ -96,7 +96,7 @@ export default function UserProfileButton() {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -10, scale: 0.96 }}
                         transition={{ duration: 0.18, ease: "easeOut" }}
-                        className="absolute right-0 mt-3 lg:mt-5 w-68 p-2 z-50 rounded-xl backdrop-blur-xl bg-surface-raised"
+                        className="absolute right-0 mt-3 lg:mt-5 w-68 p-2 z-60 rounded-xl backdrop-blur-xl bg-surface-raised"
                         style={{
                             // background: "rgba(255,255,255)",
                             border: "1px solid var(--glass-border)",
