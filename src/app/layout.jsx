@@ -3,6 +3,7 @@ import "./globals.css";
 import { Providers } from "@/providers/Providers";
 import AuthGuard from "@/middleware/AuthGuard";
 import { cn } from "@/lib/utils";
+import { Analytics } from '@vercel/analytics/next';
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -12,7 +13,7 @@ const poppins = Poppins({
   variable: "--font-poppins",
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://problempusle.site";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://problempulse.ai";
 
 export const metadata = {
   title: "Problem Pulse",
@@ -70,10 +71,11 @@ export default function RootLayout({ children }) {
           <AuthGuard>{children}</AuthGuard>
         </Providers>
 
+        <Analytics />
       </body>
     </html>
   );
-};
+}
 
 // Auth flow logic ->
 // Every page load → AuthGuard runs
