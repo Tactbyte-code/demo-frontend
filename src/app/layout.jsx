@@ -16,7 +16,7 @@ const poppins = Poppins({
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://problempulse.ai";
 
 export const metadata = {
-  title: "Problem Pulse",
+  title: "Problem Pulse | AI Problem Discovery System",
   description: "AI Problem Discovery System",
 };
 

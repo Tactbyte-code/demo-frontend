@@ -102,24 +102,13 @@ export default function Navbar() {
   const handleMouseLeave = () => {
     if (window.innerWidth < 1024) return;
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => setIsFeaturesOpen(false), 200);
+    timeoutRef.current = setTimeout(() => setIsFeaturesOpen(false), 300);
   };
 
   useEffect(() => {
     document.body.style.overflow =
       isFeaturesOpen || isMobileMenuOpen ? "hidden" : "unset";
   }, [isFeaturesOpen, isMobileMenuOpen]);
-
-  const handleScrollToSection = (e, path) => {
-    e.preventDefault();
-
-    if (pathname === "/") {
-      const el = document.getElementById(path);
-      if (el) el.scrollIntoView({ behavior: "smooth" });
-    } else {
-      router.push(`/#${path}`);
-    }
-  };
 
   const navItems = [
     { name: "How It Works", path: "how-it-works", href: "/#how-it-works", icon: Briefcase },
@@ -246,7 +235,7 @@ export default function Navbar() {
               >
                 <button
                   className={`flex items-center gap-1 px-3 py-2 rounded-none transition-all
-                    ${isFeaturesOpen
+      ${isFeaturesOpen
                       ? "text-foreground hover:bg-primary/10 font-semibold"
                       : isScrolled
                         ? "text-foreground font-semibold"
@@ -259,6 +248,15 @@ export default function Navbar() {
                     className={`w-3 h-3 transition-transform ${isFeaturesOpen ? "rotate-180" : ""}`}
                   />
                 </button>
+
+                {/* Invisible hover bridge: keeps the menu open while the cursor
+      travels from the button down to the dropdown */}
+                {isFeaturesOpen && (
+                  <div
+                    aria-hidden="true"
+                    className="absolute top-full -left-10 -right-10 h-14"
+                  />
+                )}
               </div>
             </div>
 
