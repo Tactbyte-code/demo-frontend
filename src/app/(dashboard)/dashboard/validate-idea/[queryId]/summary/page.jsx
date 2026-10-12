@@ -96,7 +96,7 @@ export default function SummaryPage() {
 
     return (
         <div className="min-h-[91vh] bg-[var(--background)] text-[var(--foreground)]">
-            <div className="max-w-full mx-auto p-6 md:p-12">
+            <div className="max-w-full mx-auto p-6 md:p-10">
 
                 {/* Top Actions Bar */}
                 <div className="flex items-center justify-between mb-8">
@@ -119,7 +119,7 @@ export default function SummaryPage() {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: reduceMotion ? 0 : 0.4, ease: [0.22, 1, 0.36, 1] }}
-                    className="flex flex-col-reverse md:flex-row items-start md:items-center justify-between gap-8 mb-6 pb-8 border-b border-[var(--border)]"
+                    className="flex flex-col-reverse md:flex-row items-start md:items-center justify-between gap-8 mb-6"
                 >
                     <div className="flex-1 min-w-0 flex flex-col gap-2">
                         <div
@@ -133,7 +133,7 @@ export default function SummaryPage() {
                             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: conviction.color }} />
                             <span className="text-[11px] font-bold uppercase tracking-wide">{conviction.label}</span>
                         </div>
-                        <h1 className="text-2xl     font-bold text-[var(--text-header)] mb-2 tracking-tight">
+                        <h1 className="text-2xl font-bold text-[var(--text-header)] mb-2 tracking-tight">
                             {summary?.title || 'Idea validation report'}
                         </h1>
                         {summary?.created_at && (
@@ -148,7 +148,7 @@ export default function SummaryPage() {
 
                 {/* Tab bar */}
                 <div
-                    className="flex gap-2 overflow-x-auto mb-6 -mx-6 px-6 md:mx-0 md:px-0 snap-x snap-mandatory"
+                    className="sticky top-0 z-20 flex gap-2 overflow-x-auto mb-6 -mx-6 px-6 md:-mx-12 md:px-12 py-4 snap-x snap-mandatory bg-[var(--background)]/95 backdrop-blur-md supports-[backdrop-filter]:bg-[var(--background)]/80 border-b border-secondary/20 transition-all"
                     style={{ scrollbarWidth: 'none' }}
                 >
                     {TABS.map((tab, i) => {
@@ -159,7 +159,7 @@ export default function SummaryPage() {
                                 key={tab.id}
                                 onClick={() => goToTab(i)}
                                 className={`shrink-0 snap-start flex items-center gap-2 px-5 py-2.5 rounded-full text-[12px] font-semibold transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--primary)] ${isActive
-                                    ? 'bg-[var(--text-header)] text-[var(--background)]'
+                                    ? 'bg-[var(--text-header)] text-[var(--background)] shadow-sm'
                                     : 'text-[var(--text-subtle)] bg-[var(--surface-raised)] hover:bg-[var(--surface-hover)]'
                                     }`}
                             >

@@ -259,8 +259,6 @@ export default function DashboardLayout({ children }) {
                         </span>
                     </div>
 
-                    {/* <LocationFetcher /> */}
-
                     <UserProfileButton />
                 </div>
 
