@@ -261,7 +261,7 @@ export default function DashboardLayout({ children }) {
                                 href="/dashboard/validate-idea/beta-version"
                                 className="relative inline-flex items-center justify-center gap-2 px-5 py-2 text-sm font-semibold text-white rounded-full transition-all duration-300 ease-in-out hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 bg-gradient-to-r from-violet-600 via-fuchsia-600 to-orange-500 hover:from-violet-500 hover:via-fuchsia-500 hover:to-orange-400 shadow-[0_0_15px_rgba(192,38,211,0.4)] hover:shadow-[0_0_25px_rgba(192,38,211,0.6)]"                            >
                                 <span className="animate-pulse">✨</span>
-                                Try the New Experience
+                                Try the New Beta Update 
                             </Link>
                         )}
                     </div>
