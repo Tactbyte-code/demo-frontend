@@ -9,7 +9,7 @@ import {
     PanelLeftOpen,
     X,
     Sparkles,
-    Target
+    Target,
 } from 'lucide-react';
 import { BsRobot } from "react-icons/bs";
 import { FaCheckCircle, FaReddit } from "react-icons/fa";
@@ -23,7 +23,6 @@ import { useSidebarStore } from "@/context/useSidebarStore";
 import Image from "next/image";
 import FeedbackModal from "@/components/shared/FeedbackModal";
 import TicketChatPopup, { SidebarTrigger } from "@/app/(dashboard)/tickets/page";
-import LocationFetcher from "@/components/location/LocationFetcher";
 
 export default function DashboardLayout({ children }) {
     const pathname = usePathname();
@@ -254,12 +253,23 @@ export default function DashboardLayout({ children }) {
                         <div className="w-px h-4 bg-border-solid hidden sm:block" />
 
                         <span className="text-[14px] md:text-[16px] font-bold text-muted truncate max-w-35 md:max-w-none">
-                            {[...engineItems, ...mainItems].find((i) => i.href === pathname)
-                                ?.name || "Dashboard"}
+                            {[...engineItems, ...mainItems].find((i) => i.href === pathname)?.name || "Dashboard"}
                         </span>
+
+                        {pathname === "/dashboard/validate-idea" && (
+                            <Link
+                                href="/dashboard/validate-idea/beta-version"
+                                className="relative inline-flex items-center justify-center gap-2 px-5 py-2 text-sm font-semibold text-white rounded-full transition-all duration-300 ease-in-out hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 bg-gradient-to-r from-violet-600 via-fuchsia-600 to-orange-500 hover:from-violet-500 hover:via-fuchsia-500 hover:to-orange-400 shadow-[0_0_15px_rgba(192,38,211,0.4)] hover:shadow-[0_0_25px_rgba(192,38,211,0.6)]"                            >
+                                <span className="animate-pulse">✨</span>
+                                Try the New Experience
+                            </Link>
+                        )}
                     </div>
 
-                    <UserProfileButton />
+                    {/* RIGHT SIDE: Beta Link & Profile */}
+                    <div className="flex items-center gap-4">
+                        <UserProfileButton />
+                    </div>
                 </div>
 
                 <main className="flex-1 overflow-y-auto">{children}</main>
