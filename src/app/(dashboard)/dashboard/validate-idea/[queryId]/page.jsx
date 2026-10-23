@@ -2,36 +2,12 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { FaSpinner } from 'react-icons/fa';
-import { generateContext, triggerSearch, generateSummary, getStatus } from "@/features/validate/api/validate.api";
+import { FaCheckCircle, FaSpinner } from 'react-icons/fa';
+import { triggerSearch, generateSummary, getStatus, triggerFilter, triggerExtract, triggerScore } from "@/features/validate/api/validate.api";
 import { useGenerateContext } from '@/features/validate/hooks/useGenerateContext';
+import { STAGE_LABELS, STATUS, PIPELINE_STEPS, STATUS_TO_STEP } from '@/utils/validate/status';
 
 const POLL_INTERVAL_MS = 3000;
-
-// Mirrors the backend's ValidateQueryStatus enum
-const STATUS = {
-    INITIALIZED: "INITIALIZED",
-    CREATED: "CREATED",
-    VALIDATING: "VALIDATING",
-    VALIDATED: "VALIDATED",
-    SEARCHING: "SEARCHING",
-    SEARCH_COMPLETED: "SEARCH_COMPLETED",
-    SCORING: "SCORING",
-    COMPLETED: "COMPLETED",
-    FAILED: "FAILED",
-}
-
-const STAGE_LABELS = {
-    [STATUS.INITIALIZED]: "Initializing...",
-    [STATUS.CREATED]: "Generating Context...",
-    [STATUS.VALIDATING]: "Validating on RunPod...",
-    [STATUS.VALIDATED]: "Query validated, kicking off search...",
-    [STATUS.SEARCHING]: "Searching the web for insights...",
-    [STATUS.SEARCH_COMPLETED]: "Generating summary...",
-    [STATUS.SCORING]: "Scoring results...",
-    [STATUS.COMPLETED]: "Completed",
-    [STATUS.FAILED]: "Failed",
-}
 
 // Handles getStatus/generateContext/triggerSearch/generateSummary returning
 // either a bare string or an object with a `status` field, and normalizes casing.
@@ -45,11 +21,26 @@ const ValidateQueryIdPage = () => {
     const router = useRouter();
     const queryId = params?.queryId
 
-    const [currentStage, setCurrentStage] = useState("Initializing...")
+    const [currentStage, setCurrentStage] = useState(STATUS.INITIALIZED)
+    const [currentStageLabel, setCurrentStageLabel] = useState(STAGE_LABELS[STATUS.INITIALIZED])
     const [hasError, setHasError] = useState(false)
 
     // 1. Initialize the mutation hook
     const { mutateAsync: triggerGenerateContext } = useGenerateContext();
+
+    // Helper to determine step state relative to active status
+    const getStepState = (stepKey) => {
+        const stepOrder = PIPELINE_STEPS.map(s => s.key);
+        const mappedStage = STATUS_TO_STEP[currentStage] ?? currentStage;
+        const currentIndex = stepOrder.indexOf(mappedStage);
+        const targetIndex = stepOrder.indexOf(stepKey);
+
+        if (currentStage === STATUS.COMPLETED) return 'completed';
+        if (currentIndex === -1) return 'upcoming';
+        if (targetIndex < currentIndex) return 'completed';
+        if (targetIndex === currentIndex) return 'active';
+        return 'upcoming';
+    };
 
     useEffect(() => {
         if (!queryId) return;
@@ -58,10 +49,6 @@ const ValidateQueryIdPage = () => {
         let isProcessing = false
         let timeoutId = null
 
-        // Tracks which statuses we've ALREADY dispatched an action for, so
-        // generateContext / triggerSearch / generateSummary each fire at
-        // most once per queryId, no matter how many poll ticks still see
-        // the same status while the backend catches up.
         const firedActions = new Set()
 
         const stopPolling = () => {
@@ -93,19 +80,19 @@ const ValidateQueryIdPage = () => {
                 return
             }
 
-            setCurrentStage(STAGE_LABELS[status] || `Status: ${status}`)
+            setCurrentStage(status)
+            setCurrentStageLabel(STAGE_LABELS[status] || `Status: ${status}`)
 
             switch (status) {
                 case STATUS.CREATED: {
                     try {
-                        // 2. Call the mutation function instead of the raw API call
                         const contextResponse = await runOnce(STATUS.CREATED, () => triggerGenerateContext(queryId))
                         if (contextResponse) console.log("Context generated response: ", contextResponse)
                     } catch (error) {
                         console.error("Error generating context:", error)
                         stopPolling()
                         setHasError(true)
-                        setCurrentStage("Failed to generate context. Please try again.")
+                        setCurrentStageLabel("Failed to generate context. Please try again.")
                     }
                     break
                 }
@@ -118,24 +105,59 @@ const ValidateQueryIdPage = () => {
                         console.error("Error triggering search:", error)
                         stopPolling()
                         setHasError(true)
-                        setCurrentStage("Failed to trigger search. Please try again.")
+                        setCurrentStageLabel("Failed to trigger search. Please try again.")
                     }
                     break
                 }
 
                 case STATUS.SEARCH_COMPLETED: {
                     try {
-                        // generateSummary's response here is just FastAPI acking
-                        // that the summary job was submitted — RunPod is still
-                        // working on it in the background. So dispatch it once
-                        // and keep polling; do NOT treat this response as terminal.
-                        const summaryResponse = await runOnce(STATUS.SEARCH_COMPLETED, () => generateSummary(queryId))
-                        if (summaryResponse) console.log("Summary job response: ", summaryResponse)
+                        const filterResponse = await runOnce(STATUS.SEARCH_COMPLETED, () => triggerFilter(queryId))
+                        if (filterResponse) console.log("Filter job response: ", filterResponse)
                     } catch (error) {
-                        console.error("Error generating summary:", error)
+                        console.error("Error filtering: ", error)
                         stopPolling()
                         setHasError(true)
-                        setCurrentStage("Failed to generate summary. Please try again.")
+                        setCurrentStageLabel("Failed to filter. Please try again.")
+                    }
+                    break
+                }
+
+                case STATUS.FILTERED: {
+                    try {
+                        const extractResponse = await runOnce(STATUS.FILTERED, () => triggerExtract(queryId))
+                        if (extractResponse) console.log("Extraction response: ", extractResponse)
+                    } catch (error) {
+                        console.error("Error extracting:", error)
+                        stopPolling()
+                        setHasError(true)
+                        setCurrentStageLabel("Failed to extract. Please try again.")
+                    }
+                    break
+                }
+
+                case STATUS.EXTRACTED: {
+                    try {
+                        const scoreResponse = await runOnce(STATUS.EXTRACTED, () => triggerScore(queryId))
+                        if (scoreResponse) console.log("Scoring response: ", scoreResponse)
+                    } catch (error) {
+                        console.error("Error scoring:", error)
+                        stopPolling()
+                        setHasError(true)
+                        setCurrentStageLabel("Failed to score. Please try again.")
+                    }
+                    break
+                }
+
+                case STATUS.SCORED: {
+                    try {
+                        const summaryResponse = await runOnce(STATUS.SCORED, () => generateSummary(queryId))
+                        if (summaryResponse) console.log("Summarizing response: ", summaryResponse)
+                    } catch (error) {
+                        console.error("Error summarizing:", error)
+                        stopPolling()
+                        setHasError(true)
+                        setCurrentStageLabel("Failed to summarize. Please try again.")
                     }
                     break
                 }
@@ -143,14 +165,14 @@ const ValidateQueryIdPage = () => {
                 case STATUS.INITIALIZED:
                 case STATUS.VALIDATING:
                 case STATUS.SEARCHING:
-                case STATUS.SCORING: {
-                    // Purely in-progress on the backend — nothing to fire, just keep polling.
+                case STATUS.FILTERING:
+                case STATUS.EXTRACTING:
+                case STATUS.SCORING:
+                case STATUS.SUMMARIZING: {
                     break
                 }
 
                 case STATUS.COMPLETED: {
-                    // The only true terminal state now. Stop polling and hand
-                    // off to the dedicated summary page.
                     stopPolling()
                     router.push(`/dashboard/validate-idea/${queryId}/summary`)
                     break
@@ -187,7 +209,7 @@ const ValidateQueryIdPage = () => {
                 if (!cancelled) {
                     stopPolling()
                     setHasError(true)
-                    setCurrentStage("Could not fetch status. Please try again.")
+                    setCurrentStageLabel("Could not fetch status. Please try again.")
                 }
                 return
             }
@@ -195,7 +217,7 @@ const ValidateQueryIdPage = () => {
             if (!cancelled) scheduleNextPoll()
         }
 
-        poll() // check immediately on mount/focus
+        poll()
 
         return () => {
             cancelled = true
@@ -203,20 +225,61 @@ const ValidateQueryIdPage = () => {
         }
     }, [queryId, router])
 
-    // This page is now a pure loading/redirect screen — navigation to the
-    // summary page happens as soon as status hits COMPLETED.
     return (
-        <div className="min-h-[91vh] flex flex-col items-center justify-center px-4 bg-slate-50 text-slate-900">
-            <div className="flex flex-col items-center space-y-5 text-center">
-                <FaSpinner className={`animate-spin text-5xl ${hasError ? 'text-red-500' : 'text-indigo-600'}`} />
-                <div>
-                    <h2 className="text-xl font-bold text-slate-900 mb-1">
-                        Processing Query
-                    </h2>
-                    <p className="text-sm font-medium text-slate-500">
-                        {currentStage}
-                    </p>
+        <div className="min-h-[91vh] flex flex-col items-center justify-center px-4 bg-slate-50 text-slate-900 py-12">
+            <div className="w-full max-w-2xl bg-white border border-slate-200 shadow-xl rounded-2xl p-8 flex flex-col space-y-8">
+
+                {/* Header info */}
+                <div className="flex flex-col items-center space-y-3 text-center">
+                    <FaSpinner className={`animate-spin text-4xl ${hasError ? 'text-red-500' : 'text-indigo-600'}`} />
+                    <div>
+                        <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+                            Processing Your Idea Validation
+                        </h2>
+                        <p className="text-sm font-medium text-slate-500 mt-1 min-h-[20px]">
+                            {currentStageLabel}
+                        </p>
+                    </div>
                 </div>
+
+                {/* Pipeline Stages Display */}
+                <div className="flex flex-col space-y-3">
+                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-1">
+                        Execution Pipeline
+                    </span>
+                    <div className="grid grid-cols-1 gap-2.5">
+                        {PIPELINE_STEPS.map((step) => {
+                            const state = getStepState(step.key);
+
+                            let buttonStyles = "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed";
+                            let icon = <span className="w-4 h-4 rounded-full border-2 border-slate-300 inline-block" />;
+
+                            if (state === 'completed') {
+                                buttonStyles = "bg-emerald-50/60 border-emerald-200 text-emerald-800 shadow-sm";
+                                icon = <FaCheckCircle className="text-emerald-500 w-4 h-4 shrink-0" />;
+                            } else if (state === 'active') {
+                                buttonStyles = "bg-indigo-50 border-indigo-300 text-indigo-900 ring-2 ring-indigo-500/20 shadow-md";
+                                icon = <FaSpinner className="animate-spin text-indigo-600 w-4 h-4 shrink-0" />;
+                            }
+
+                            return (
+                                <div
+                                    key={step.key}
+                                    className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-sm font-medium transition-all duration-300 ${buttonStyles}`}
+                                >
+                                    <span className="truncate">{step.title}</span>
+                                    <div className="flex items-center space-x-2">
+                                        <span className="text-xs uppercase tracking-wider font-semibold opacity-75">
+                                            {state === 'completed' ? 'Done' : state === 'active' ? 'Running' : 'Pending'}
+                                        </span>
+                                        {icon}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
             </div>
         </div>
     )

@@ -15,6 +15,21 @@ export const triggerSearch = async (queryId) => {
     return response?.data;
 };
 
+export const triggerFilter = async (queryId) => {
+    const response = await api.post(`/validate/query/${queryId}/filter`);
+    return response?.data;
+};
+
+export const triggerExtract = async (queryId) => {
+    const response = await api.post(`/validate/query/${queryId}/extract`);
+    return response?.data;
+};
+
+export const triggerScore = async (queryId) => {
+    const response = await api.post(`/validate/query/${queryId}/score`);
+    return response?.data;
+};
+
 export const generateSummary = async (queryId) => {
     const response = await api.post(`/validate/query/${queryId}/generate-summary`);
     return response?.data;
@@ -27,6 +42,8 @@ export const getStatus = async (queryId) => {
 
 export const getSummary = async (queryId) => {
     const response = await api.get(`/validate/query/${queryId}/summary`);
+    console.log('final summary: ', response);
+    
     return response?.data;
 };
 

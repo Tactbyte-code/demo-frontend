@@ -6,10 +6,7 @@ import {
     AlertTriangle, ShieldAlert, ShieldCheck, Link2,
     ExternalLink, FileText, LayoutDashboard, Inbox,
     Users, Banknote, Crosshair, MapPin, Globe, Activity,
-    Info,
-    HelpCircle,
-    SlidersHorizontal,
-    TrendingUp,
+    Info
 } from 'lucide-react';
 import {
     ResponsiveContainer,
@@ -85,9 +82,9 @@ const CustomRadarTooltip = ({ active, payload }) => {
     const tier = getConviction(data.score * 10);
 
     return (
-        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-card)] p-3 shadow-lg backdrop-blur-md max-w-xs z-50">
+        <div className="rounded-lg border border-border bg-surface-card p-3 shadow-lg backdrop-blur-md max-w-xs z-50">
             <div className="flex items-center justify-between gap-3 mb-1.5">
-                <span className="text-xs font-bold text-[var(--text-header)] truncate">
+                <span className="text-xs font-bold text-header truncate">
                     {data.subject}
                 </span>
                 <span
@@ -98,7 +95,7 @@ const CustomRadarTooltip = ({ active, payload }) => {
                 </span>
             </div>
             {data.metricLabel && (
-                <div className="text-[11px] text-[var(--text-muted)] flex items-center justify-between gap-2 border-t border-[var(--border)] pt-1.5 mt-1.5">
+                <div className="text-[11px] text-muted flex items-center justify-between gap-2 border-t border-[var(--border)] pt-1.5 mt-1.5">
                     <span className="truncate">{data.metricLabel}:</span>
                     <span className="font-mono font-semibold text-[var(--text-main)]">
                         {data.metricValue !== null ? `${data.metricValue} ${data.metricUnit || ''}` : 'Unverified'}

@@ -1,25 +1,37 @@
 "use client";
 
 import React, { useState } from 'react';
-import { triggerSearch, generateSummary, generateContext } from '@/features/validate/api/validate.api';
+import { triggerSearch, generateSummary, generateContext, triggerFilter, triggerExtract, triggerScore } from '@/features/validate/api/validate.api';
 
 const Page = () => {
     // Shared input state
     const [queryId, setQueryId] = useState('');
 
+    // State management for Context
+    const [contextLoading, setContextLoading] = useState(false);
+    const [contextError, setContextError] = useState(null);
+
     // State management for Search
     const [searchLoading, setSearchLoading] = useState(false);
     const [searchError, setSearchError] = useState(null);
 
-    // State management for Context
-    const [contextLoading, setContextLoading] = useState(false);
-    const [contextError, setContextError] = useState(null);
+    // State management for Filter
+    const [filterLoading, setFilterLoading] = useState(false);
+    const [filterError, setFilterError] = useState(null);
+
+    // State management for Extraction
+    const [extractLoading, setExtractLoading] = useState(false);
+    const [extractError, setExtractError] = useState(null);
+   
+    // State management for Scoring
+    const [scoreLoading, setScoreLoading] = useState(false);
+    const [scoreError, setScoreError] = useState(null);
 
     // State management for Summary
     const [summaryLoading, setSummaryLoading] = useState(false);
     const [summaryError, setSummaryError] = useState(null);
 
-    const isAnyLoading = searchLoading || contextLoading || summaryLoading;
+    const isAnyLoading = searchLoading || contextLoading || filterLoading || summaryLoading || extractLoading || scoreLoading;
 
     const handleSearch = async () => {
         if (!queryId.trim()) return;
@@ -35,6 +47,57 @@ const Page = () => {
             setSearchError(err.message || "Search failed. Please try again.");
         } finally {
             setSearchLoading(false);
+        }
+    };
+
+    const handleFilter = async () => {
+        if (!queryId.trim()) return;
+
+        setFilterLoading(true);
+        setFilterError(null);
+
+        try {
+            const filterData = await triggerFilter(queryId);
+            console.log("Filter executed successfully: ", filterData);
+        } catch (err) {
+            console.error("Failed to fetch filter data:", err);
+            setFilterError(err.message || "Filter failed. Please try again.");
+        } finally {
+            setFilterLoading(false);
+        }
+    };
+
+    const handleExtract = async () => {
+        if (!queryId.trim()) return;
+
+        setExtractLoading(true);
+        setExtractError(null);
+
+        try {
+            const extractedData = await triggerExtract(queryId);
+            console.log("Extraction completed successfully: ", extractedData);
+        } catch (err) {
+            console.error("Failed to fetch extracted data:", err);
+            setExtractError(err.message || "Extraction failed. Please try again.");
+        } finally {
+            setExtractLoading(false);
+        }
+    };
+    
+    const handleScore = async () => {
+        if (!queryId.trim()) return;
+
+        setScoreLoading(true);
+        setScoreError(null);
+
+        try {
+            const scoredData = await triggerScore(queryId);
+            console.log("Scoring completed successfully: ", scoredData);
+        } catch (err) {
+            console.error("Failed to fetch scored data:", err);
+            setScoreError(err.message || "Scoring failed. Please try again.");
+        } finally {
+            setScoreLoading(false);
         }
     };
 
@@ -115,6 +178,33 @@ const Page = () => {
 
                     <button
                         type="button"
+                        onClick={handleFilter}
+                        disabled={isAnyLoading || !queryId.trim()}
+                        className="w-full px-4 py-2 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                        {filterLoading ? 'Filtering...' : 'Trigger Filter'}
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={handleExtract}
+                        disabled={isAnyLoading || !queryId.trim()}
+                        className="w-full px-4 py-2 bg-fuchsia-600 text-white font-medium rounded-md hover:bg-fuchsia-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                        {extractLoading ? 'Extracting...' : 'Trigger Extract'}
+                    </button>
+                    
+                    <button
+                        type="button"
+                        onClick={handleScore}
+                        disabled={isAnyLoading || !queryId.trim()}
+                        className="w-full px-4 py-2 bg-gray-600 text-white font-medium rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                        {extractLoading ? 'Scoring...' : 'Trigger Score'}
+                    </button>
+
+                    <button
+                        type="button"
                         onClick={handleSummary}
                         disabled={isAnyLoading || !queryId.trim()}
                         className="w-full px-4 py-2 bg-emerald-600 text-white font-medium rounded-md hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -124,11 +214,14 @@ const Page = () => {
                 </div>
 
                 {/* Error Messages */}
-                {(searchError || contextError || summaryError) && (
+                {(searchError || contextError || summaryError || filterError || extractError || scoreError) && (
                     <div className="p-3 bg-red-50 border border-red-200 rounded-md">
                         {searchError && <p className="text-sm text-red-600 mb-1">{searchError}</p>}
                         {contextError && <p className="text-sm text-red-600 mb-1">{contextError}</p>}
                         {summaryError && <p className="text-sm text-red-600">{summaryError}</p>}
+                        {filterError && <p className="text-sm text-red-600">{filterError}</p>}
+                        {extractError && <p className="text-sm text-red-600">{extractError}</p>}
+                        {scoreError && <p className="text-sm text-red-600">{scoreError}</p>}
                     </div>
                 )}
             </div>
