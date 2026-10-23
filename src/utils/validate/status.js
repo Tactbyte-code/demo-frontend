@@ -39,7 +39,7 @@ export const STAGE_LABELS = {
 export const PIPELINE_STEPS = [
     { key: STATUS.INITIALIZED, title: "Initialization" },
     { key: STATUS.CREATED, title: "Context Generation" },
-    { key: STATUS.VALIDATING, title: "Cluster Validation" },
+    // { key: STATUS.VALIDATING, title: "Cluster Validation" },
     { key: STATUS.SEARCHING, title: "Web Search" },
     { key: STATUS.FILTERING, title: "Data Filtering" },
     { key: STATUS.EXTRACTING, title: "Information Extraction" },

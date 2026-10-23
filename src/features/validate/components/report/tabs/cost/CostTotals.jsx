@@ -5,11 +5,14 @@ import { fmtMoney } from '@/features/validate/components/report/lib/format'
 
 export default function CostTotals({ totals, currency }) {
   if (!totals) return null
+  
+  // Create the array, but filter out any objects that might be missing from the JSON
   const items = [
     ['One-time costs', totals.one_time],
     ['Monthly burn', totals.monthly_burn],
     ['First 12 months', totals.first_12_months],
-  ]
+  ].filter(([_, t]) => t !== undefined && t !== null)
+
   return (
     <Card>
       <SectionHeader title="Cost totals" sub="Low / base / high scenarios" />

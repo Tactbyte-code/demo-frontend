@@ -2,9 +2,6 @@ import React from 'react';
 import { BulletList, Card, SectionHeader, TwoCol } from '@/features/validate/components/report/ui';
 
 export default function StrengthsRisks({ strengths, risks }) {
-  console.log('strngrths: ', strengths);
-  console.log('risks: ', risks);
-
   return (
     <TwoCol>
       <Card className="border-emerald-200 bg-emerald-50/40">
