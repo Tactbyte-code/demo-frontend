@@ -45,7 +45,7 @@ export const PIPELINE_STEPS = [
     { key: STATUS.EXTRACTING, title: "Information Extraction" },
     { key: STATUS.SCORING, title: "Relevance Scoring" },
     { key: STATUS.SUMMARIZING, title: "Synthesis & Summary" },
-    { key: STATUS.COMPLETED, title: "Finalization" },
+    { key: STATUS.COMPLETED, title: "Completed" },
 ];
 
 // Transitional statuses are not rendered as steps, so map each one to the
