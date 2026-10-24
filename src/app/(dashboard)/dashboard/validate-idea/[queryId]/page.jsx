@@ -6,7 +6,7 @@ import { FaCheckCircle, FaSpinner } from 'react-icons/fa';
 import { triggerSearch, generateSummary, getStatus, triggerFilter, triggerExtract, triggerScore } from "@/features/validate/api/validate.api";
 import { useGenerateContext } from '@/features/validate/hooks/useGenerateContext';
 import { STAGE_LABELS, STATUS, PIPELINE_STEPS, STATUS_TO_STEP } from '@/utils/validate/status';
-import { LoaderCircle, Loader2 } from 'lucide-react';
+import { LoaderCircle, XCircle, RotateCcw } from 'lucide-react';
 
 const POLL_INTERVAL_MS = 3000;
 
@@ -25,6 +25,9 @@ const ValidateQueryIdPage = () => {
     const [currentStage, setCurrentStage] = useState(STATUS.INITIALIZED)
     const [currentStageLabel, setCurrentStageLabel] = useState(STAGE_LABELS[STATUS.INITIALIZED])
     const [statusFetched, setStatusFetched] = useState(false);
+    const [failureReason, setFailureReason] = useState(
+        "An unexpected error occurred while analyzing your idea."
+    );
     const [hasError, setHasError] = useState(false)
 
     // 1. Initialize the mutation hook
@@ -181,9 +184,12 @@ const ValidateQueryIdPage = () => {
                 }
 
                 case STATUS.FAILED: {
-                    stopPolling()
-                    setHasError(true)
-                    break
+                    stopPolling();
+                    setHasError(true);
+                    setFailureReason(
+                        "The analysis could not be completed. Please try again."
+                    );
+                    break;
                 }
 
                 default: {
@@ -238,8 +244,39 @@ const ValidateQueryIdPage = () => {
     return (
         <div className="min-h-[91vh] flex flex-col items-center justify-center px-4 bg-slate-50 text-slate-900 py-12">
 
-            {!statusFetched && !hasError ? (
-                <Loader2 className="h-10 w-10 animate-spin text-indigo-400" />
+            {hasError ? (
+                <div className="w-full max-w-xl rounded-2xl text-center">
+                    <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-red-50">
+                        <XCircle className="h-9 w-9 text-red-500" />
+                    </div>
+
+                    <h2 className="text-2xl font-bold text-slate-900">
+                        Analysis Failed
+                    </h2>
+
+                    <p className="mt-2 text-sm leading-6 text-red-600">
+                        Reason: {failureReason}
+                    </p>
+
+                    <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
+                        {/* <button
+                            onClick={() => window.location.reload()}
+                            className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
+                        >
+                            <RotateCcw className="h-4 w-4" />
+                            Try Again
+                        </button> */}
+
+                        <button
+                            onClick={() => router.push('/dashboard/validate-idea')}
+                            className="inline-flex items-center justify-center gap-2 cursor-pointer rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
+                        >
+                            Back to Dashboard
+                        </button>
+                    </div>
+                </div>
+            ) : !statusFetched ? (
+                <LoaderCircle className="h-10 w-10 animate-spin text-indigo-600" />
             ) : (
                 <div className="w-full max-w-2xl bg-white border border-slate-200 shadow-xl rounded-2xl p-8 flex flex-col space-y-8">
 
