@@ -23,7 +23,7 @@ export const STAGE_LABELS = {
     [STATUS.VALIDATING]: "Validating the query parameters on the RunPod cluster...",
     [STATUS.VALIDATED]: "Query successfully validated; initiating the deep search process...",
     [STATUS.SEARCHING]: "Searching the web and gathering relevant insights...",
-    [STATUS.SEARCH_COMPLETED]: "Search finished successfully; compiling and generating the summary...",
+    [STATUS.SEARCH_COMPLETED]: "Search finished successfully; filtering the validated data...",
     [STATUS.FILTERING]: "Filtering out irrelevant data and cleaning the collected sources...",
     [STATUS.FILTERED]: "Data filtration complete; preparing content for extraction...",
     [STATUS.EXTRACTING]: "Extracting key information and structured details from sources...",

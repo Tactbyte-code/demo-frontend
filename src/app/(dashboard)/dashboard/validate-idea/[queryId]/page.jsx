@@ -6,6 +6,7 @@ import { FaCheckCircle, FaSpinner } from 'react-icons/fa';
 import { triggerSearch, generateSummary, getStatus, triggerFilter, triggerExtract, triggerScore } from "@/features/validate/api/validate.api";
 import { useGenerateContext } from '@/features/validate/hooks/useGenerateContext';
 import { STAGE_LABELS, STATUS, PIPELINE_STEPS, STATUS_TO_STEP } from '@/utils/validate/status';
+import { LoaderCircle, Loader2 } from 'lucide-react';
 
 const POLL_INTERVAL_MS = 3000;
 
@@ -23,6 +24,7 @@ const ValidateQueryIdPage = () => {
 
     const [currentStage, setCurrentStage] = useState(STATUS.INITIALIZED)
     const [currentStageLabel, setCurrentStageLabel] = useState(STAGE_LABELS[STATUS.INITIALIZED])
+    const [statusFetched, setStatusFetched] = useState(false);
     const [hasError, setHasError] = useState(false)
 
     // 1. Initialize the mutation hook
@@ -200,10 +202,18 @@ const ValidateQueryIdPage = () => {
             }
 
             try {
-                const queryStatus = await getStatus(queryId)
-                if (cancelled) return
-                console.log("Query status: ", queryStatus)
-                await handleStatus(normalizeStatus(queryStatus))
+                const queryStatus = await getStatus(queryId);
+                if (cancelled) return;
+
+                console.log("Query status: ", queryStatus);
+
+                const status = normalizeStatus(queryStatus);
+
+                if (status) {
+                    setStatusFetched(true);
+                };
+
+                await handleStatus(status);
             } catch (error) {
                 console.error("Error fetching status:", error)
                 if (!cancelled) {
@@ -227,62 +237,90 @@ const ValidateQueryIdPage = () => {
 
     return (
         <div className="min-h-[91vh] flex flex-col items-center justify-center px-4 bg-slate-50 text-slate-900 py-12">
-            <div className="w-full max-w-2xl bg-white border border-slate-200 shadow-xl rounded-2xl p-8 flex flex-col space-y-8">
 
-                {/* Header info */}
-                <div className="flex flex-col items-center space-y-3 text-center">
-                    <FaSpinner className={`animate-spin text-4xl ${hasError ? 'text-red-500' : 'text-indigo-600'}`} />
-                    <div>
-                        <h2 className="text-xl font-bold text-slate-900 tracking-tight">
-                            Processing Your Idea Validation
-                        </h2>
-                        <p className="text-sm font-medium text-slate-500 mt-1 min-h-[20px]">
-                            {currentStageLabel}
-                        </p>
+            {!statusFetched && !hasError ? (
+                <Loader2 className="h-10 w-10 animate-spin text-indigo-400" />
+            ) : (
+                <div className="w-full max-w-2xl bg-white border border-slate-200 shadow-xl rounded-2xl p-8 flex flex-col space-y-8">
+
+                    {/* Header info */}
+                    <div className="flex flex-col items-center space-y-3 text-center">
+                        <FaSpinner
+                            className={`animate-spin text-4xl ${hasError ? 'text-red-500' : 'text-indigo-600'
+                                }`}
+                        />
+
+                        <div>
+                            <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+                                Processing Your Idea Validation
+                            </h2>
+
+                            <p className="text-sm font-medium text-slate-500 mt-1 min-h-[20px]">
+                                {currentStageLabel}
+                            </p>
+                        </div>
                     </div>
-                </div>
 
-                {/* Pipeline Stages Display */}
-                <div className="flex flex-col space-y-3">
-                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-1">
-                        Execution Pipeline
-                    </span>
-                    <div className="grid grid-cols-1 gap-2.5">
-                        {PIPELINE_STEPS.map((step) => {
-                            const state = getStepState(step.key);
+                    {/* Pipeline Stages Display */}
+                    <div className="flex flex-col space-y-3">
+                        <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-1">
+                            Execution Pipeline
+                        </span>
 
-                            let buttonStyles = "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed";
-                            let icon = <span className="w-4 h-4 rounded-full border-2 border-slate-300 inline-block" />;
+                        <div className="grid grid-cols-1 gap-2.5">
+                            {PIPELINE_STEPS.map((step) => {
+                                const state = getStepState(step.key);
 
-                            if (state === 'completed') {
-                                buttonStyles = "bg-emerald-50/60 border-emerald-200 text-emerald-800 shadow-sm";
-                                icon = <FaCheckCircle className="text-emerald-500 w-4 h-4 shrink-0" />;
-                            } else if (state === 'active') {
-                                buttonStyles = "bg-indigo-50 border-indigo-300 text-indigo-900 ring-2 ring-indigo-500/20 shadow-md";
-                                icon = <FaSpinner className="animate-spin text-indigo-600 w-4 h-4 shrink-0" />;
-                            }
+                                let buttonStyles =
+                                    "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed";
 
-                            return (
-                                <div
-                                    key={step.key}
-                                    className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-sm font-medium transition-all duration-300 ${buttonStyles}`}
-                                >
-                                    <span className="truncate">{step.title}</span>
-                                    <div className="flex items-center space-x-2">
-                                        <span className="text-xs uppercase tracking-wider font-semibold opacity-75">
-                                            {state === 'completed' ? 'Done' : state === 'active' ? 'Running' : 'Pending'}
-                                        </span>
-                                        {icon}
+                                let icon = (
+                                    <span className="w-4 h-4 rounded-full border-2 border-slate-300 inline-block" />
+                                );
+
+                                if (state === 'completed') {
+                                    buttonStyles =
+                                        "bg-emerald-50/60 border-emerald-200 text-emerald-800 shadow-sm";
+
+                                    icon = (
+                                        <FaCheckCircle className="text-emerald-500 w-4 h-4 shrink-0" />
+                                    );
+                                } else if (state === 'active') {
+                                    buttonStyles =
+                                        "bg-indigo-50 border-indigo-300 text-indigo-900 ring-2 ring-indigo-500/20 shadow-md";
+
+                                    icon = (
+                                        <FaSpinner className="animate-spin text-indigo-600 w-4 h-4 shrink-0" />
+                                    );
+                                }
+
+                                return (
+                                    <div
+                                        key={step.key}
+                                        className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-sm font-medium transition-all duration-300 ${buttonStyles}`}
+                                    >
+                                        <span className="truncate">{step.title}</span>
+
+                                        <div className="flex items-center space-x-2">
+                                            <span className="text-xs uppercase tracking-wider font-semibold opacity-75">
+                                                {state === 'completed'
+                                                    ? 'Done'
+                                                    : state === 'active'
+                                                        ? 'Running'
+                                                        : 'Pending'}
+                                            </span>
+
+                                            {icon}
+                                        </div>
                                     </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
-
-            </div>
+            )}
         </div>
-    )
+    );
 };
 
 export default ValidateQueryIdPage;
