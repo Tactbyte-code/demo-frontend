@@ -6,7 +6,7 @@ import { FaCheckCircle, FaSpinner } from 'react-icons/fa';
 import { triggerSearch, generateSummary, getStatus, triggerFilter, triggerExtract, triggerScore } from "@/features/validate/api/validate.api";
 import { useGenerateContext } from '@/features/validate/hooks/useGenerateContext';
 import { STAGE_LABELS, STATUS, PIPELINE_STEPS, STATUS_TO_STEP } from '@/utils/validate/status';
-import { LoaderCircle, XCircle, RotateCcw } from 'lucide-react';
+import { LoaderCircle, XCircle, RotateCcw, ArrowLeft } from 'lucide-react';
 
 const POLL_INTERVAL_MS = 3000;
 
@@ -258,7 +258,7 @@ const ValidateQueryIdPage = () => {
                         Reason: {failureReason}
                     </p>
 
-                    <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
+                    <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:justify-center">
                         {/* <button
                             onClick={() => window.location.reload()}
                             className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
@@ -269,8 +269,9 @@ const ValidateQueryIdPage = () => {
 
                         <button
                             onClick={() => router.push('/dashboard/validate-idea')}
-                            className="inline-flex items-center justify-center gap-2 cursor-pointer rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
+                            className="inline-flex items-center justify-center gap-2 cursor-pointer rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
                         >
+                            <ArrowLeft className='size-5 text-white' />
                             Back to Dashboard
                         </button>
                     </div>

@@ -2,7 +2,7 @@
 
 import api from "@/lib/axios";
 import { useState, useEffect } from "react";
-import { FaSpinner, FaMapMarkerAlt, FaExclamationCircle } from "react-icons/fa";
+// import { FaSpinner, FaMapMarkerAlt, FaExclamationCircle } from "react-icons/fa";
 
 // Added onLocationFetched prop
 export default function LocationFetcher({ onLocationFetched }) {
@@ -80,28 +80,5 @@ export default function LocationFetcher({ onLocationFetched }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    return (
-        <div className="inline-flex items-center bg-white px-4 py-2.5 rounded-full shadow-sm border border-slate-200 text-xs sm:text-sm font-medium transition-all">
-            {loading && (
-                <div className="flex items-center text-emerald-600 gap-2">
-                    <FaSpinner className="animate-spin text-sm" />
-                    <span>Locating...</span>
-                </div>
-            )}
-
-            {!loading && error && (
-                <div className="flex items-center text-rose-600 gap-2" title={error}>
-                    <FaExclamationCircle className="text-sm" />
-                    <span>Location failed</span>
-                </div>
-            )}
-
-            {!loading && !error && addressData && (
-                <div className="flex items-center text-slate-700 gap-1">
-                    <FaMapMarkerAlt className="text-emerald-600 text-sm" />
-                    <span className="text-xs text-emerald-600 font-medium">{addressData.raw_address.quarter}, {addressData.raw_address.suburb}, {addressData.raw_address.state_district}</span>
-                </div>
-            )}
-        </div>
-    );
+    return null;
 }

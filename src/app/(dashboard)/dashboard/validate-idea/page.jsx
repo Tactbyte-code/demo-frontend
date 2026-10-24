@@ -63,8 +63,6 @@ const ValidateIdeaPage = () => {
         }
     };
 
-    console.log('location data; ', locationData);
-
     return (
         <div className="min-h-[91vh] flex flex-col px-4 py-6 md:p-8 bg-slate-50 text-slate-900">
 
