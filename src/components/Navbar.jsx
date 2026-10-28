@@ -267,10 +267,10 @@ export default function Navbar() {
               ) : (
                 <Link
                   href="/login"
-                  className="px-5 py-2 text-[12px] font-bold rounded-full bg-slate-900 dark:bg-white text-white dark:text-black hover:opacity-90 transition-all flex items-center gap-2 shadow-sm"
+                  className="relative inline-flex items-center gap-2 px-5 py-2 text-xs font-bold tracking-wide text-white transition-all duration-300 border rounded-full bg-gradient-to-r from-purple-800 via-indigo-900 to-fuchsia-800 border-purple-400/60 hover:border-fuchsia-300 hover:from-purple-700 hover:via-fuchsia-800 hover:to-pink-700 hover:shadow-lg hover:shadow-fuchsia-500/35 hover:-translate-y-0.5 active:translate-y-0 group"
                 >
-                  <LogIn className="w-4 h-4" />
-                  Login
+                  <LogIn className="w-4 h-4 transition-transform duration-300 text-fuchsia-200 group-hover:scale-110" />
+                  <span className="text-sm">Login</span>
                 </Link>
               )}
             </div>
