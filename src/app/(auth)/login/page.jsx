@@ -277,22 +277,29 @@ export default function LoginPage() {
                 <div className="absolute -bottom-40 -right-24 w-[420px] h-[420px] rounded-full bg-black/20 blur-3xl" />
 
                 {/* Brand Image Illustration for the Analysis Platform */}
-                <div className="absolute top-0 inset-x-0 bottom-1/3 flex justify-center items-center pointer-events-none opacity-80 z-0 overflow-hidden select-none">
-                    <motion.img
+                <div className="absolute top-0 inset-x-0 bottom-1/3 flex justify-center items-center pointer-events-none z-0 overflow-hidden select-none">
+                    <motion.div
                         initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 0.9, y: [0, -10, 0] }}
                         transition={{
                             opacity: { duration: 1.2, ease: "easeOut" },
                             y: { duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.2 }
                         }}
-                        src="/images/login-img.png"
-                        alt="Analysis report generation platform"
-                        className="w-full h-full object-cover object-center mix-blend-screen"
-                        style={{
-                            maskImage: 'linear-gradient(to bottom, black 50%, transparent 85%)',
-                            WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 85%)'
-                        }}
-                    />
+                        className="absolute inset-0 w-full h-full"
+                    >
+                        <Image
+                            src="/images/login-img.png"
+                            alt="Analysis report generation platform"
+                            fill
+                            priority
+                            sizes="(max-width: 1024px) 0vw, 50vw"
+                            className="object-cover object-center mix-blend-screen"
+                            style={{
+                                maskImage: 'linear-gradient(to bottom, black 50%, transparent 85%)',
+                                WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 85%)'
+                            }}
+                        />
+                    </motion.div>
                 </div>
 
                 <div className="relative text-white max-w-md z-10">
