@@ -301,13 +301,13 @@ function BrandPanel() {
 
             {/* Brand */}
             <div className="relative flex items-center gap-3">
-                <LogoMark size={44} className="ring-2 ring-white/20" />
-                <span className=" text-xl font-bold tracking-tight">{BRAND}</span>
+                <LogoMark size={38} className="ring-2 ring-white/20" />
+                <span className=" text-lg font-bold tracking-tight">{BRAND}</span>
             </div>
 
             {/* Message + composition */}
             <div className="relative">
-                <h1 className="max-w-lg  text-5xl font-extrabold leading-[1.05] tracking-tight xl:text-[56px]">
+                <h1 className="max-w-lg text-4xl mt-10 font-extrabold leading-[1.05] tracking-tight xl:text-[56px]">
                     {COPY.headline}
                 </h1>
                 <p className="mt-5 max-w-md text-base leading-relaxed text-white/75">{COPY.sub}</p>
