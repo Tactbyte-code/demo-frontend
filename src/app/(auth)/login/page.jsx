@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import {
-    Zap, ArrowRight, ShieldCheck,
-    Eye, EyeOff, AlertCircle, Loader2, Home,
+    ArrowRight, ShieldCheck,
+    Eye, EyeOff, AlertCircle, Loader2,
     Mail, CheckCircle2, KeyRound, Lock,
     ArrowLeft
 } from 'lucide-react';
@@ -19,29 +19,37 @@ const STEPS = { EMAIL: "email", OTP: "otp", PASSWORD: "password", DONE: "done" }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-// ── Shared input style helpers ────────────────────────────
-const inputClass = "w-full rounded-none px-6 py-4 text-base font-medium transition-all outline-none";
+// ── Shared style helpers ──────────────────────────────────
+const inputClass =
+    "w-full h-12 rounded-md border text-[15px] font-medium outline-none transition-all " +
+    "bg-[var(--surface-card)] border-[var(--border-solid)] text-[var(--text-main)] " +
+    "placeholder:text-[var(--text-subtle)] " +
+    "hover:border-[color-mix(in_srgb,var(--primary)_40%,var(--border-solid))] " +
+    "focus:border-[var(--primary)] focus:ring-4 focus:ring-[color-mix(in_srgb,var(--primary)_15%,transparent)]";
 
-const inputStyle = {
-    backgroundColor: 'var(--surface-card)',
-    border: '1px solid var(--border-solid)',
-    color: 'var(--text-main)',
-};
-
-const onFocus = e => {
-    e.currentTarget.style.borderColor = 'var(--primary)';
-    e.currentTarget.style.boxShadow = '0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent)';
-};
-
-const onBlur = e => {
-    e.currentTarget.style.borderColor = 'var(--border-solid)';
-    e.currentTarget.style.boxShadow = 'none';
-};
+const primaryBtnClass =
+    "w-full h-12 rounded-lg font-semibold text-[15px] flex items-center justify-center gap-2 " +
+    "transition-all hover:brightness-110 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer";
 
 const primaryBtnStyle = {
     background: 'linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 70%, var(--accent)))',
     color: '#ffffff',
-    boxShadow: '0 4px 20px color-mix(in srgb, var(--primary) 35%, transparent)',
+    boxShadow: '0 8px 24px -8px color-mix(in srgb, var(--primary) 60%, transparent)',
+};
+
+const ghostBtnClass =
+    "w-full h-11 rounded-xl font-semibold text-sm transition-colors cursor-pointer " +
+    "text-[var(--text-subtle)] hover:text-[var(--text-main)]";
+
+// Turns raw Firebase errors into human-readable messages
+const friendlyError = (msg) => {
+    if (!msg) return undefined;
+    if (msg.includes("auth/invalid-credential") || msg.includes("auth/wrong-password") || msg.includes("auth/user-not-found"))
+        return "Incorrect email or password.";
+    if (msg.includes("auth/too-many-requests")) return "Too many attempts. Please try again later.";
+    if (msg.includes("auth/popup-closed-by-user")) return "Sign-in was cancelled.";
+    if (msg.includes("auth/network-request-failed")) return "Network error. Check your connection.";
+    return msg;
 };
 
 // ── Error banner ──────────────────────────────────────────
@@ -50,21 +58,22 @@ function ErrorBanner({ message }) {
         <AnimatePresence>
             {message && (
                 <motion.div
+                    role="alert"
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
                     className="mb-5 overflow-hidden"
                 >
-                    <div className="rounded-none p-4 flex items-center gap-3"
-                        style={{ backgroundColor: 'var(--destructive-bg)', border: '1px solid color-mix(in srgb, var(--destructive) 20%, transparent)', color: 'var(--destructive)' }}>
-                        <AlertCircle size={16} className="shrink-0" />
-                        <p className="text-xs font-bold">{message}</p>
+                    <div className="rounded-xl p-3.5 flex items-start gap-3"
+                        style={{ backgroundColor: 'var(--destructive-bg)', border: '1px solid color-mix(in srgb, var(--destructive) 25%, transparent)', color: 'var(--destructive)' }}>
+                        <AlertCircle size={16} className="shrink-0 mt-0.5" />
+                        <p className="text-[13px] font-medium leading-snug">{friendlyError(message)}</p>
                     </div>
                 </motion.div>
             )}
         </AnimatePresence>
     );
-};
+}
 
 export default function LoginPage() {
     const router = useRouter();
@@ -83,10 +92,6 @@ export default function LoginPage() {
     const [newPassword, setNewPassword] = useState('');
     const [confirmNewPassword, setConfirmNewPassword] = useState('');
     const [showNewPassword, setShowNewPassword] = useState(false);
-
-    const storedUser= localStorage.getItem("user");
-    const user = JSON.parse(storedUser);
-    console.log('user: ', user);
 
     // ── Helpers ───────────────────────────────────────────
     const saveUserAndRedirect = (data) => {
@@ -116,37 +121,66 @@ export default function LoginPage() {
     // ── Mutation: Email login ─────────────────────────────
     const loginMutation = useMutation({
         mutationFn: async ({ email, password }) => {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-            const token = await user.getIdToken();
+            try {
+                // 1. Attempt Firebase Sign In
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                const token = await user.getIdToken();
 
-            const res = await fetch(`${API_URL}/auth/email-login`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ firebase_uid: user.uid, full_name: user.displayName, email, password }),
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.detail || "Login failed"); // this block will handle the error from the backend login api
-            return data;
-        },
-        onSuccess: (data) => saveUserAndRedirect(data),
-        onError: async (err) => { // this blovk will handle all the firebase error after calling signInWithEmailAndPassword
-            const code = err?.code || "";
-            if (code === "auth/invalid-credential" || code === "auth/wrong-password") {
-                const check = await fetch(`${API_URL}/auth/check-provider`, {
+                // 2. Call Backend Login API
+                const res = await fetch(`${API_URL}/auth/email-login`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email }),
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        firebase_uid: user.uid,
+                        full_name: user.displayName,
+                        email,
+                        password
+                    }),
                 });
-                if (check.ok) {
-                    const { provider } = await check.json();
-                    if (provider === "google") {
-                        loginMutation.reset();
-                        // Re-throw a cleaner error by setting it manually
-                        throw new Error("This account uses Google Sign-In. Please use 'Continue with Google'.");
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.detail || "Login failed");
+                }
+
+                return data;
+
+            } catch (err) {
+                const code = err?.code || "";
+
+                // 3. Handle Firebase credential errors
+                if (code === "auth/invalid-credential" || code === "auth/wrong-password") {
+                    try {
+                        const check = await fetch(`${API_URL}/auth/check-provider`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ email }),
+                        });
+
+                        if (check.ok) {
+                            const { provider } = await check.json();
+                            if (provider === "google") {
+                                throw new Error("An account with this email already exists using Google Sign-In. Please sign in using the 'Continue with Google' option.");
+                            }
+                        }
+                    } catch (checkErr) {
+                        if (checkErr.message === "An account with this email already exists using Google Sign-In. Please sign in using the 'Continue with Google' option.") {
+                            throw checkErr;
+                        }
                     }
                 }
+
+                throw err;
             }
+        },
+        onSuccess: (data) => saveUserAndRedirect(data),
+        onError: (err) => {
+            console.log('onError side-effect: ', err.message);
         },
     });
 
@@ -160,10 +194,14 @@ export default function LoginPage() {
             const res = await fetch(`${API_URL}/auth/google`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ firebase_uid: user.uid, full_name: user.displayName, email: user.email, photo_url: user.photoURL }),
+                body: JSON.stringify({
+                    firebase_uid: user.uid,
+                    full_name: user.displayName,
+                    email: user.email,
+                    photo_url: user.photoURL
+                }),
             });
             const data = await res.json();
-            console.log('response: ', data);
 
             if (!res.ok) throw new Error(data.detail || "Google login failed");
             return data;
@@ -222,67 +260,94 @@ export default function LoginPage() {
     const isLoading = loginMutation.isPending || googleMutation.isPending;
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-6 font-sans overflow-hidden relative" style={{ backgroundColor: 'var(--background)' }}>
-            {/* Back to home */}
-            <Link href="/"
-                className="absolute top-8 left-8 z-20 flex items-center gap-2 px-4 py-2 text-sm font-bold transition-all duration-300"
-                style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border-solid)', color: 'var(--text-muted)', boxShadow: 'var(--shadow-sm)' }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.color = 'var(--primary)'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-solid)'; e.currentTarget.style.color = 'var(--text-muted)'; }}>
-                <ArrowLeft size={16} />
-            </Link>
+        <div className="min-h-screen grid lg:grid-cols-2 font-sans" style={{ backgroundColor: 'var(--background)' }}>
 
-            {/* Ambient orbs */}
-            <div className="absolute top-[-20%] left-[-10%] w-150 h-150 blur-[130px] animate-pulse pointer-events-none" style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 12%, transparent)' }} />
-            <div className="absolute bottom-[-10%] right-[-5%] w-125 h-125 blur-[110px] pointer-events-none" style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 8%, transparent)' }} />
+            {/* ── Brand panel (desktop only) ── */}
+            <aside className="hidden lg:flex relative flex-col justify-end p-14 overflow-hidden h-full min-h-[600px]"
+                style={{ background: 'linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 55%, var(--accent)))' }}>
+                <button onClick={() => router.back()} aria-label="Go back"
+                    className="absolute top-8 left-8 z-20 bg-white/80 hover:bg-white text-black flex items-center justify-center h-10 w-10 rounded-full border transition-colors border-white cursor-pointer"
+                >
+                    <ArrowLeft size={16} />
+                </button>
 
-            <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
-                className="relative z-10 w-full max-w-115"
-            >
-                {/* Brand */}
-                <div className="flex flex-row gap-4 items-center mt-4 justify-center mb-2">
-                    <div className="relative h-10 w-50 rounded-full">
-                        <Image src="/images/logo_with_text_2.png" alt="Logo" fill sizes="(max-width: 640px) 100vw, 160px" className="object-contain" priority />
-                    </div>
-                    {/* <h1 className="text-3xl font-extrabold tracking-tight" style={{ color: 'var(--text-main)' }}>Demo</h1> */}
+                <div className="absolute inset-0 opacity-[0.15]"
+                    style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, #fff 1px, transparent 0)', backgroundSize: '28px 28px' }} />
+                <div className="absolute -top-32 -left-32 w-[480px] h-[480px] rounded-full bg-white/20 blur-3xl" />
+                <div className="absolute -bottom-40 -right-24 w-[420px] h-[420px] rounded-full bg-black/20 blur-3xl" />
+
+                {/* Brand Image Illustration for the Analysis Platform */}
+                <div className="absolute top-0 inset-x-0 bottom-1/3 flex justify-center items-center pointer-events-none opacity-80 z-0 overflow-hidden select-none">
+                    <motion.img
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 0.9, y: [0, -10, 0] }}
+                        transition={{
+                            opacity: { duration: 1.2, ease: "easeOut" },
+                            y: { duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.2 }
+                        }}
+                        src="/images/login-img.png"
+                        alt="Analysis report generation platform"
+                        className="w-full h-full object-cover object-center mix-blend-screen"
+                        style={{
+                            maskImage: 'linear-gradient(to bottom, black 50%, transparent 85%)',
+                            WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 85%)'
+                        }}
+                    />
                 </div>
 
-                <p className="text-sm font-medium text-center mb-12" style={{ color: 'var(--text-subtle)' }}>
-                    Intelligence at your fingertips
-                </p>
+                <div className="relative text-white max-w-md z-10">
+                    <h2 className="text-4xl font-bold tracking-tight leading-tight mb-4">
+                        Intelligence at your fingertips.
+                    </h2>
+                    <p className="text-white/75 text-base mb-10">
+                        Sign in to pick up right where you left off.
+                    </p>
+                    <ul className="space-y-4">
+                        {["Fast, personalised experience", "Your data stays private and secure", "Works seamlessly across devices"].map(t => (
+                            <li key={t} className="flex items-center gap-3 text-sm font-medium text-white/90">
+                                <CheckCircle2 size={18} className="shrink-0" /> {t}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </aside>
 
-                <div className="backdrop-blur-xl p-10 relative overflow-hidden bg-background"
-                    style={{ border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-lg)' }}>
-                    <div className="absolute top-0 left-8 right-8 h-px rounded-none"
-                        style={{ background: 'linear-gradient(90deg, transparent, var(--accent), transparent)', opacity: 0.3 }} />
+            {/* ── Form column ── */}
+            <main className="relative flex items-center justify-center px-6 py-12 sm:px-10">
+                <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    className="w-full max-w-105"
+                >
+                    <div className="relative h-10 w-44 mb-10">
+                        <Image src="/images/logo_with_text_2.png" alt="Logo" fill sizes="176px" className="object-contain object-left" priority />
+                    </div>
 
                     <AnimatePresence mode="wait">
 
                         {/* ── Forgot Password Flow ──────────── */}
                         {showForgot ? (
                             <motion.div key="forgot"
-                                initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}>
+                                initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}>
                                 <AnimatePresence mode="wait">
 
                                     {/* Done */}
                                     {forgotStep === STEPS.DONE && (
-                                        <motion.div key="done" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="py-6 text-center">
+                                        <motion.div key="done" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="py-6 text-center">
                                             <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
                                                 style={{ backgroundColor: 'var(--success-bg)', border: '1px solid color-mix(in srgb, var(--success) 20%, transparent)' }}>
                                                 <CheckCircle2 className="w-8 h-8" style={{ color: 'var(--success)' }} />
                                             </div>
-                                            <h3 className="text-xl font-black mb-2" style={{ color: 'var(--text-main)' }}>Password Reset!</h3>
-                                            <p className="text-sm font-medium mb-8" style={{ color: 'var(--text-muted)' }}>
-                                                Your password has been updated. You can now log in.
+                                            <h3 className="text-2xl font-bold tracking-tight mb-2" style={{ color: 'var(--text-main)' }}>Password reset</h3>
+                                            <p className="text-sm mb-8" style={{ color: 'var(--text-muted)' }}>
+                                                Your password has been updated. You can now sign in.
                                             </p>
                                             <button onClick={resetForgotFlow}
-                                                className="w-full py-3.5 rounded-none font-bold text-sm transition-all"
-                                                style={{ backgroundColor: 'var(--surface-card)', border: '1px solid var(--border-solid)', color: 'var(--text-main)' }}>
-                                                Back to Login
+                                                className="w-full h-12 rounded-xl border font-semibold text-[15px] transition-all cursor-pointer hover:border-[var(--primary)]"
+                                                style={{ backgroundColor: 'var(--surface-card)', borderColor: 'var(--border-solid)', color: 'var(--text-main)' }}>
+                                                Back to sign in
                                             </button>
                                         </motion.div>
                                     )}
@@ -291,34 +356,28 @@ export default function LoginPage() {
                                     {forgotStep === STEPS.EMAIL && (
                                         <motion.div key="step-email" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                                             <div className="mb-8">
-                                                <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-main)' }}>Reset Password</h2>
-                                                <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
-                                                    Enter your email and we'll send you a 6-digit OTP.
+                                                <h2 className="text-3xl font-bold tracking-tight mb-2" style={{ color: 'var(--text-main)' }}>Reset password</h2>
+                                                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                                                    Enter your email and we'll send you a 6-digit code.
                                                 </p>
                                             </div>
                                             <ErrorBanner message={sendOTPMutation.error?.message} />
                                             <form onSubmit={e => { e.preventDefault(); sendOTPMutation.mutate(forgotEmail); }} className="space-y-5">
                                                 <div>
-                                                    <label className="block text-xs font-bold mb-2 ml-1" style={{ color: 'var(--text-muted)' }}>Email Address</label>
+                                                    <label htmlFor="forgot-email" className="block text-[13px] font-semibold mb-2" style={{ color: 'var(--text-main)' }}>Email</label>
                                                     <div className="relative">
-                                                        <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-subtle)' }} />
-                                                        <input type="email" required placeholder="name@company.com"
+                                                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'var(--text-subtle)' }} />
+                                                        <input id="forgot-email" type="email" required autoComplete="email" placeholder="name@company.com"
                                                             value={forgotEmail} onChange={e => setForgotEmail(e.target.value)}
-                                                            className="w-full rounded-none pl-12 pr-6 py-4 text-base font-medium transition-all outline-none"
-                                                            style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+                                                            className={`${inputClass} pl-11 pr-4`} />
                                                     </div>
                                                 </div>
                                                 <button type="submit" disabled={sendOTPMutation.isPending}
-                                                    className="w-full py-4 rounded-none font-bold text-base flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-70"
-                                                    style={primaryBtnStyle}>
-                                                    {sendOTPMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Send OTP <ArrowRight className="w-5 h-5" /></>}
+                                                    className={primaryBtnClass} style={primaryBtnStyle}>
+                                                    {sendOTPMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Send code <ArrowRight className="w-4 h-4" /></>}
                                                 </button>
-                                                <button type="button" onClick={resetForgotFlow}
-                                                    className="w-full py-3 rounded-none font-bold text-sm transition-all"
-                                                    style={{ backgroundColor: 'transparent', color: 'var(--text-subtle)' }}
-                                                    onMouseEnter={e => e.currentTarget.style.color = 'var(--text-main)'}
-                                                    onMouseLeave={e => e.currentTarget.style.color = 'var(--text-subtle)'}>
-                                                    ← Back to Login
+                                                <button type="button" onClick={resetForgotFlow} className={ghostBtnClass}>
+                                                    ← Back to sign in
                                                 </button>
                                             </form>
                                         </motion.div>
@@ -328,36 +387,32 @@ export default function LoginPage() {
                                     {forgotStep === STEPS.OTP && (
                                         <motion.div key="step-otp" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
                                             <div className="mb-8">
-                                                <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-main)' }}>Enter OTP</h2>
-                                                <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
+                                                <h2 className="text-3xl font-bold tracking-tight mb-2" style={{ color: 'var(--text-main)' }}>Enter code</h2>
+                                                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
                                                     We sent a 6-digit code to{' '}
-                                                    <span className="font-bold" style={{ color: 'var(--primary)' }}>{forgotEmail}</span>
+                                                    <span className="font-semibold" style={{ color: 'var(--primary)' }}>{forgotEmail}</span>
                                                 </p>
                                             </div>
                                             <ErrorBanner message={verifyOTPMutation.error?.message} />
                                             <form onSubmit={e => { e.preventDefault(); verifyOTPMutation.mutate({ email: forgotEmail, otp }); }} className="space-y-5">
                                                 <div>
-                                                    <label className="block text-xs font-bold mb-2 ml-1" style={{ color: 'var(--text-muted)' }}>6-Digit OTP</label>
+                                                    <label htmlFor="otp" className="block text-[13px] font-semibold mb-2" style={{ color: 'var(--text-main)' }}>6-digit code</label>
                                                     <div className="relative">
-                                                        <KeyRound className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-subtle)' }} />
-                                                        <input type="text" required placeholder="______" maxLength={6} value={otp}
+                                                        <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'var(--text-subtle)' }} />
+                                                        <input id="otp" type="text" inputMode="numeric" autoComplete="one-time-code" required
+                                                            placeholder="______" maxLength={6} value={otp}
                                                             onChange={e => setOtp(e.target.value.replace(/\D/g, ''))}
-                                                            className="w-full rounded-none pl-12 pr-6 py-4 text-base font-bold tracking-[0.5em] transition-all outline-none"
-                                                            style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+                                                            className={`${inputClass} pl-11 pr-4 font-bold tracking-[0.5em]`} />
                                                     </div>
                                                 </div>
                                                 <button type="submit" disabled={verifyOTPMutation.isPending || otp.length !== 6}
-                                                    className="w-full py-4 rounded-none font-bold text-base flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-70"
-                                                    style={primaryBtnStyle}>
-                                                    {verifyOTPMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Verify OTP <ArrowRight className="w-5 h-5" /></>}
+                                                    className={primaryBtnClass} style={primaryBtnStyle}>
+                                                    {verifyOTPMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Verify code <ArrowRight className="w-4 h-4" /></>}
                                                 </button>
                                                 <button type="button"
                                                     onClick={() => { setForgotStep(STEPS.EMAIL); verifyOTPMutation.reset(); setOtp(''); }}
-                                                    className="w-full py-3 rounded-none font-bold text-sm transition-all"
-                                                    style={{ backgroundColor: 'transparent', color: 'var(--text-subtle)' }}
-                                                    onMouseEnter={e => e.currentTarget.style.color = 'var(--text-main)'}
-                                                    onMouseLeave={e => e.currentTarget.style.color = 'var(--text-subtle)'}>
-                                                    ← Resend OTP
+                                                    className={ghostBtnClass}>
+                                                    ← Resend code
                                                 </button>
                                             </form>
                                         </motion.div>
@@ -367,8 +422,8 @@ export default function LoginPage() {
                                     {forgotStep === STEPS.PASSWORD && (
                                         <motion.div key="step-password" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
                                             <div className="mb-8">
-                                                <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-main)' }}>New Password</h2>
-                                                <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
+                                                <h2 className="text-3xl font-bold tracking-tight mb-2" style={{ color: 'var(--text-main)' }}>New password</h2>
+                                                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
                                                     Choose a strong password for your account.
                                                 </p>
                                             </div>
@@ -379,158 +434,145 @@ export default function LoginPage() {
                                                 resetPasswordMutation.mutate({ resetToken, newPassword });
                                             }} className="space-y-5">
                                                 <div>
-                                                    <label className="block text-xs font-bold mb-2 ml-1" style={{ color: 'var(--text-muted)' }}>New Password</label>
+                                                    <label htmlFor="new-password" className="block text-[13px] font-semibold mb-2" style={{ color: 'var(--text-main)' }}>New password</label>
                                                     <div className="relative">
-                                                        <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-subtle)' }} />
-                                                        <input type={showNewPassword ? "text" : "password"} required
+                                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'var(--text-subtle)' }} />
+                                                        <input id="new-password" type={showNewPassword ? "text" : "password"} required autoComplete="new-password"
                                                             placeholder="Create a strong password" value={newPassword}
                                                             onChange={e => setNewPassword(e.target.value)}
-                                                            className="w-full rounded-none pl-12 pr-14 py-4 text-base font-medium transition-all outline-none"
-                                                            style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+                                                            className={`${inputClass} pl-11 pr-12`} />
                                                         <button type="button" onClick={() => setShowNewPassword(!showNewPassword)}
-                                                            className="absolute right-5 top-1/2 -translate-y-1/2 transition-colors"
+                                                            aria-label={showNewPassword ? "Hide password" : "Show password"}
+                                                            className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer transition-colors hover:text-[var(--text-main)]"
                                                             style={{ color: 'var(--text-subtle)' }}>
                                                             {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                                         </button>
                                                     </div>
                                                 </div>
                                                 <div>
-                                                    <label className="block text-xs font-bold mb-2 ml-1" style={{ color: 'var(--text-muted)' }}>Confirm Password</label>
+                                                    <label htmlFor="confirm-password" className="block text-[13px] font-semibold mb-2" style={{ color: 'var(--text-main)' }}>Confirm password</label>
                                                     <div className="relative">
-                                                        <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-subtle)' }} />
-                                                        <input type="password" required placeholder="Repeat your password"
+                                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'var(--text-subtle)' }} />
+                                                        <input id="confirm-password" type="password" required autoComplete="new-password"
+                                                            placeholder="Repeat your password"
                                                             value={confirmNewPassword}
                                                             onChange={e => setConfirmNewPassword(e.target.value)}
-                                                            className="w-full rounded-none pl-12 pr-6 py-4 text-base font-medium transition-all outline-none"
+                                                            className={`${inputClass} pl-11 pr-4`}
                                                             style={{
-                                                                ...inputStyle,
                                                                 borderColor: confirmNewPassword && confirmNewPassword !== newPassword
                                                                     ? 'var(--destructive)'
                                                                     : confirmNewPassword && confirmNewPassword === newPassword
                                                                         ? 'var(--success)'
-                                                                        : 'var(--border-solid)'
-                                                            }}
-                                                            onFocus={onFocus} onBlur={onBlur} />
+                                                                        : undefined
+                                                            }} />
                                                     </div>
                                                     {confirmNewPassword && confirmNewPassword !== newPassword && (
-                                                        <p className="text-[11px] font-semibold mt-1.5 ml-1" style={{ color: 'var(--destructive)' }}>Passwords don't match</p>
+                                                        <p className="text-xs font-medium mt-1.5" style={{ color: 'var(--destructive)' }}>Passwords don't match</p>
                                                     )}
                                                 </div>
                                                 <button type="submit"
                                                     disabled={resetPasswordMutation.isPending || newPassword !== confirmNewPassword}
-                                                    className="w-full py-4 rounded-none font-bold text-base flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-70"
-                                                    style={primaryBtnStyle}>
-                                                    {resetPasswordMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Reset Password <ArrowRight className="w-5 h-5" /></>}
+                                                    className={primaryBtnClass} style={primaryBtnStyle}>
+                                                    {resetPasswordMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Reset password <ArrowRight className="w-4 h-4" /></>}
                                                 </button>
                                             </form>
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
                             </motion.div>
-
                         ) : (
                             /* ── Login View ──────────────────── */
                             <motion.div key="login"
-                                initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: 30 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}>
+                                initial={{ opacity: 0, x: -24 }} animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: 24 }} transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}>
 
-                                <div className="mb-10 text-center">
-                                    <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--text-main)' }}>Welcome Back</h2>
-                                    <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Log in to manage your market insights</p>
+                                <div className="mb-8">
+                                    <h1 className="text-3xl font-bold tracking-tight mb-2" style={{ color: 'var(--text-main)' }}>Welcome back</h1>
+                                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Sign in to your account to continue.</p>
                                 </div>
 
                                 <ErrorBanner message={loginMutation.error?.message || googleMutation.error?.message} />
 
-                                <div className="space-y-6">
-                                    {/* Google */}
-                                    <button onClick={() => googleMutation.mutate()} disabled={isLoading}
-                                        className="w-full flex items-center justify-center cursor-pointer gap-3 py-3.5 rounded-none font-semibold text-[15px] transition-all disabled:opacity-50"
-                                        style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border-solid)', color: 'var(--text-main)', boxShadow: 'var(--shadow-sm)' }}
-                                        onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--surface-card)'; e.currentTarget.style.borderColor = 'var(--primary)'; }}
-                                        onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'var(--surface)'; e.currentTarget.style.borderColor = 'var(--border-solid)'; }}>
-                                        {googleMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-                                            <>
-                                                <svg className="w-5 h-5" viewBox="0 0 24 24">
-                                                    <path fill="#EA4335" d="M24 12.27c0-.85-.07-1.7-.22-2.53H12.27v4.8h6.58a5.62 5.62 0 0 1-2.44 3.7v3.08h3.94c2.31-2.13 3.65-5.26 3.65-8.85z" />
-                                                    <path fill="#FBBC05" d="M12.27 24c3.24 0 5.96-1.07 7.95-2.9l-3.94-3.08c-1.09.73-2.49 1.16-4.01 1.16-3.08 0-5.7-2.08-6.64-4.88H1.63v3.18A12 12 0 0 0 12.27 24z" />
-                                                    <path fill="#34A853" d="M5.63 14.3a7.22 7.22 0 0 1 0-4.6V6.52H1.63a12 12 0 0 0 0 10.96l4-3.18z" />
-                                                    <path fill="#4285F4" d="M12.27 4.78c1.76 0 3.34.6 4.58 1.8l3.44-3.44A12 12 0 0 0 1.63 6.52l4 3.18c.94-2.8 3.56-4.92 6.64-4.92z" />
-                                                </svg>
-                                                Continue with Google
-                                            </>
-                                        )}
-                                    </button>
+                                {/* Google Button */}
+                                <button type="button" onClick={() => googleMutation.mutate()} disabled={isLoading}
+                                    className="w-full h-12 flex items-center justify-center gap-3 rounded-md border text-[15px] font-semibold transition-all cursor-pointer hover:bg-[var(--surface-card)] hover:border-[var(--primary)] disabled:opacity-60 disabled:cursor-not-allowed"
+                                    style={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border-solid)', color: 'var(--text-main)' }}>
+                                    {googleMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+                                        <>
+                                            <svg className="w-5 h-5" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path fill="#EA4335" d="M24 12.27c0-.85-.07-1.7-.22-2.53H12.27v4.8h6.58a5.62 5.62 0 0 1-2.44 3.7v3.08h3.94c2.31-2.13 3.65-5.26 3.65-8.85z" />
+                                                <path fill="#FBBC05" d="M12.27 24c3.24 0 5.96-1.07 7.95-2.9l-3.94-3.08c-1.09.73-2.49 1.16-4.01 1.16-3.08 0-5.7-2.08-6.64-4.88H1.63v3.18A12 12 0 0 0 12.27 24z" />
+                                                <path fill="#34A853" d="M5.63 14.3a7.22 7.22 0 0 1 0-4.6V6.52H1.63a12 12 0 0 0 0 10.96l4-3.18z" />
+                                                <path fill="#4285F4" d="M12.27 4.78c1.76 0 3.34.6 4.58 1.8l3.44-3.44A12 12 0 0 0 1.63 6.52l4 3.18c.94-2.8 3.56-4.92 6.64-4.92z" />
+                                            </svg>
+                                            Continue with Google
+                                        </>
+                                    )}
+                                </button>
 
-                                    <div className="relative flex items-center py-2">
-                                        <div className="flex-grow border-t" style={{ borderColor: 'var(--border-solid)' }} />
-                                        <span className="flex-shrink mx-4 text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-subtle)' }}>Or login with email</span>
-                                        <div className="flex-grow border-t" style={{ borderColor: 'var(--border-solid)' }} />
+                                <div className="flex items-center gap-4 my-7">
+                                    <div className="flex-1 h-px" style={{ backgroundColor: 'var(--border-solid)' }} />
+                                    <span className="text-xs font-medium" style={{ color: 'var(--text-subtle)' }}>or continue with email</span>
+                                    <div className="flex-1 h-px" style={{ backgroundColor: 'var(--border-solid)' }} />
+                                </div>
+
+                                {/* Email/Password Form */}
+                                <form onSubmit={e => { e.preventDefault(); loginMutation.mutate({ email, password }); }} className="space-y-5">
+                                    <div>
+                                        <label htmlFor="email" className="block text-[13px] font-semibold mb-2" style={{ color: 'var(--text-main)' }}>Email</label>
+                                        <div className="relative">
+                                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'var(--text-subtle)' }} />
+                                            <input id="email" type="email" required autoComplete="email" placeholder="name@company.com"
+                                                value={email} onChange={e => setEmail(e.target.value)}
+                                                className={`${inputClass} pl-11 pr-4`} />
+                                        </div>
                                     </div>
 
-                                    <form onSubmit={e => { e.preventDefault(); loginMutation.mutate({ email, password }); }} className="space-y-5">
-                                        <div>
-                                            <label className="block text-xs font-bold mb-2 ml-1" style={{ color: 'var(--text-muted)' }}>Work Email</label>
-                                            <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-                                                placeholder="name@company.com" required
-                                                className={inputClass} style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+                                    <div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <label htmlFor="password" className="text-[13px] font-semibold" style={{ color: 'var(--text-main)' }}>Password</label>
+                                            <button type="button" onClick={() => setShowForgot(true)}
+                                                className="text-[13px] font-semibold cursor-pointer hover:underline" style={{ color: 'var(--primary)' }}>
+                                                Forgot password?
+                                            </button>
                                         </div>
-
-                                        <div>
-                                            <div className="flex justify-between items-center mb-2 ml-1">
-                                                <label className="block text-xs font-bold" style={{ color: 'var(--text-muted)' }}>Password</label>
-                                                <button type="button"
-                                                    onClick={() => { setShowForgot(true); setForgotEmail(email); loginMutation.reset(); }}
-                                                    className="text-[13px] font-bold transition-colors"
-                                                    style={{ color: 'var(--primary)' }}
-                                                    onMouseEnter={e => e.currentTarget.style.color = 'var(--primary-hover)'}
-                                                    onMouseLeave={e => e.currentTarget.style.color = 'var(--primary)'}>
-                                                    Forgot Password?
-                                                </button>
-                                            </div>
-                                            <div className="relative">
-                                                <input type={showPassword ? "text" : "password"}
-                                                    value={password} onChange={e => setPassword(e.target.value)}
-                                                    placeholder="••••••••" required
-                                                    className={inputClass} style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
-                                                <button type="button" onClick={() => setShowPassword(!showPassword)}
-                                                    className="absolute right-5 top-1/2 -translate-y-1/2 transition-colors"
-                                                    style={{ color: 'var(--text-subtle)' }}
-                                                    onMouseEnter={e => e.currentTarget.style.color = 'var(--primary)'}
-                                                    onMouseLeave={e => e.currentTarget.style.color = 'var(--text-subtle)'}>
-                                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                                </button>
-                                            </div>
+                                        <div className="relative">
+                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'var(--text-subtle)' }} />
+                                            <input id="password" type={showPassword ? "text" : "password"} required autoComplete="current-password"
+                                                placeholder="Enter your password"
+                                                value={password} onChange={e => setPassword(e.target.value)}
+                                                className={`${inputClass} pl-11 pr-12`} />
+                                            <button type="button" onClick={() => setShowPassword(!showPassword)}
+                                                aria-label={showPassword ? "Hide password" : "Show password"}
+                                                className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer transition-colors hover:text-[var(--text-main)]"
+                                                style={{ color: 'var(--text-subtle)' }}>
+                                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                            </button>
                                         </div>
+                                    </div>
 
-                                        <button type="submit" disabled={isLoading}
-                                            className="w-full py-4 rounded-none font-bold text-base flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-70"
-                                            style={primaryBtnStyle}
-                                            onMouseEnter={e => e.currentTarget.style.boxShadow = '0 6px 28px color-mix(in srgb, var(--accent) 30%, transparent)'}
-                                            onMouseLeave={e => e.currentTarget.style.boxShadow = '0 4px 20px color-mix(in srgb, var(--primary) 35%, transparent)'}>
-                                            {loginMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Sign In <ArrowRight className="w-5 h-5" /></>}
-                                        </button>
-                                    </form>
-                                </div>
+                                    <button type="submit" disabled={isLoading}
+                                        className={primaryBtnClass} style={primaryBtnStyle}>
+                                        {loginMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Sign in <ArrowRight className="w-4 h-4" /></>}
+                                    </button>
+                                </form>
 
-                                <div className="mt-5 flex justify-center">
-                                    <Link href="/signup" className="text-xs">
-                                        <span className="font-medium" style={{ color: 'var(--text-subtle)' }}>Don't have an account? </span>
-                                        <span className="font-bold hover:underline" style={{ color: 'var(--primary)' }}>Sign Up</span>
-                                    </Link>
-                                </div>
+                                <p className="text-center text-sm mt-8" style={{ color: 'var(--text-muted)' }}>
+                                    Don't have an account?{' '}
+                                    <Link href="/signup" className="font-semibold hover:underline" style={{ color: 'var(--primary)' }}>Sign up</Link>
+                                </p>
                             </motion.div>
                         )}
-                    </AnimatePresence>
-                </div>
 
-                <div className="mt-10 flex items-center justify-center">
-                    <div className="flex items-center gap-2 px-4 py-2 rounded-none backdrop-blur-sm"
-                        style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--glass-border)' }}>
-                        <ShieldCheck className="w-4 h-4" style={{ color: 'var(--success)' }} />
-                        <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Enterprise Secure</span>
+                    </AnimatePresence>
+
+                    {/* Security note */}
+                    <div className="flex items-center justify-center gap-2 mt-10 text-xs font-medium" style={{ color: 'var(--text-subtle)' }}>
+                        <ShieldCheck size={14} style={{ color: 'var(--success)' }} />
+                        <span>Your data is encrypted in transit</span>
                     </div>
-                </div>
-            </motion.div>
+                </motion.div>
+            </main>
         </div>
     );
-};
+}
