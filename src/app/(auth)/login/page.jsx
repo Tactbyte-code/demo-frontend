@@ -265,11 +265,11 @@ export default function LoginPage() {
             {/* ── Brand panel (desktop only) ── */}
             <aside className="hidden lg:flex relative flex-col justify-end p-14 overflow-hidden h-full min-h-[600px]"
                 style={{ background: 'linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 55%, var(--accent)))' }}>
-                <button onClick={() => router.back()} aria-label="Go back"
+                <Link href="/" aria-label="Go back"
                     className="absolute top-8 left-8 z-20 bg-white/80 hover:bg-white text-black flex items-center justify-center h-10 w-10 rounded-full border transition-colors border-white cursor-pointer"
                 >
                     <ArrowLeft size={16} />
-                </button>
+                </Link>
 
                 <div className="absolute inset-0 opacity-[0.15]"
                     style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, #fff 1px, transparent 0)', backgroundSize: '28px 28px' }} />
