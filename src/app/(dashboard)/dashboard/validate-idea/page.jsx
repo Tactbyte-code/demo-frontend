@@ -7,13 +7,19 @@ import { FaLightbulb, FaSpinner } from "react-icons/fa";
 import ValidateIdeaListPage from "@/features/validate/components/ValidateIdeaListPage";
 import { useCreateQuery } from "@/features/validate/hooks/useCreateQuery";
 import LocationFetcher from "@/components/location/LocationFetcher";
+import { useCreditStore } from "@/store/useCreditStore";
+import CreditPurchaseModal from "@/components/credits/CreditPurchaseModal";
 
 const ValidateIdeaPage = () => {
+
     const router = useRouter();
 
     const { mutateAsync: submitIdea, isPending: loading } = useCreateQuery();
 
-    const [localError, setLocalError] = useState(null)
+    const [localError, setLocalError] = useState(null);
+    const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
+
+    const { credits } = useCreditStore();
 
     // 1. Add state to hold the location data
     const [locationData, setLocationData] = useState(null);
@@ -29,6 +35,12 @@ const ValidateIdeaPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
+
+        if (credits < 66) {
+            setIsCreditModalOpen(true);
+            return;
+        }
+
         if (!canSubmit || loading) return
 
         setLocalError(null);
@@ -51,7 +63,7 @@ const ValidateIdeaPage = () => {
 
             if (!queryId || !status) {
                 throw new Error("No query ID was returned from the server.")
-            };
+            }
 
             if (status === "CREATED") {
                 router.push(`/dashboard/validate-idea/${queryId}`)
@@ -179,6 +191,12 @@ const ValidateIdeaPage = () => {
 
                 <ValidateIdeaListPage />
             </div>
+
+            {/* Mount the modal outside of your standard document flow */}
+            <CreditPurchaseModal
+                isOpen={isCreditModalOpen}
+                onClose={() => setIsCreditModalOpen(false)}
+            />
         </div>
     )
 }

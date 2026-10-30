@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import ReportPage from '@/features/validate/components/report/ReportPage'
+import { useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import ReportPage from '@/features/validate/components/report/ReportPage';
 
 export default function Page() {
-  const { queryId } = useParams()
-  const router = useRouter()
+  const { queryId } = useParams();
+  const router = useRouter();
 
   // always navigate to the validate idea page on browser back
   useEffect(() => {

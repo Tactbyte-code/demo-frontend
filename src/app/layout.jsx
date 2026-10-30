@@ -4,6 +4,7 @@ import { Providers } from "@/providers/Providers";
 import AuthGuard from "@/middleware/AuthGuard";
 import { cn } from "@/lib/utils";
 import { Analytics } from '@vercel/analytics/next';
+import CreditInitializer from "@/components/credits/CreditInitializer";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -67,8 +68,13 @@ export default function RootLayout({ children }) {
             selection:text-primary
         `}
       >
+        {/* Invisible component that fetches credits on app load */}
+
         <Providers>
-          <AuthGuard>{children}</AuthGuard>
+          <AuthGuard>
+            <CreditInitializer />
+            {children}
+          </AuthGuard>
         </Providers>
 
         <Analytics />

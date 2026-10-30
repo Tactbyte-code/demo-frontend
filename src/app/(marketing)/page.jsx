@@ -1,3 +1,5 @@
+"use client"
+
 import ComparisonSection from "@/components/ComparisonSection";
 import FAQSection from "@/components/FAQSection";
 import FeaturesSection from "@/components/FeaturesSection";
@@ -12,6 +14,7 @@ import AuthVerificationHandler from "@/components/AuthVerificationHandler";
 import React from "react";
 
 const page = () => {
+
   return (
     <>
       <AuthVerificationHandler />
