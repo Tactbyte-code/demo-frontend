@@ -1,39 +1,36 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import {
-    LayoutDashboard,
     ChevronRight,
     CircleDot,
     PanelLeftClose,
     PanelLeftOpen,
     X,
+    Coins,
     Sparkles,
-    Target,
+    Loader2,
+    Zap,
 } from 'lucide-react';
-import { BsRobot } from "react-icons/bs";
-import { FaCheckCircle, FaReddit } from "react-icons/fa";
-import { FaGooglePlay } from "react-icons/fa";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import UserProfileButton from "@/components/ui/UserProfileButton";
-import { auth } from "@/lib/firebase";
 import { useSidebarStore } from "@/context/useSidebarStore";
 import Image from "next/image";
 import FeedbackModal from "@/components/shared/FeedbackModal";
 import TicketChatPopup, { SidebarTrigger } from "@/app/(dashboard)/tickets/page";
+import { engineItems, leadGenerationItems, mainItems } from "@/utils/data";
+import { useCreditStore } from "@/store/useCreditStore";
 
 export default function DashboardLayout({ children }) {
     const pathname = usePathname();
+    const router = useRouter();
     const { sidebarOpen, setSidebarOpen, toggleSidebar } = useSidebarStore();
-    const [userPlan, setUserPlan] = useState(null);
-    const [loading, setLoading] = useState(true);
     const [hasUnread, setHasUnread] = useState(false);
-
     const [ticketOpen, setTicketOpen] = useState(false);
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const { credits } = useCreditStore();
 
     useEffect(() => {
         const handleResize = () => {
@@ -54,46 +51,7 @@ export default function DashboardLayout({ children }) {
         }
     }, [pathname, setSidebarOpen]);
 
-    const loadCredits = useCallback(async () => {
-        try {
-            const firebaseUser = auth.currentUser;
-            if (!firebaseUser) return;
-            const token = await firebaseUser.getIdToken();
-            const res = await fetch(`${apiUrl}/auth/me`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (!res.ok) return;
-            const data = await res.json();
-            setUserPlan(data.plan ?? null);
-        } catch (err) {
-            console.error("Failed to fetch credits:", err);
-        } finally {
-            setLoading(false);
-        }
-    }, [apiUrl]);
-
-    useEffect(() => {
-        void (async () => {
-            await loadCredits();
-        })();
-        window.addEventListener("userUpdated", loadCredits);
-        return () => window.removeEventListener("userUpdated", loadCredits);
-    }, [loadCredits]);
-
-    const mainItems = [
-        { name: "Overview", icon: LayoutDashboard, href: "/dashboard" },
-    ];
-
-    const engineItems = [
-        { name: 'Reddit Analysis', icon: FaReddit, href: '/dashboard/reddit', color: "#FF4500" },
-        { name: 'Playstore Analysis', icon: FaGooglePlay, href: '/dashboard/playstore', color: "#4285F4" },
-        { name: 'Validate Idea', icon: FaCheckCircle, href: '/dashboard/validate-idea', color: "#10b981" },
-        { name: 'AI Workspace', icon: BsRobot, href: '/dashboard/ai-workspace', color: "#FF4500" },
-    ];
-
-    const leadGenerationItems = [
-        { name: 'AI Lead Engine', icon: Target, href: '/dashboard/ai-lead-engine/campaigns', color: "#10b981" },
-    ];
+    const isLowCredits = credits !== null && credits < 30;
 
     return (
         <div
@@ -253,21 +211,43 @@ export default function DashboardLayout({ children }) {
                         <div className="w-px h-4 bg-border-solid hidden sm:block" />
 
                         <span className="text-[14px] md:text-[16px] font-bold text-muted truncate max-w-35 md:max-w-none">
-                            {[...engineItems, ...mainItems].find((i) => i.href === pathname)?.name || "Dashboard"}
+                            {[...engineItems, ...mainItems, ...leadGenerationItems].find((i) => i.href === pathname)?.name || "Dashboard"}
                         </span>
-
-                        {/* {pathname === "/dashboard/validate-idea" && (
-                            <Link
-                                href="/dashboard/validate-idea/beta-version"
-                                className="relative inline-flex items-center justify-center gap-2 px-5 py-2 text-sm font-semibold text-white rounded-full transition-all duration-300 ease-in-out hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 bg-gradient-to-r from-violet-600 via-fuchsia-600 to-orange-500 hover:from-violet-500 hover:via-fuchsia-500 hover:to-orange-400 shadow-[0_0_15px_rgba(192,38,211,0.4)] hover:shadow-[0_0_25px_rgba(192,38,211,0.6)]"                            >
-                                <span className="animate-pulse">✨</span>
-                                Try the New Beta Update 
-                            </Link>
-                        )} */}
                     </div>
 
-                    {/* RIGHT SIDE: Beta Link & Profile */}
-                    <div className="flex items-center gap-4">
+                    {/* RIGHT SIDE: Credit Counter, Conditional Buy Button & Profile */}
+                    <div className="flex items-center gap-3 md:gap-4 ml-auto">
+                        {/* Credits Badge Display */}
+                        <div
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold border transition-colors"
+                            style={{
+                                backgroundColor: isLowCredits ? "rgba(239, 68, 68, 0.1)" : "var(--surface-raised)",
+                                borderColor: isLowCredits ? "var(--destructive)" : "var(--border-solid)",
+                                color: isLowCredits ? "var(--destructive)" : "var(--text-main)",
+                            }}
+                        >
+                            <Zap className="w-4 h-4 fill-current text-amber-500" />
+                            <span>{credits !== null ? credits.toLocaleString() : 0} Credits</span>
+                            {/* {loadingCredits ? (
+                                <Loader2 className="w-4 h-4 animate-spin text-muted" />
+                            ) : (
+                                <>
+                                </>
+                            )} */}
+                        </div>
+
+                        {/* Buy Credits Button (Shown only when credits < 30) */}
+                        {/* {!loadingCredits && isLowCredits && (
+                            <button
+                                type="button"
+                                onClick={() => router.push("/pricing")}
+                                className="relative inline-flex items-center gap-2 px-3.5 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-bold text-amber-950 bg-amber-400 hover:bg-amber-300 active:scale-98 transition-all duration-200 rounded-lg shadow-[0_0_15px_rgba(251,191,36,0.5)] hover:shadow-[0_0_22px_rgba(251,191,36,0.7)] border border-amber-300/80 cursor-pointer"
+                            >
+                                <Coins className="w-4 h-4 text-amber-950 animate-bounce" />
+                                <span>Buy Credits</span>
+                            </button>
+                        )} */}
+
                         <UserProfileButton />
                     </div>
                 </div>
@@ -286,7 +266,7 @@ export default function DashboardLayout({ children }) {
             />
         </div>
     );
-}
+};
 
 // ─── NavGroup ─────────────────────────────────────────────────────────────────
 function NavGroup({ label, items, pathname }) {

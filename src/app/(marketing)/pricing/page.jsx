@@ -2,12 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, X, Zap, ArrowRight, Sparkles } from "lucide-react";
+import { Check, X, Zap, ArrowRight, Loader2 } from "lucide-react";
 import { plans } from "@/utils/data";
 import { useRouter } from "next/navigation";
-import { auth } from '@/lib/firebase';
-import { Loader2 } from 'lucide-react';
-import { initiatePayment } from "@/lib/razorpay";
+import { initiatePayment, preloadRazorpay } from "@/lib/razorpay";
 
 const containerVariants = {
     hidden: {},
@@ -19,93 +17,115 @@ const cardVariants = {
     show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
 };
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
 export default function PricingPage() {
     const [yearly, setYearly] = useState(false);
-    const [user, setUser] = useState(false);
+    const [user, setUser] = useState(null);
     const [hoveredPlan, setHoveredPlan] = useState(null);
+    const [purchasingPlan, setPurchasingPlan] = useState(null);
+    const [isProcessing, setIsProcessing] = useState(false); // full-screen blocking spinner
+    const [error, setError] = useState("");
+
+    const router = useRouter();
 
     useEffect(() => {
         const storedUser = localStorage.getItem("user");
         if (storedUser) {
             setUser(JSON.parse(storedUser));
         }
-    }, [])
+        // Warm up Razorpay SDK and the dashboard route
+        preloadRazorpay();
+        router.prefetch("/dashboard");
+    }, [router]);
 
-    // Inside the component:
-    const router = useRouter();
-    const [purchasingPlan, setPurchasingPlan] = useState(null);
-    const [error, setError] = useState("");
+    // Lock page scroll while the overlay is visible
+    useEffect(() => {
+        document.body.style.overflow = isProcessing ? "hidden" : "";
+        return () => {
+            document.body.style.overflow = "";
+        };
+    }, [isProcessing]);
 
-    // const handlePurchase = async (planId) => {
-    //     console.log('entered the function', planId);
-    //     setError("");
-    //     setPurchasingPlan(planId);
+    const handlePurchase = (plan) => {
+        setError("");
+        setPurchasingPlan(plan.id);
 
-    //     try {
-    //         const firebaseUser = auth.currentUser;
-    //         if (!firebaseUser) { router.replace("/login"); return; }
-
-    //         const token = await firebaseUser.getIdToken();
-    //         console.log('token:', token);
-
-    //         // Get credits for this plan from the plans data
-    //         const selectedPlan = plans.find(p => p.id === planId);
-    //         console.log('selectedplan: ', selectedPlan);
-    //         const credits = selectedPlan?.credits?.monthly ?? 0;  // ← use credits.monthly
-
-    //         console.log('plan credits: ', credits);
-
-    //         const response = await fetch(`${apiUrl}/users/purchase-plan`, {
-    //             method: "POST",
-    //             headers: {
-    //                 "Content-Type": "application/json",
-    //                 "Authorization": `Bearer ${token}`
-    //             },
-    //             body: JSON.stringify({
-    //                 plan: planId,
-    //                 credits: credits       // ← send credits too
-    //             })
-    //         });
-
-    //         console.log('purchase response: ', response);
-
-    //         if (!response.ok) {
-    //             const err = await response.json();
-    //             console.log('error: ', err);
-    //             throw new Error(err.detail || "Purchase failed");
-    //         }
-
-    //         const data = await response.json();
-    //         console.log('purchase data: ', data);
-
-    //         const storedUser = localStorage.getItem("user");
-    //         if (storedUser) {
-    //             const user = JSON.parse(storedUser);
-    //             localStorage.setItem("user", JSON.stringify({
-    //                 ...user,
-    //                 credits: data.credits,
-    //                 plan: data.plan
-    //             }));
-    //             window.dispatchEvent(new Event("userUpdated"));
-    //         }
-
-    //         router.replace("/dashboard");
-
-    //     } catch (err) {
-    //         console.error('Purchase error:', err);
-    //         setError(err.message);
-    //     } finally {
-    //         setPurchasingPlan(null);
-    //     }
-    // };
+        initiatePayment({
+            amount: 1900,
+            userEmail: user?.email,
+            userName: user?.full_name,
+            onProcessing: () => setIsProcessing(true),
+            onSuccess: () => {
+                // Keep the overlay up; the page unmounts once navigation completes
+                router.push("/dashboard");
+            },
+            onFailure: () => {
+                setIsProcessing(false);
+                setPurchasingPlan(null);
+                setError("Payment failed or was cancelled. Please try again.");
+            },
+        });
+    };
 
     return (
         <div
             className="min-h-screen relative overflow-hidden"
             style={{ backgroundColor: "var(--background)", color: "var(--text-main)" }}
         >
+            {/* Blocking loader overlay */}
+            <AnimatePresence>
+                {isProcessing && (
+                    <motion.div
+                        key="processing-overlay"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="fixed inset-0 z-[100] flex items-center justify-center backdrop-blur-md px-4"
+                        style={{ backgroundColor: "rgba(0, 0, 0, 0.6)", cursor: "wait" }}
+                        role="alert"
+                        aria-busy="true"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0, y: 10 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.95, opacity: 0, y: 10 }}
+                            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                            className="flex flex-col items-center justify-center p-8 pt-6 rounded-2xl shadow-2xl max-w-sm w-full border"
+                            style={{
+                                backgroundColor: "var(--surface)",
+                                borderColor: "var(--border-solid)",
+                                boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+                            }}
+                        >
+                            {/* Outer glowing container with increased vertical space */}
+                            <div className="relative flex items-center justify-center my-6 py-2">
+                                <div
+                                    className="absolute w-20 h-20 rounded-full animate-ping opacity-20"
+                                    style={{ backgroundColor: "var(--primary)" }}
+                                />
+                                <div
+                                    className="relative w-14 h-14 rounded-full flex items-center justify-center border shadow-inner"
+                                    style={{
+                                        backgroundColor: "var(--surface-raised)",
+                                        borderColor: "var(--border-solid)"
+                                    }}
+                                >
+                                    <Loader2 className="w-7 h-7 animate-spin" style={{ color: "var(--primary)" }} />
+                                </div>
+                            </div>
+
+                            <h3 className="text-lg font-bold tracking-tight mb-1 mt-6 text-center" style={{ color: "var(--text-main)" }}>
+                                Confirming your payment
+                            </h3>
+
+                            <p className="text-xs font-medium text-center" style={{ color: "var(--text-muted)" }}>
+                                Please wait while we secure your payment and update your credits. Do not close this window.
+                            </p>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* Background */}
             <div className="absolute inset-0 pointer-events-none">
                 <div className="absolute top-[-15%] left-[10%] w-[600px] h-[600px] rounded-none blur-[160px] opacity-30"
@@ -159,7 +179,7 @@ export default function PricingPage() {
                             <span className="text-sm font-bold" style={{ color: yearly ? "var(--text-main)" : "var(--text-subtle)" }}>
                                 Yearly
                             </span>
-                            {/* <AnimatePresence>
+                            <AnimatePresence>
                                 {yearly && (
                                     <motion.span
                                         initial={{ opacity: 0, scale: 0.8, x: -10 }}
@@ -171,7 +191,7 @@ export default function PricingPage() {
                                         Save 20%
                                     </motion.span>
                                 )}
-                            </AnimatePresence> */}
+                            </AnimatePresence>
                         </div>
                     </div>
                 </motion.div>
@@ -191,7 +211,7 @@ export default function PricingPage() {
                             onMouseLeave={() => setHoveredPlan(null)}
                             className="relative p-6 flex flex-col transition-all duration-300 cursor-pointer"
                             style={{
-                                backgroundColor: plan.popular ? "var(--surface)" : "var(--surface)",
+                                backgroundColor: "var(--surface)",
                                 border: hoveredPlan === plan.id
                                     ? `1px solid ${plan.accent}`
                                     : plan.popular
@@ -267,24 +287,8 @@ export default function PricingPage() {
 
                             {/* CTA Button */}
                             <button
-                                // onClick={() => handlePurchase(plan.id)}
-                                onClick={() => {
-                                    if (plan.monthlyPrice === 0) {
-                                        router.push("/dashboard");
-                                        return;
-                                    }
-                                    initiatePayment({
-                                        amount: 49900,
-                                        userEmail: user?.email,
-                                        userName: user?.full_name,
-                                        onSuccess: (data) => {
-                                            console.log("Payment successful!");
-                                            router.push("/dashboard");
-                                        },
-                                        onFailure: () => console.error("Payment failed or cancelled"),
-                                    });
-                                }}
-                                disabled={purchasingPlan === plan.id}
+                                onClick={() => handlePurchase(plan)}
+                                disabled={purchasingPlan !== null || isProcessing}
                                 className="w-full py-3.5 rounded-none font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] mb-6 disabled:opacity-70"
                                 style={{
                                     backgroundColor: plan.popular ? "var(--accent)" : plan.monthlyPrice === 0 ? "var(--surface-raised)" : "var(--primary)",
@@ -341,13 +345,9 @@ export default function PricingPage() {
                 >
                     <p className="text-sm font-medium" style={{ color: "var(--text-subtle)" }}>
                         All plans include a <span className="font-bold" style={{ color: "var(--text-main)" }}>14-day free trial</span>. No credit card required.
-                        {" "}
-                        {/* <span className="font-bold" style={{ color: "var(--primary)", cursor: "pointer" }}>
-                            Compare all features →
-                        </span> */}
                     </p>
                 </motion.div>
             </div>
-        </div>
+        </div >
     );
-};
+}

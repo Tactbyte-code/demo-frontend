@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react'
-// Adjust to wherever your existing hook lives.
 import { ReportProvider } from './context/ReportContext'
 import ReportView from './ReportView'
 import { ErrorState, LoadingState, StatusState } from './states'

@@ -7,57 +7,7 @@ import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { getToken } from '@/utils/getToken';
-
-const questions = [
-    {
-        id: 'discovery',
-        step: '01',
-        question: 'How did you discover us?',
-        hint: 'Select all that apply',
-        multi: true,
-        options: [
-            'Twitter / X', 'LinkedIn', 'Instagram', 'YouTube',
-            'Google Search', 'DuckDuckGo', 'Bing',
-            'Friend or Colleague', 'Word of Mouth',
-            'Newsletter', 'Email Campaign',
-            'Reddit', 'Hacker News', 'Product Hunt',
-            'Blog or Article', 'Podcast', 'Webinar',
-            'App Store', 'Other',
-        ],
-    },
-    {
-        id: 'usage',
-        step: '02',
-        question: 'How will you use Demo?',
-        hint: 'Pick everything that fits',
-        multi: true,
-        options: [
-            'Market Research', 'Competitor Analysis', 'Trend Tracking',
-            'Product Ideation', 'Feature Validation', 'User Feedback Analysis',
-            'Building a Product', 'Launching a Startup',
-            'Marketing Insights', 'Content Strategy', 'Ad Research',
-            'E-commerce Strategy', 'Pricing Research',
-            'Client Consulting', 'Agency Work',
-            'Academic Research', 'Personal Learning', 'Other',
-        ],
-    },
-    {
-        id: 'occupation',
-        step: '03',
-        question: 'What best describes you?',
-        hint: 'Choose one',
-        multi: false,
-        options: [
-            'Founder / Co-founder', 'Solo Entrepreneur', 'Early-stage Startup',
-            'Product Manager', 'Product Designer', 'UX Researcher',
-            'Software Engineer', 'Full-stack Developer', 'Data Scientist',
-            'Growth Marketer', 'Content Creator', 'Brand Strategist',
-            'VC / Investor', 'Business Analyst', 'Consultant',
-            'Student', 'Academic / Researcher',
-            'Enterprise Professional', 'Freelancer', 'Other',
-        ],
-    },
-];
+import { questions } from '@/utils/data';
 
 // ── Background orbs ───────────────────────────────────────────────────────────
 function BackgroundOrbs() {
@@ -342,6 +292,7 @@ export default function OnboardingPage() {
             }
 
             const storedUser = localStorage.getItem("user");
+            
             if (storedUser) {
                 const user = JSON.parse(storedUser);
                 localStorage.setItem("user", JSON.stringify({ ...user, is_onboarded: true }));
@@ -381,7 +332,7 @@ export default function OnboardingPage() {
                 </div>
             </div>
         );
-    }
+    };
 
     return (
         <div className="min-h-screen flex items-stretch font-sans" style={{ backgroundColor: 'var(--background)' }}>

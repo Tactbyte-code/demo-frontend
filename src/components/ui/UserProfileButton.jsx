@@ -150,12 +150,12 @@ export default function UserProfileButton() {
                         </div>
 
                         {/* APPEARANCE */}
-                        <div className="flex items-center justify-between px-3 py-2">
+                        {/* <div className="flex items-center justify-between px-3 py-2">
                             <span className="text-xs font-medium text-muted">
                                 Appearance
                             </span>
                             <ThemeToggle />
-                        </div>
+                        </div> */}
 
                         {/* DIVIDER */}
                         <div

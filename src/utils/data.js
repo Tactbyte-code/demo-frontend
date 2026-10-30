@@ -1,3 +1,11 @@
+import {
+    LayoutDashboard,
+    Target,
+} from 'lucide-react';
+import { BsRobot } from "react-icons/bs";
+import { FaCheckCircle, FaReddit } from "react-icons/fa";
+import { FaGooglePlay } from "react-icons/fa";
+
 export const apiData = {
     "query": "gym in india",
     "subreddit": "r/Fitness_India",
@@ -714,4 +722,70 @@ export const reportData = {
         "duration_seconds": 212
     },
     "disclaimer": "This report supports, but does not replace, primary customer research. Scores are directional estimates, not probabilities of success."
-}
+};
+
+export const mainItems = [
+    { name: "Overview", icon: LayoutDashboard, href: "/dashboard" },
+];
+
+export const engineItems = [
+    { name: 'Reddit Analysis', icon: FaReddit, href: '/dashboard/reddit', color: "#FF4500" },
+    { name: 'Playstore Analysis', icon: FaGooglePlay, href: '/dashboard/playstore', color: "#4285F4" },
+    { name: 'Validate Idea', icon: FaCheckCircle, href: '/dashboard/validate-idea', color: "#10b981" },
+    { name: 'AI Workspace', icon: BsRobot, href: '/dashboard/ai-workspace', color: "#FF4500" },
+];
+
+export const leadGenerationItems = [
+    { name: 'AI Lead Engine', icon: Target, href: '/dashboard/ai-lead-engine/campaigns', color: "#10b981" },
+];
+
+export const questions = [
+    {
+        id: 'discovery',
+        step: '01',
+        question: 'How did you discover us?',
+        hint: 'Select all that apply',
+        multi: true,
+        options: [
+            'Twitter / X', 'LinkedIn', 'Instagram', 'YouTube',
+            'Google Search', 'DuckDuckGo', 'Bing',
+            'Friend or Colleague', 'Word of Mouth',
+            'Newsletter', 'Email Campaign',
+            'Reddit', 'Hacker News', 'Product Hunt',
+            'Blog or Article', 'Podcast', 'Webinar',
+            'App Store', 'Other',
+        ],
+    },
+    {
+        id: 'usage',
+        step: '02',
+        question: 'How will you use Demo?',
+        hint: 'Pick everything that fits',
+        multi: true,
+        options: [
+            'Market Research', 'Competitor Analysis', 'Trend Tracking',
+            'Product Ideation', 'Feature Validation', 'User Feedback Analysis',
+            'Building a Product', 'Launching a Startup',
+            'Marketing Insights', 'Content Strategy', 'Ad Research',
+            'E-commerce Strategy', 'Pricing Research',
+            'Client Consulting', 'Agency Work',
+            'Academic Research', 'Personal Learning', 'Other',
+        ],
+    },
+    {
+        id: 'occupation',
+        step: '03',
+        question: 'What best describes you?',
+        hint: 'Choose one',
+        multi: false,
+        options: [
+            'Founder / Co-founder', 'Solo Entrepreneur', 'Early-stage Startup',
+            'Product Manager', 'Product Designer', 'UX Researcher',
+            'Software Engineer', 'Full-stack Developer', 'Data Scientist',
+            'Growth Marketer', 'Content Creator', 'Brand Strategist',
+            'VC / Investor', 'Business Analyst', 'Consultant',
+            'Student', 'Academic / Researcher',
+            'Enterprise Professional', 'Freelancer', 'Other',
+        ],
+    },
+];

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getSummary } from '@/features/validate/api/validate.api'; // Adjust the import path as needed
+import { getSummary } from '@/features/validate/api/validate.api';
 
 export const useGetSummary = (queryId) => {
     return useQuery({
@@ -7,7 +7,7 @@ export const useGetSummary = (queryId) => {
         queryKey: ['validate-query', queryId],
         queryFn: ()=>getSummary(queryId),
         
-        // `enabled: !!queryId` ensures the request doesn't fire if the queryId is undefined 
+        // `enabled: !!queryId` ensures the request doesn't fire if the queryId is undefined
         // (which often happens on the very first render in Next.js before the router is ready)
         enabled: !!queryId,
         
