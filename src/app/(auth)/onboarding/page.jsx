@@ -8,6 +8,7 @@ import { auth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { getToken } from '@/utils/getToken';
 import { questions } from '@/utils/data';
+import { useCreditStore } from '@/store/useCreditStore';
 
 // ── Background orbs ───────────────────────────────────────────────────────────
 function BackgroundOrbs() {
@@ -235,6 +236,8 @@ export default function OnboardingPage() {
     const [error, setError] = useState("");
     const router = useRouter();
 
+    const { getCredits } = useCreditStore();
+
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
     useEffect(() => {
@@ -285,14 +288,15 @@ export default function OnboardingPage() {
 
             // ← read body only once
             const data = await response.json();
-            console.log('onboarding data: ', data);
 
             if (!response.ok) {
                 throw new Error(data.detail || "Submission failed");
-            }
+            };
+
+            await getCredits(true);
 
             const storedUser = localStorage.getItem("user");
-            
+
             if (storedUser) {
                 const user = JSON.parse(storedUser);
                 localStorage.setItem("user", JSON.stringify({ ...user, is_onboarded: true }));
@@ -351,7 +355,7 @@ export default function OnboardingPage() {
                         style={{ background: 'linear-gradient(135deg, var(--primary), var(--accent))' }}>
                         <Zap className="w-3.5 h-3.5 text-white fill-white" />
                     </div>
-                    <span className="text-sm font-black tracking-tight" style={{ color: 'var(--text-main)' }}>DEMO</span>
+                    <span className="text-sm font-black tracking-tight" style={{ color: 'var(--text-main)' }}>Problem Pulse</span>
                 </div>
 
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}

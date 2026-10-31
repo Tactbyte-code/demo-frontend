@@ -43,12 +43,18 @@ export const getStatus = async (queryId) => {
 export const getSummary = async (queryId) => {
     const response = await api.get(`/validate/query/${queryId}/summary`);
     console.log('final summary: ', response);
-    
+
     return response?.data;
 };
 
 export const getQueries = async (page = 1, pageSize = 10) => {
     const response = await api.get(`/validate/query?page=${page}&page_size=${pageSize}`);
-    if (response.statusText !== 'OK') throw new Error('Failed to fetch queries');
+    return response?.data;
+};
+
+export const unlockParameter = async (queryId, sectionName) => {
+    const response = await api.post(`/validate/query/${queryId}/unlock`, {
+        section_name: sectionName
+    });
     return response?.data;
 };
