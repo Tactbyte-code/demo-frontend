@@ -30,7 +30,7 @@ export default function DashboardLayout({ children }) {
     const [hasUnread, setHasUnread] = useState(false);
     const [ticketOpen, setTicketOpen] = useState(false);
 
-    const { credits } = useCreditStore();
+    const { credits, loadingCredits } = useCreditStore();
 
     useEffect(() => {
         const handleResize = () => {
@@ -217,7 +217,6 @@ export default function DashboardLayout({ children }) {
 
                     {/* RIGHT SIDE: Credit Counter, Conditional Buy Button & Profile */}
                     <div className="flex items-center gap-3 md:gap-4 ml-auto">
-                        {/* Credits Badge Display */}
                         <div
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold border transition-colors"
                             style={{
@@ -226,14 +225,21 @@ export default function DashboardLayout({ children }) {
                                 color: isLowCredits ? "var(--destructive)" : "var(--text-main)",
                             }}
                         >
-                            <Zap className="w-4 h-4 fill-current text-amber-500" />
-                            <span>{credits !== null ? credits.toLocaleString() : 0} Credits</span>
-                            {/* {loadingCredits ? (
-                                <Loader2 className="w-4 h-4 animate-spin text-muted" />
+                            {loadingCredits ? (
+                                <div className="flex items-center gap-1.5">
+                                    {/* <Zap className="w-4 h-4 fill-current text-amber-500 opacity-50" /> */}
+                                    <span className="flex items-center gap-0.5">
+                                        <span className="w-1.5 h-1.5 bg-current rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                                        <span className="w-1.5 h-1.5 bg-current rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                                        <span className="w-1.5 h-1.5 bg-current rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                                    </span>
+                                </div>
                             ) : (
                                 <>
+                                    <Zap className="w-4 h-4 fill-current text-amber-500" />
+                                    <span>{credits !== null ? credits.toLocaleString() : 0} Credits</span>
                                 </>
-                            )} */}
+                            )}
                         </div>
 
                         {/* Buy Credits Button (Shown only when credits < 30) */}

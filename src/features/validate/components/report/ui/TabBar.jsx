@@ -1,6 +1,6 @@
 // TabBar.jsx
-import React from 'react'
-import { Lock } from 'lucide-react'
+import React from 'react';
+import { Lock } from 'lucide-react';
 
 /** tabs: [{ key, label, badge?, locked? }] — badge undefined = none, null = "N/A". */
 export default function TabBar({ tabs, active, onChange, onLockedClick }) {

@@ -7,6 +7,7 @@ import { triggerSearch, generateSummary, getStatus, triggerFilter, triggerExtrac
 import { useGenerateContext } from '@/features/validate/hooks/useGenerateContext';
 import { STAGE_LABELS, STATUS, PIPELINE_STEPS, STATUS_TO_STEP } from '@/utils/validate/status';
 import { LoaderCircle, XCircle, RotateCcw, ArrowLeft } from 'lucide-react';
+import { useCreditStore } from '@/store/useCreditStore';
 
 const POLL_INTERVAL_MS = 3000;
 
@@ -21,6 +22,8 @@ const ValidateQueryIdPage = () => {
     const params = useParams();
     const router = useRouter();
     const queryId = params?.queryId
+
+    const { getCredits } = useCreditStore();
 
     const [currentStage, setCurrentStage] = useState(STATUS.INITIALIZED)
     const [currentStageLabel, setCurrentStageLabel] = useState(STAGE_LABELS[STATUS.INITIALIZED])
@@ -164,7 +167,7 @@ const ValidateQueryIdPage = () => {
                         setHasError(true)
                         setCurrentStageLabel("Failed to summarize. Please try again.")
                     }
-                    break
+                    break;
                 }
 
                 case STATUS.INITIALIZED:
@@ -178,9 +181,10 @@ const ValidateQueryIdPage = () => {
                 }
 
                 case STATUS.COMPLETED: {
-                    stopPolling()
-                    router.push(`/dashboard/validate-idea/${queryId}/summary`)
-                    break
+                    stopPolling();
+                    useCreditStore.setState({ loadingCredits: true });
+                    router.push(`/dashboard/validate-idea/${queryId}/summary`);
+                    break;
                 }
 
                 case STATUS.FAILED: {
@@ -194,7 +198,7 @@ const ValidateQueryIdPage = () => {
 
                 default: {
                     console.warn("Unhandled status from getStatus:", status)
-                    break
+                    break;
                 }
             }
         }
