@@ -114,7 +114,7 @@ export default function Navbar() {
     { name: "How It Works", path: "how-it-works", href: "/#how-it-works", icon: Briefcase },
     { name: "Market Friction", path: "market-friction", href: "/#market-friction", icon: AlertTriangle },
     { name: "Who Is It For", path: "who-for", href: "/#who-for", icon: Users },
-    { name: "Pricing", href: "/pricing", icon: Tag },
+    // { name: "Pricing", href: "/pricing", icon: Tag },
   ];
 
   const useCases = {
