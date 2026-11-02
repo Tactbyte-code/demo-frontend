@@ -18,6 +18,7 @@ import { SourcesList } from "./_components/SourcesList";
 import { SummaryResult } from "./_components/SummaryResult";
 import { useQueryClient } from "@tanstack/react-query";
 import { useGetSummary } from "@/features/reddit/hooks/useGetSummary";
+import { useCreditStore } from "@/store/useCreditStore";
 
 const POSTS_STATUSES = ["SEARCH_COMPLETE", "SUMMARIZING", "COMPLETED", "WEB_SEARCHING"];
 
@@ -42,6 +43,8 @@ export default function QueryResultPage() {
     const [autoSummarizeFired, setAutoSummarizeFired] = useState(false);
     const [isSummarized, setIsSummarized] = useState(false);
     const [isRequerying, setIsRequerying] = useState(false);
+
+    const { getCredits } = useCreditStore();
 
     const user_id = typeof window !== 'undefined'
         ? JSON.parse(localStorage?.getItem('user') || '{}')?.firebase_uid
@@ -72,7 +75,9 @@ export default function QueryResultPage() {
 
         try {
             const data = await getQueryResult(query_id);
-            console.log('final summary: ', data);
+            if (data) await getCredits(true);
+
+            // console.log('final summary: ', data);
 
             setSummary(data); // store full summary object
         } catch (e) {

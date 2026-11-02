@@ -12,7 +12,6 @@ import {
   Search,
   Briefcase,
   LayoutGrid,
-  Tag,
   Menu,
   X,
   ArrowRight,

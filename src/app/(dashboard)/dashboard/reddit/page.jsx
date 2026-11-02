@@ -11,6 +11,8 @@ import RedditQueryHistoryTable from "./_components/RedditQueryHistoryTable";
 import { useRouter } from "next/navigation";
 import QueryProcessingLoader from "./_components/QueryProcessingLoader";
 import { useQueryClient } from "@tanstack/react-query";
+import CreditPurchaseModal from "@/components/credits/CreditPurchaseModal";
+import { useCreditStore } from "@/store/useCreditStore";
 // import AILoader from "@/components/shared/AiLoader";
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
@@ -50,6 +52,7 @@ export default function RedditIntelligencePage() {
     const [cooldownSeconds, setCooldownSeconds] = useState(0);
     const [isOnCooldown, setIsOnCooldown] = useState(false);
     const [cooldownLoading, setCooldownLoading] = useState(true);
+    const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
 
     const textareaRef = useRef(null);
     const jobsIntervalRef = useRef(null);
@@ -60,8 +63,15 @@ export default function RedditIntelligencePage() {
     const user_id = localStorage?.getItem('user')?.firebase_uid;
     const queryClient = useQueryClient();
 
+    const { credits } = useCreditStore();
+
     const handleSubmitQuery = async (e) => {
         e?.preventDefault();
+
+        if (credits < 30) {
+            setIsCreditModalOpen(true);
+            return;
+        }
 
         setLoading(true);
         setError(null);
@@ -69,6 +79,7 @@ export default function RedditIntelligencePage() {
 
         try {
             const response = await createQuery(query);
+            console.log('query creation response: ', response);
 
             if (response) {
                 setQueryId(response.id);
@@ -303,6 +314,12 @@ export default function RedditIntelligencePage() {
             </div>
 
             <RedditQueryHistoryTable />
+
+            {/* Mount the modal outside of your standard document flow */}
+            <CreditPurchaseModal
+                isOpen={isCreditModalOpen}
+                onClose={() => setIsCreditModalOpen(false)}
+            />
         </div>
     );
 }

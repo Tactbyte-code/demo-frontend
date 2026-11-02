@@ -8,13 +8,18 @@ import PlaystoreQueryHistoryTable from "./_components/PlaystoreQueryHistoryTable
 import { useRouter } from "next/navigation";
 import AILoader from "@/components/shared/AiLoader";
 import { useQueryClient } from "@tanstack/react-query";
+import { useCreditStore } from "@/store/useCreditStore";
+import CreditPurchaseModal from "@/components/credits/CreditPurchaseModal";
 
 export default function AppAnalysisPage() {
 
     const [appUrl, setAppUrl] = useState("");
     const [error, setError] = useState(null);
     const [submitLoading, setSubmitLoading] = useState(false);
+    const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
     const router = useRouter();
+
+    const { credits } = useCreditStore();
 
     const user_id = typeof window !== 'undefined'
         ? JSON.parse(localStorage?.getItem('user') || '{}')?.firebase_uid
@@ -34,6 +39,12 @@ export default function AppAnalysisPage() {
 
     const submitPlaystoreQuery = async (e) => {
         e?.preventDefault();
+
+        if (credits < 15) {
+            setIsCreditModalOpen(true);
+            return;
+        };
+
         if (submitLoading) return;
         setSubmitLoading(true);
         setError(null);
@@ -188,6 +199,12 @@ export default function AppAnalysisPage() {
                     <PlaystoreQueryHistoryTable />
                 </div>
             </div>
+
+            {/* Mount the modal outside of your standard document flow */}
+            <CreditPurchaseModal
+                isOpen={isCreditModalOpen}
+                onClose={() => setIsCreditModalOpen(false)}
+            />
         </div>
     );
 }
