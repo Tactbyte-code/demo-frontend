@@ -17,6 +17,7 @@ import { SummaryResult } from "./_components/SummaryResult";
 import { ReviewsList } from "./_components/ReviewsList";
 import { useQueryClient } from "@tanstack/react-query";
 import { getReviews } from "@/features/playstore/api/getReviews";
+import { useCreditStore } from "@/store/useCreditStore";
 
 // Statuses that have reviews available
 const REVIEWS_STATUSES = ["FETCH_COMPLETE", "SUMMARIZING", "COMPLETED"];
@@ -42,6 +43,8 @@ export default function PlaystoreQueryDetailPage() {
 
     const queryClient = useQueryClient();
 
+    const { getCredits } = useCreditStore();
+
     // ── fetch helpers ────────────────────────────────────────────────────────────
     const fetchReviews = useCallback(async () => {
         try {
@@ -57,11 +60,11 @@ export default function PlaystoreQueryDetailPage() {
     const fetchResult = useCallback(async () => {
         try {
             const data = await getQueryResult(query_id);
-            console.log('result: ', data);
+            if (data) await getCredits(true);
 
             setSummary(data);
         } catch (e) {
-            console.error("[fetchResult]", e);
+            console.error("Fetch result: ", e);
         }
     }, [query_id]);
 

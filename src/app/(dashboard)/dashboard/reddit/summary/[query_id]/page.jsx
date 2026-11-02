@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { useGetSummary } from '@/features/reddit/hooks/useGetSummary';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { SummaryResult } from '../../query/[query_id]/_components/SummaryResult';
 import { useGetPosts } from '@/features/reddit/hooks/useGetPosts';
 import { LoadingSkeleton, PageShell } from '../../query/[query_id]/_components/Layout';
@@ -35,7 +35,6 @@ const page = () => {
 
     return (
         <PageShell>
-
             {/* Query Card */}
             <QueryCard
                 query={query}
@@ -44,7 +43,6 @@ const page = () => {
             />
 
             {!isRequerying && <SummaryResult data={data} sources={sources} approvedCount={10} />}
-
         </PageShell>
     )
 }

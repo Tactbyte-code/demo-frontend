@@ -41,7 +41,7 @@ const ValidateIdeaPage = () => {
             return;
         }
 
-        if (!canSubmit || loading) return
+        if (!canSubmit || loading) return;
 
         setLocalError(null);
 
@@ -93,7 +93,9 @@ const ValidateIdeaPage = () => {
                         <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center mx-auto mb-4 text-indigo-600 text-xl shadow-sm">
                             <FaLightbulb />
                         </div>
-                        <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">
+                        <h1
+                            className="text-3xl font-bold text-slate-900 tracking-tight mb-2"
+                        >
                             Validate Your Venture Idea
                         </h1>
                         <p className="text-slate-500 text-sm max-w-md mx-auto">
