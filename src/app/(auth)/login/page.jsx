@@ -327,8 +327,21 @@ export default function LoginPage() {
                     transition={{ duration: 0.4, ease: "easeOut" }}
                     className="w-full max-w-105"
                 >
-                    <div className="relative h-10 w-44 mb-10">
-                        <Image src="/images/logo_with_text_2.png" alt="Logo" fill sizes="176px" className="object-contain object-left" priority />
+                    <div className="flex items-center gap-0 mb-10">
+                        <div className="relative h-15 w-15 shrink-0">
+                            <Image
+                                src="/images/logo-new-no-bg.png"
+                                alt="Logo"
+                                fill
+                                sizes="176px"
+                                className="object-contain object-left"
+                                priority
+                            />
+                        </div>
+
+                        <span className="bg-linear-to-r from-[#7138D5] via-[#C12AAE] to-[#FF4D83] bg-clip-text text-transparent text-xl font-bold tracking-tight whitespace-nowrap">
+                            ProblemPulse
+                        </span>
                     </div>
 
                     <AnimatePresence mode="wait">

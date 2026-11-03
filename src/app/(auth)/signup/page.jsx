@@ -24,7 +24,7 @@ const body = Figtree({ subsets: ['latin'], variable: '--font-body', display: 'sw
 /* ───────────────────────── Brand & copy (edit freely) ───────────────────────── */
 
 const BRAND = "Problem Pulse";
-const LOGO_SRC = "/images/logo_favicon.png"; // copy the uploaded logo to public/images/
+const LOGO_SRC = "/images/logo-new-no-bg.png"; // copy the uploaded logo to public/images/
 
 const COPY = {
     headline: "Turn real conversations into product insight.",
@@ -144,7 +144,7 @@ function LogoMark({ size = 48, className = "" }) {
             className={`relative inline-block shrink-0 overflow-hidden rounded-full bg-white ${className}`}
             style={{ width: size, height: size }}
         >
-            <Image src={LOGO_SRC} alt="" fill sizes={`${size}px`} className="object-cover" priority />
+            <Image src={LOGO_SRC} alt="" fill sizes={`${size}px`} className="object-contain" priority />
         </span>
     );
 }
@@ -243,10 +243,10 @@ function Steps({ current }) {
                             <span
                                 aria-current={active ? "step" : undefined}
                                 className={`flex h-7 w-7 items-center justify-center rounded-full border-2 text-xs font-bold transition-colors ${done
-                                        ? "border-[var(--violet)] bg-[var(--violet)] text-white"
-                                        : active
-                                            ? "border-[var(--violet)] bg-white text-[var(--violet)]"
-                                            : "border-[var(--line)] bg-white text-[var(--subtle)]"
+                                    ? "border-[var(--violet)] bg-[var(--violet)] text-white"
+                                    : active
+                                        ? "border-[var(--violet)] bg-white text-[var(--violet)]"
+                                        : "border-[var(--line)] bg-white text-[var(--subtle)]"
                                     }`}
                             >
                                 {done ? <Check size={14} strokeWidth={3} /> : i + 1}
@@ -302,7 +302,10 @@ function BrandPanel() {
             {/* Brand */}
             <div className="relative flex items-center gap-3">
                 <LogoMark size={38} className="ring-2 ring-white/20" />
-                <span className=" text-lg font-bold tracking-tight">{BRAND}</span>
+
+                <span className="bg-linear-to-r from-[#7138D5] via-[#C12AAE] to-[#FF4D83] bg-clip-text text-transparent text-lg font-bold tracking-tight">
+                    {BRAND}
+                </span>
             </div>
 
             {/* Message + composition */}

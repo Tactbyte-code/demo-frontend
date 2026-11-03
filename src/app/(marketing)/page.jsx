@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react";
 import ComparisonSection from "@/components/ComparisonSection";
 import FAQSection from "@/components/FAQSection";
 import FeaturesSection from "@/components/FeaturesSection";
@@ -11,7 +12,6 @@ import SolutionSection from "@/components/SolutionSection";
 import TargetAudience from "@/components/TargetAudience";
 import Testimonials from "@/components/Testimonials";
 import AuthVerificationHandler from "@/components/AuthVerificationHandler";
-import React from "react";
 
 const page = () => {
 
@@ -19,15 +19,10 @@ const page = () => {
     <>
       <AuthVerificationHandler />
       <Hero />
-
       <ProblemSection />
-
       <SolutionSection />
-
       <FeaturesSection />
-
       <TargetAudience />
-
       <SampleInsights />
       <ComparisonSection />
       <Testimonials />
