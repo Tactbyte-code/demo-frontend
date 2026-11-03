@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 
-import { getQuery, getQueryStatus, getQueryResult, getQueryReviews, triggerFetch, triggerSummarize, retryFetch, retrySummarize } from "@/lib/api/playstore";
+import { getQuery, getQueryResult, triggerFetch, triggerSummarize, retryFetch, retrySummarize } from "@/lib/api/playstore";
 
 import { useQueryStatus } from "./_hooks/useQueryStatus";
 import { usePolling } from "./_hooks/usePolling";

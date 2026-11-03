@@ -5,7 +5,7 @@ import { createQuery } from '@/lib/api/reddit';
 import { useSearchParams } from 'next/navigation';
 import ClarificationComponent from '../_components/ClarificationComponent';
 import QueryProcessingLoader from '../_components/QueryProcessingLoader';
-import { useSidebarStore } from '@/context/useSidebarStore';
+import { useSidebarStore } from '@/store/useSidebarStore';
 import AILoader from '@/components/shared/AiLoader';
 
 const page = () => {

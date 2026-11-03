@@ -17,7 +17,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useSidebarStore } from "@/context/useSidebarStore";
+import { useSidebarStore } from "@/store/useSidebarStore";
 import { useQueryClient } from "@tanstack/react-query";
 import QueryCompletedPage from "../../../_components/QueryCompletedPage";
 
