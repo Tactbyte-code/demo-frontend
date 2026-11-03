@@ -7,8 +7,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import { useRouter } from 'next/navigation';
-import ThemeToggle from '@/components/ui/ThemeToggle';
 import { useQueryClient } from '@tanstack/react-query';
+import { useCreditStore } from '@/store/useCreditStore';
 
 export default function UserProfileButton() {
     const [user, setUser] = useState(null);
@@ -48,10 +48,17 @@ export default function UserProfileButton() {
 
     const handleLogout = async () => {
         await signOut(auth);
+
+        // Clear cached queries
         queryClient.clear();
+
+        // Reset Zustand credits
+        useCreditStore.getState().resetCredits();
+
         localStorage.removeItem("user");
         setUser(null);
         setIsProfileOpen(false);
+
         router.replace("/login");
     };
 

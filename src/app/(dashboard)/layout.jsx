@@ -7,16 +7,14 @@ import {
     PanelLeftClose,
     PanelLeftOpen,
     X,
-    Coins,
     Sparkles,
-    Loader2,
     Zap,
 } from 'lucide-react';
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import UserProfileButton from "@/components/ui/UserProfileButton";
-import { useSidebarStore } from "@/context/useSidebarStore";
+import { useSidebarStore } from "@/store/useSidebarStore";
 import Image from "next/image";
 import FeedbackModal from "@/components/shared/FeedbackModal";
 import TicketChatPopup, { SidebarTrigger } from "@/app/(dashboard)/tickets/page";
