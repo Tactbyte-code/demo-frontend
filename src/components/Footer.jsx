@@ -50,10 +50,21 @@ export default function Footer() {
 
                     {/* Left: Brand Section */}
                     <div className="lg:w-1/3 flex flex-col justify-center space-y-6">
-                        <Link href="/" className="flex items-center gap-2 group w-fit">
-                            <div className="relative h-10 w-50 rounded-full">
-                                <Image src="/images/logo_with_text_2.png" alt="Logo" fill sizes="(max-width: 640px) 100vw, 160px" className="object-contain" priority />
+                        <Link href="/" className="flex items-center gap-0 group w-fit">
+                            <div className="relative h-14 w-14 shrink-0">
+                                <Image
+                                    src="/images/logo-new-no-bg.png"
+                                    alt="Logo"
+                                    fill
+                                    sizes="(max-width: 640px) 100vw, 160px"
+                                    className="object-contain"
+                                    priority
+                                />
                             </div>
+
+                            <span className="bg-gradient-to-r from-[#7138D5] via-[#C12AAE] to-[#FF4D83] bg-clip-text text-transparent text-xl font-bold tracking-tight whitespace-nowrap">
+                                ProblemPulse
+                            </span>
                         </Link>
                         <p
                             className="text-sm leading-relaxed max-w-sm"
