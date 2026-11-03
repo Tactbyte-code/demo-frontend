@@ -104,11 +104,11 @@ export default function DashboardLayout({ children }) {
                                 <div className="mb-8">
                                     <Link
                                         href="/"
-                                        className="flex flex-row items-center no-underline group gap-2"
+                                        className="flex flex-row items-center no-underline group gap-0"
                                     >
-                                        <div className="relative h-10 w-40">
+                                        <div className="relative h-13 w-13 shrink-0">
                                             <Image
-                                                src="/images/logo_with_text_2.png"
+                                                src="/images/logo-new-no-bg.png"
                                                 alt="Logo"
                                                 fill
                                                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -116,16 +116,9 @@ export default function DashboardLayout({ children }) {
                                                 priority
                                             />
                                         </div>
-                                        <span
-                                            className="mt-1 sm:mt-0 shrink-0 flex items-center gap-1 px-2 py-1 text-[10px] tracking-wide font-bold uppercase rounded-full"
-                                            style={{
-                                                background: "linear-gradient(135deg, #16a34a, #22c55e)",
-                                                color: "white",
-                                                boxShadow: "0 2px 8px rgba(34, 197, 94, 0.25)",
-                                            }}
-                                        >
-                                            <Sparkles className="w-3 h-3" />
-                                            Beta
+
+                                        <span className="bg-gradient-to-r from-[#7138D5] via-[#C12AAE] to-[#FF4D83] bg-clip-text text-transparent text-xl font-bold tracking-tight whitespace-nowrap">
+                                            ProblemPulse
                                         </span>
                                     </Link>
                                 </div>

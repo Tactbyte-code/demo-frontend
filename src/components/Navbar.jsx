@@ -179,17 +179,21 @@ export default function Navbar() {
               }
             `}
           >
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2">
-              <div className="relative h-17 w-55">
+            {/* Logo + Title */}
+            <Link href="/" className="flex items-center gap-0">
+              <div className="relative h-18 w-18 shrink-0">
                 <Image
-                  src="/images/logo_with_text_2.png"
+                  src="/images/logo-new-no-bg.png"
                   alt="Logo"
                   fill
                   className="object-contain transition-all"
                   priority
                 />
               </div>
+
+              <span className="bg-linear-to-r from-[#7138D5] via-[#C12AAE] to-[#FF4D83] bg-clip-text text-transparent text-2xl font-bold tracking-tight whitespace-nowrap">
+                ProblemPulse
+              </span>
             </Link>
 
             {/* Center nav */}
