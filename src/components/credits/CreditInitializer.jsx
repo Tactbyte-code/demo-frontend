@@ -8,15 +8,28 @@ export default function CreditInitializer() {
   const { getCredits } = useCreditStore();
 
   useEffect(() => {
-    const fetchToken = async () => {
-      const token = await getToken();
+    const fetchCredits = async () => {
+      try {
+        const token = await getToken();
 
-      if (token) {
-        await getCredits(true);
-      };
+        if (token) {
+          await getCredits(true);
+        }
+      } catch (error) {
+        console.error("Failed to initialize credits: ", error);
+
+        // Ignore unauthenticated users.
+        if (
+          error instanceof Error &&
+          error.message === "Not authenticated"
+        ) {
+          return;
+        }
+
+      }
     };
 
-    fetchToken();
+    fetchCredits();
   }, [getCredits]);
 
   return null;
