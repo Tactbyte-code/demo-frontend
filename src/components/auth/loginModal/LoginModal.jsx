@@ -662,7 +662,7 @@ export default function LoginModal({
 
     return (
         <div
-            className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden bg-black/70 p-3 backdrop-blur-md sm:p-5"
+            className="fixed inset-0 z-100 flex items-center justify-center overflow-hidden bg-black/70 p-3 backdrop-blur-md sm:p-5"
             onMouseDown={(event) => {
                 if (event.target === event.currentTarget) {
                     handleClose();
