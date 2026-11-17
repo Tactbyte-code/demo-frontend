@@ -1,5 +1,5 @@
 import { FAILURE_MESSAGES } from "./constants";
-import { getToken } from "@/utils/getToken";
+import { getToken } from "@/lib/getToken";
 
 export function useStreamLabel(sources) {
     // console.log('stream sources: ', sources);

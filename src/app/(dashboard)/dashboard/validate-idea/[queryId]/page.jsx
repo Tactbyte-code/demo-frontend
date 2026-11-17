@@ -8,6 +8,9 @@ import { useGenerateContext } from '@/features/validate/hooks/useGenerateContext
 import { STAGE_LABELS, STATUS, PIPELINE_STEPS, STATUS_TO_STEP } from '@/utils/validate/status';
 import { LoaderCircle, XCircle, RotateCcw, ArrowLeft } from 'lucide-react';
 import { useCreditStore } from '@/store/useCreditStore';
+import { useAuthStore } from '@/store/authStore';
+import LoginModal from '@/components/auth/loginModal/LoginModal';
+import { claimGuestReports } from '@/features/guest/guest.api';
 
 const POLL_INTERVAL_MS = 3000;
 
@@ -33,6 +36,12 @@ const ValidateQueryIdPage = () => {
     );
     const [hasError, setHasError] = useState(false)
 
+    const [showLoginModal, setShowLoginModal] = useState(false);
+    const [completedQueryId, setCompletedQueryId] = useState(null);
+
+    const user = useAuthStore((state) => state.user);
+    const authLoading = useAuthStore((state) => state.loading);
+
     // 1. Initialize the mutation hook
     const { mutateAsync: triggerGenerateContext } = useGenerateContext();
 
@@ -49,6 +58,14 @@ const ValidateQueryIdPage = () => {
         if (targetIndex === currentIndex) return 'active';
         return 'upcoming';
     };
+
+    useEffect(() => {
+        if (authLoading || !completedQueryId) return;
+
+        if (!user) {
+            setShowLoginModal(true);
+        }
+    }, [authLoading, completedQueryId, user]);
 
     useEffect(() => {
         if (!queryId) return;
@@ -182,8 +199,26 @@ const ValidateQueryIdPage = () => {
 
                 case STATUS.COMPLETED: {
                     stopPolling();
-                    useCreditStore.setState({ loadingCredits: true });
-                    router.push(`/dashboard/validate-idea/${queryId}/summary`);
+
+                    useCreditStore.setState({
+                        loadingCredits: true,
+                    });
+
+                    setCompletedQueryId(queryId);
+
+                    // Wait until Firebase authentication state is resolved.
+                    if (authLoading) return;
+
+                    if (user) {
+                        // Authenticated visitor: navigate directly.
+                        router.push(
+                            `/dashboard/validate-idea/${queryId}/summary`
+                        );
+                    } else {
+                        // Anonymous visitor: ask them to log in.
+                        setShowLoginModal(true);
+                    }
+
                     break;
                 }
 
@@ -243,7 +278,7 @@ const ValidateQueryIdPage = () => {
             cancelled = true
             stopPolling()
         }
-    }, [queryId, router])
+    }, [queryId, router]);
 
     return (
         <div className="min-h-[91vh] flex flex-col items-center justify-center px-4 bg-slate-50 text-slate-900 py-12">
@@ -360,6 +395,30 @@ const ValidateQueryIdPage = () => {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {showLoginModal && (
+                <LoginModal
+                    onClose={() => setShowLoginModal(false)}
+                    onLoginSuccess={async () => {
+                        try {
+                            // Claim all reports created during the guest session.
+                            await claimGuestReports();
+
+                            setShowLoginModal(false);
+
+                            // Navigate only after successful report claiming.
+                            router.push(
+                                `/dashboard/validate-idea/${completedQueryId}/summary`
+                            );
+                        } catch (error) {
+                            console.error(
+                                "Failed to claim guest reports:",
+                                error
+                            );
+                        }
+                    }}
+                />
             )}
         </div>
     );

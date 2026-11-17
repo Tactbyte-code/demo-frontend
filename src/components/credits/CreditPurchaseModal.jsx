@@ -1,5 +1,6 @@
 "use client";
 
+import { createPortal } from "react-dom";
 import React, { useState, useEffect } from "react";
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { X, Zap, Sparkles, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
@@ -25,22 +26,37 @@ function AnimatedNumber({ value, prefix = "", suffix = "" }) {
     return <motion.span>{displayText}</motion.span>;
 }
 
-export default function CreditPurchaseModal({ isOpen, onClose, user, onPurchaseSuccess }) {
+export default function CreditPurchaseModal({
+    isOpen,
+    onClose,
+    user,
+    onPurchaseSuccess,
+    redirectAfterPurchase = true,
+}) {
     const router = useRouter();
 
     // Slider state: 1 to 9 sections (1 section = $3 / 22 credits)
     const [sections, setSections] = useState(1);
 
+    const { getCredits } = useCreditStore();
+    
     // Payment states
     const [error, setError] = useState("");
     const [purchasingPlan, setPurchasingPlan] = useState(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [needsRetry, setNeedsRetry] = useState(false); // payment done, unlock/refetch failed
 
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) return null;
+
     const customPrice = sections * 3;
     const customCredits = sections * 22;
 
-    const { getCredits } = useCreditStore();
 
     // Runs after a successful payment (and again when the user presses "Retry")
     const finishPurchase = async () => {
@@ -65,8 +81,14 @@ export default function CreditPurchaseModal({ isOpen, onClose, user, onPurchaseS
             return;
         }
 
-        // Path 2: default -> keep the overlay up; the page unmounts once navigation completes
-        router.push("/dashboard");
+        // Path 2: default
+        if (redirectAfterPurchase) {
+            router.push("/dashboard");
+        } else {
+            setPurchasingPlan(null);
+            setIsProcessing(false);
+            onClose();
+        }
     };
 
     const handleCheckout = (packId, price, credits) => {
@@ -88,7 +110,7 @@ export default function CreditPurchaseModal({ isOpen, onClose, user, onPurchaseS
         });
     };
 
-    return (
+    return createPortal(
         <AnimatePresence>
             {isOpen && (
                 <>
@@ -364,6 +386,7 @@ export default function CreditPurchaseModal({ isOpen, onClose, user, onPurchaseS
                     </div>
                 </>
             )}
-        </AnimatePresence>
+        </AnimatePresence>,
+        document.body
     );
 }

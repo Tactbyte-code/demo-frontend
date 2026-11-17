@@ -1,5 +1,6 @@
 import {
     LayoutDashboard,
+    ChartNoAxesCombined,
     Target,
 } from 'lucide-react';
 import { BsRobot } from "react-icons/bs";
@@ -787,5 +788,19 @@ export const questions = [
             'Student', 'Academic / Researcher',
             'Enterprise Professional', 'Freelancer', 'Other',
         ],
+    },
+];
+
+// new architecture - validate idea menu items
+export const validateMenuItems = [
+    {
+        title: "Dashboard",
+        href: "/validate-idea/dashboard",
+        icon: LayoutDashboard,
+    },
+    {
+        title: "Analysis",
+        href: "/validate-idea/analysis",
+        icon: ChartNoAxesCombined,
     },
 ];

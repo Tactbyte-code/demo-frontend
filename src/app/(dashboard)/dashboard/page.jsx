@@ -15,7 +15,7 @@ import { FaLightbulb, FaReddit } from "react-icons/fa";
 import { FaGooglePlay } from "react-icons/fa";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { getToken } from "@/utils/getToken";
+import { getToken } from "@/lib/getToken";
 import RedditQueryHistoryTable from "./reddit/_components/RedditQueryHistoryTable";
 import PlaystoreQueryHistoryTable from "./playstore/_components/PlaystoreQueryHistoryTable";
 import ValidateIdeaListPage from "@/features/validate/components/ValidateIdeaListPage";

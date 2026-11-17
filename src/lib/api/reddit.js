@@ -8,10 +8,11 @@ import api from "@/lib/axios";
  * Returns { id, status: "CLARIFYING", question } or { id, status: "CLARIFIED" }
  */
 export const createQuery = async (query) => {
-    const response = await api.post("/reddit/query", { query });
-    console.log('query creation: ', response);
+    const response = await api.post("/reddit/query", {
+        query,
+    });
 
-    return response?.data;
+    return response.data;
 };
 
 /**
@@ -42,7 +43,7 @@ export const getQuery = async (queryId) => {
  * Returns { id, status: "CLARIFYING", question } or { id, status: "CLARIFIED" }
  */
 export const submitClarification = async (queryId, answer, skip) => {
-    const response = await api.post(`/reddit/query/${queryId}/clarify`, { answer, skip});
+    const response = await api.post(`/reddit/query/${queryId}/clarify`, { answer, skip });
     console.log('clarification submitted: ', response);
     return response.data;
 };

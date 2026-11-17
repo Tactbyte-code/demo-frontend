@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useRef, useState } from 'react'
-import { CheckCircle, CheckCircle2, ChevronRight } from "lucide-react";
+import { CheckCircle, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ActionsTab } from './summary/ActionsTab';
 import { SummaryExport } from "./SummaryExport";
@@ -585,7 +585,6 @@ const MetaTab = ({ data }) => {
         </div>
     )
 };
-
 
 // ── Tab: Sources ──────────────────────────────────────────
 const SourcesTab = ({ sources = [], approvedCount = 0, maxApproved = 10, onToggle }) => {

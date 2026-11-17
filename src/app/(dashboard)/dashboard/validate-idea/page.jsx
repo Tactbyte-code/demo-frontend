@@ -9,6 +9,8 @@ import { useCreateQuery } from "@/features/validate/hooks/useCreateQuery";
 import LocationFetcher from "@/components/location/LocationFetcher";
 import { useCreditStore } from "@/store/useCreditStore";
 import CreditPurchaseModal from "@/components/credits/CreditPurchaseModal";
+import api from "@/lib/axios";
+import { getToken } from "@/lib/getToken";
 
 const ValidateIdeaPage = () => {
 
@@ -18,8 +20,6 @@ const ValidateIdeaPage = () => {
 
     const [localError, setLocalError] = useState(null);
     const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
-
-    const { credits } = useCreditStore();
 
     // 1. Add state to hold the location data
     const [locationData, setLocationData] = useState(null);
@@ -36,10 +36,10 @@ const ValidateIdeaPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault()
 
-        if (credits < 66) {
-            setIsCreditModalOpen(true);
-            return;
-        }
+        // if (credits < 66) {
+        //     setIsCreditModalOpen(true);
+        //     return;
+        // }
 
         if (!canSubmit || loading) return;
 
@@ -55,6 +55,14 @@ const ValidateIdeaPage = () => {
         }
 
         try {
+            const token = await getToken();
+
+            // Initialize a guest session only for anonymous visitors.
+            // The backend sets the HttpOnly guest_session cookie.
+            if (!token) {
+                await api.post("/guest/session");
+            };
+
             const data = await submitIdea(payload)
             console.log("Query created successfully: ", data)
 

@@ -19,8 +19,42 @@ import { SummaryResult } from "./_components/SummaryResult";
 import { useQueryClient } from "@tanstack/react-query";
 import { useGetSummary } from "@/features/reddit/hooks/useGetSummary";
 import { useCreditStore } from "@/store/useCreditStore";
+import { useAuthStore } from "@/store/authStore";
 
 const POSTS_STATUSES = ["SEARCH_COMPLETE", "SUMMARIZING", "COMPLETED", "WEB_SEARCHING"];
+
+function LoginModal({ onLogin }) {
+    return (
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-900 p-8 shadow-2xl text-center">
+
+                <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/40">
+                    <span className="text-2xl">🔒</span>
+                </div>
+
+                <h2 className="text-2xl font-bold mb-3">
+                    Your report is ready!
+                </h2>
+
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-7">
+                    Sign in or create an account to unlock your complete
+                    Reddit analysis report and save it to your account.
+                </p>
+
+                <button
+                    onClick={onLogin}
+                    className="w-full rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 transition-colors"
+                >
+                    Login / Sign up
+                </button>
+
+                <p className="text-xs text-gray-400 mt-4">
+                    Your analysis is ready. Sign in to view the results.
+                </p>
+            </div>
+        </div>
+    );
+}
 
 export default function QueryResultPage() {
 
@@ -43,6 +77,21 @@ export default function QueryResultPage() {
     const [autoSummarizeFired, setAutoSummarizeFired] = useState(false);
     const [isSummarized, setIsSummarized] = useState(false);
     const [isRequerying, setIsRequerying] = useState(false);
+
+    const user = useAuthStore((state) => state.user);
+    const authLoading = useAuthStore((state) => state.loading);
+    const [showLoginModal, setShowLoginModal] = useState(false);
+
+    useEffect(() => {
+        if (
+            status === "COMPLETED" &&
+            isSummarized &&
+            summary &&
+            !authLoading
+        ) {
+            setShowLoginModal(!user);
+        }
+    }, [status, isSummarized, summary, authLoading, user]);
 
     const { getCredits } = useCreditStore();
 
@@ -356,11 +405,36 @@ export default function QueryResultPage() {
                 />
             )}
 
-            {status === "COMPLETED" && isSummarized && !isRequerying && (
-                <>
-                    <SummaryResult data={summary} sources={sources} approvedCount={10} onToggleSource={handleToggleApproval} />
-                </>
-            )}
+            {status === "COMPLETED" &&
+                isSummarized &&
+                !isRequerying &&
+                summary && (
+                    <div className="relative">
+                        {/* Summary */}
+                        <div
+                            className={
+                                !user
+                                    ? "blur-md select-none pointer-events-none"
+                                    : ""
+                            }
+                        >
+                            <SummaryResult
+                                data={summary}
+                                sources={sources}
+                                approvedCount={10}
+                                onToggleSource={handleToggleApproval}
+                            />
+                        </div>
+
+                        {/* Login Modal */}
+                        {showLoginModal && !user && (
+                            <LoginModal
+                                onLogin={() => router.push("/login")}
+                            />
+                        )}
+
+                    </div>
+                )}
         </PageShell>
     );
 }

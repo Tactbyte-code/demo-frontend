@@ -1,6 +1,6 @@
 
-import api from '@/lib/axios';
-import { create } from 'zustand';
+import api from "@/lib/axios";
+import { create } from "zustand";
 
 export const useCreditStore = create((set, get) => ({
     credits: 0,
@@ -10,24 +10,23 @@ export const useCreditStore = create((set, get) => ({
     setLoadingCredits: (status) => set({ loadingCredits: status }),
 
     // Reset credits when the user logs out
-    resetCredits: () => set({
-        credits: 0,
-        loadingCredits: false,
-        hasFetched: false,
-    }),
+    resetCredits: () =>
+        set({
+            credits: 0,
+            loadingCredits: false,
+            hasFetched: false,
+        }),
 
     getCredits: async (forceRefresh = false) => {
-        console.log('get credits called');
-
         if (get().hasFetched && !forceRefresh) return;
 
         set({ loadingCredits: true });
 
         try {
-            const response = await api.get('/users/credits');
+            const response = await api.get("/credits/balance");
 
             set({
-                credits: response.data?.credits ?? 0,
+                credits: response.data?.balance ?? 0,
                 hasFetched: true,
             });
         } catch (error) {
@@ -35,18 +34,20 @@ export const useCreditStore = create((set, get) => ({
 
             set({
                 credits: 0,
-                hasFetched: false, // Allow retrying on failure
+                hasFetched: false,
             });
         } finally {
             set({ loadingCredits: false });
         }
     },
 
-    addCreditsLocally: (amount) => set((state) => ({
-        credits: state.credits + amount
-    })),
+    addCreditsLocally: (amount) =>
+        set((state) => ({
+            credits: state.credits + amount,
+        })),
 
-    deductCreditsLocally: (amount) => set((state) => ({
-        credits: state.credits - amount
-    }))
+    deductCreditsLocally: (amount) =>
+        set((state) => ({
+            credits: Math.max(0, state.credits - amount),
+        })),
 }));
