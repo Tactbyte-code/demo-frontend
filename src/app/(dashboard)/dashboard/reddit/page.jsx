@@ -1,19 +1,18 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ChevronRight, RefreshCcw, Sparkles, CheckCircle2, Clock, AlertCircle, Timer, ClockFading } from "lucide-react";
-import { getToken } from "@/utils/getToken";
+import { ArrowRight, Sparkles, CheckCircle2, AlertCircle, Timer } from "lucide-react";
 import Link from "next/link";
-import ClarificationComponent from './_components/ClarificationComponent';
-import { createQuery, getQueries } from "@/lib/api/reddit";
+import { createQuery } from "@/lib/api/reddit";
 import RedditQueryHistoryTable from "./_components/RedditQueryHistoryTable";
 import { useRouter } from "next/navigation";
 import QueryProcessingLoader from "./_components/QueryProcessingLoader";
 import { useQueryClient } from "@tanstack/react-query";
 import CreditPurchaseModal from "@/components/credits/CreditPurchaseModal";
 import { useCreditStore } from "@/store/useCreditStore";
-// import AILoader from "@/components/shared/AiLoader";
+import { getToken } from "@/lib/getToken";
+import api from "@/lib/axios";
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const EXAMPLES = [
@@ -68,16 +67,24 @@ export default function RedditIntelligencePage() {
     const handleSubmitQuery = async (e) => {
         e?.preventDefault();
 
-        if (credits < 30) {
-            setIsCreditModalOpen(true);
-            return;
-        }
+        // if (credits < 30) {
+        //     setIsCreditModalOpen(true);
+        //     return;
+        // }
 
         setLoading(true);
         setError(null);
         setStatus(null);
 
         try {
+            const token = await getToken();
+
+            // Initialize a guest session only for anonymous visitors.
+            // The backend sets the HttpOnly guest_session cookie.
+            if (!token) {
+                await api.post("/guest/session");
+            }
+
             const response = await createQuery(query);
             console.log('query creation response: ', response);
 

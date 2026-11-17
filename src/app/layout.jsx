@@ -1,12 +1,14 @@
 import { Poppins, Geist } from "next/font/google";
-import "./globals.css";
 import { Providers } from "@/providers/Providers";
-import AuthGuard from "@/middleware/AuthGuard";
+import { Analytics } from "@vercel/analytics/next";
 import { cn } from "@/lib/utils";
-import { Analytics } from '@vercel/analytics/next';
-import CreditInitializer from "@/components/credits/CreditInitializer";
+import "./globals.css";
+import Script from "next/script";
 
-const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
+const geist = Geist({
+  subsets: ["latin"],
+  variable: "--font-sans",
+});
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -57,41 +59,40 @@ export default function RootLayout({ children }) {
           }}
         />
       </head>
+
       <body
         className={`
-            ${poppins.variable}
-            antialiased
-            font-sans
-            bg-background
-            text-foreground
-            selection:bg-primary/20
-            selection:text-primary
+          ${poppins.variable}
+          antialiased
+          font-sans
+          bg-background
+          text-foreground
+          selection:bg-primary/20
+          selection:text-primary
         `}
       >
-        {/* Invisible component that fetches credits on app load */}
-
         <Providers>
-          <AuthGuard>
-            <CreditInitializer />
-            {children}
-          </AuthGuard>
+          {children}
         </Providers>
 
         <Analytics />
+
+        {/* script for chatbot from wazlly */}
+        {/* <Script id="wazlly-chat-config" strategy="afterInteractive">
+          {`
+    window.aiChatConfig = {
+      siteId: "d8266103-3507-436a-86f1-0a831edae3a8",
+      channelId: "f001218b-321e-4282-aeca-248759731d46",
+      url: "https://wazlly.com"
+    };
+  `}
+        </Script>
+
+        <Script
+          src="https://wazlly.com/widget/widget.js"
+          strategy="afterInteractive"
+        /> */}
       </body>
     </html>
   );
 }
-
-// Auth flow logic ->
-// Every page load → AuthGuard runs
-//         ↓
-// Is this a public route ? → skip all checks
-//         ↓
-// No Firebase user → redirect to /login
-//         ↓
-// is_onboarded = false → redirect to /onboarding
-//         ↓
-// is_onboarded = true + on login/signup → redirect to /dashboard
-//         ↓
-// All good → render page normally

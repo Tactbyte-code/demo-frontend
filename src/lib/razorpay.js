@@ -1,6 +1,6 @@
 // lib/razorpay.js
 
-import { getToken } from "@/utils/getToken";
+import { getToken } from "@/lib/getToken";
 
 let scriptPromise = null;
 

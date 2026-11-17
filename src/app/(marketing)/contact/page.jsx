@@ -13,7 +13,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { getToken } from '@/utils/getToken';
+import { getToken } from '@/lib/getToken';
 
 export default function ContactPage() {
     const [user, setUser] = useState(null);

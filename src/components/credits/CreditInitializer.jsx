@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useCreditStore } from "@/store/useCreditStore";
-import { getToken } from "@/utils/getToken";
+import { getToken } from "@/lib/getToken";
 
 export default function CreditInitializer() {
   const { getCredits } = useCreditStore();
@@ -16,7 +16,6 @@ export default function CreditInitializer() {
           await getCredits(true);
         }
       } catch (error) {
-        console.error("Failed to initialize credits: ", error);
 
         // Ignore unauthenticated users.
         if (
@@ -25,6 +24,8 @@ export default function CreditInitializer() {
         ) {
           return;
         }
+
+        console.error("Failed to initialize credits: ", error);
 
       }
     };

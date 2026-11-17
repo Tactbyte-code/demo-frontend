@@ -122,7 +122,7 @@ export default function ReportView({ report, queryId, onRefetch }) {
       {/* Back Button */}
       <div className="mx-auto max-w-7xl px-4 pt-6 sm:px-6">
         <Link
-          href="/dashboard/validate-idea"
+          href="/validate-idea/analysis"
           className="group inline-flex items-center text-sm font-medium text-slate-500 transition-colors hover:text-slate-900"
         >
           <div className='bg-background rounded-full p-1 mr-2 transition-transform group-hover:-translate-x-1'>

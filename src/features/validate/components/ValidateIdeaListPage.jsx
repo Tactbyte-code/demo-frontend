@@ -6,6 +6,7 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { Lightbulb, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useGetQueries } from '../hooks/useGetQueries'
 import { STATUS_TIER } from '@/utils/data'
+import { useAuthStore } from '@/store/authStore'
 
 const getStatusTier = (status) =>
     STATUS_TIER[String(status || '').toUpperCase()] || { label: formatLabel(status) || 'Unknown', color: 'var(--text-muted)', tint: 'var(--surface-raised)' }
@@ -16,8 +17,8 @@ function formatLabel(key) {
 
 const getHrefForQuery = (query) =>
     String(query?.status || '').toUpperCase() === 'COMPLETED'
-        ? `/dashboard/validate-idea/${query.id}/summary`
-        : `/dashboard/validate-idea/${query.id}`
+        ? `/validate-idea/analysis/${query.id}/report`
+        : `/validate-idea/analysis/${query.id}`
 
 const formatDate = (isoString) => {
     if (!isoString) return null
@@ -58,7 +59,7 @@ const QueryRow = ({ query, index, serialNumber, reduceMotion }) => {
                     {String(serialNumber).padStart(2, '0')}
                 </span>
                 <h3 className="text-[15px] font-medium text-[var(--text-main)] truncate pr-4">
-                    {query?.title || 'Untitled idea'}
+                    {query?.idea || 'Untitled idea'}
                 </h3>
                 <div>
                     <span
@@ -81,17 +82,15 @@ const ValidateIdeaListPage = () => {
     const [page, setPage] = useState(1)
     const pageSize = 10
 
-    // Safely parse localStorage for Next.js SSR to avoid hydration errors
-    const userId = typeof window !== 'undefined'
-        ? JSON.parse(localStorage.getItem('user') || '{}')?.firebase_uid
-        : null;
+    const user = useAuthStore((state) => state.user);
+    const userId = user?.uid ?? null;
 
     const {
         data,
         isLoading,
         isError,
         error,
-        isPlaceholderData // Useful to show a subtle loading state while fetching next page
+        isPlaceholderData,
     } = useGetQueries(userId, page, pageSize);
 
     // Extract items safely from the new paginated response structure.

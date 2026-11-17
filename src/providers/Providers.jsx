@@ -1,21 +1,27 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ThemeProvider } from "next-themes";
 import { useState } from "react";
+import {
+    QueryClient,
+    QueryClientProvider,
+} from "@tanstack/react-query";
+import { ThemeProvider } from "next-themes";
+import AuthInitializer from "@/components/auth/AuthInitializer";
 
 export function Providers({ children }) {
-
-    const [queryClient] = useState(() => new QueryClient({
-        defaultOptions: {
-            queries: {
-                // staleTime: 5 * 60 * 1000, // 5 min → no refetch till this time -> // ms → sec → min → hr
-                cacheTime: 10 * 60 * 1000, // 10 min -> data will be stored in the cache till this time
-                retry: 2,
-                refetchOnWindowFocus: false, // optional (good for dashboards)            
-            },
-        },
-    }));
+    const [queryClient] = useState(
+        () =>
+            new QueryClient({
+                defaultOptions: {
+                    queries: {
+                        // staleTime: 5 * 60 * 1000,
+                        gcTime: 10 * 60 * 1000,
+                        retry: 2,
+                        refetchOnWindowFocus: false,
+                    },
+                },
+            })
+    );
 
     return (
         <QueryClientProvider client={queryClient}>
@@ -24,10 +30,12 @@ export function Providers({ children }) {
                 defaultTheme="light"
                 enableSystem={false}
                 disableTransitionOnChange={true}
-                themes={['light', 'dark']}
+                themes={["light", "dark"]}
                 storageKey="theme"
             >
-                {children}
+                <AuthInitializer>
+                    {children}
+                </AuthInitializer>
             </ThemeProvider>
         </QueryClientProvider>
     );

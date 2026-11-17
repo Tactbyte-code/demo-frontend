@@ -6,7 +6,7 @@ import { ArrowRight, ArrowLeft, Check, Zap, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { getToken } from '@/utils/getToken';
+import { getToken } from '@/lib/getToken';
 import { questions } from '@/utils/data';
 import { useCreditStore } from '@/store/useCreditStore';
 
