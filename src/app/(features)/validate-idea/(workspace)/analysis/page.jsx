@@ -8,7 +8,6 @@ import AnalysisList from "@/features/validate/components/workspace/analysis/Anal
 import AnalysisEmptyState from "@/features/validate/components/workspace/analysis/AnalysisEmptyState";
 import { useAuthStore } from "@/store/authStore";
 import { useGetQueries } from "@/features/validate/hooks/useGetQueries";
-import ValidateIdeaListPage from "@/features/validate/components/ValidateIdeaListPage";
 
 const PAGE_SIZE = 10;
 

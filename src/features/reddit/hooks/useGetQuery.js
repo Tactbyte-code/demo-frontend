@@ -3,7 +3,7 @@ import { getQuery } from "../api/getQuery";
 
 export const useGetQuery = (queryId) => {
     return useQuery({
-        queryKey: ["query", queryId],
+        queryKey: ["reddit-query", queryId],
         queryFn: () => getQuery(queryId),
         staleTime: 5 * 60 * 1000,
     });

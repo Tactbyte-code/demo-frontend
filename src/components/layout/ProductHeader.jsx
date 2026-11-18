@@ -130,7 +130,16 @@ export default function ProductHeader() {
                     {/* Auth CTA */}
                     <motion.div layout transition={transition} className="shrink-0">
                         {user ? (
-                            <Link href="/validate-idea/analysis" className="group inline-flex h-10 items-center gap-2 rounded-lg bg-linear-to-r from-[#7628ED] via-[#B22AE1] to-[#F02D83] px-3.5 text-xs font-bold text-white shadow-[0_5px_18px_rgba(147,38,213,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_9px_25px_rgba(147,38,213,0.32)] sm:h-12 sm:px-5 sm:text-sm">
+                            <Link
+                                href={
+                                    pathname.startsWith("/reddit")
+                                        ? "/reddit/analysis"
+                                        : pathname.startsWith("/playstore")
+                                            ? "/playstore/analysis"
+                                            : "/validate-idea/analysis"
+                                }
+                                className="group inline-flex h-10 items-center gap-2 rounded-lg bg-linear-to-r from-[#7628ED] via-[#B22AE1] to-[#F02D83] px-3.5 text-xs font-bold text-white shadow-[0_5px_18px_rgba(147,38,213,0.22)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_9px_25px_rgba(147,38,213,0.32)] sm:h-12 sm:px-5 sm:text-sm"
+                            >
                                 <LayoutDashboard className="h-4 w-4" />
                                 <span className="hidden sm:inline">My Workspace</span>
                                 <span className="sm:hidden">Workspace</span>

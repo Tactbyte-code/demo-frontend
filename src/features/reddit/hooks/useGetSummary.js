@@ -3,7 +3,7 @@ import { getSummary } from "../api/getSummary";
 
 export const useGetSummary = (queryId) => {
     return useQuery({
-        queryKey: ["summary", queryId],
+        queryKey: ["reddit-summary", queryId],
         queryFn: () => getSummary(queryId),
         staleTime: 5 * 60 * 1000,
     });

@@ -46,19 +46,18 @@ export default function RedditHero() {
 
         const trimmedQuery = query.trim();
 
-        if (trimmedQuery.length < 3) {
-            setError("Please enter at least 3 characters.");
+        if (trimmedQuery.length < 10) {
+            setError("Your query must be atleast 10 characters long.");
             return;
         }
 
         try {
             setError("");
-
             const data = await submitRedditQuery(trimmedQuery);
 
             if (!data?.id) {
                 throw new Error("No query ID was returned from the server.");
-            }
+            };
 
             router.push(`/reddit/analysis/${data.id}`);
         } catch (err) {
