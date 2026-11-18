@@ -30,8 +30,8 @@ export default function WorkspaceCreditCard({ onTopUp, collapsed = false }) {
                     title={`${credits.toLocaleString("en-IN")} credits`}
                     className="
                     flex h-12 w-12 flex-col items-center justify-center
-                    rounded-lg border border-amber-300/20
-                    bg-amber-400/10 text-amber-300
+                    rounded-full border border-amber-300/20
+                    bg-amber-400 text-black
                 "
                 >
                     <Coins size={22} />
@@ -65,7 +65,7 @@ export default function WorkspaceCreditCard({ onTopUp, collapsed = false }) {
     return (
         <div className="
             relative overflow-hidden
-            rounded-xl
+            rounded-lg
             border border-amber-300/20
             bg-linear-to-br from-[#49300D] via-[#38280F] to-[#30210D]
             p-3.5
@@ -148,7 +148,7 @@ export default function WorkspaceCreditCard({ onTopUp, collapsed = false }) {
                 onClick={onTopUp}
                 className="
                     relative mt-4 flex w-full items-center justify-center gap-2
-                    rounded-lg bg-amber-400 px-3 py-2
+                    rounded-md bg-amber-400 px-3 py-2.5
                     text-xs font-semibold text-[#30200A]
                     transition-colors
                     hover:bg-amber-300
