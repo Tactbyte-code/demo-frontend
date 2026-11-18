@@ -25,48 +25,23 @@ export default function AnalysisPage() {
     const userId = user?.uid ?? null;
 
     const {
-        data,
+        data: analyses = [],
         isLoading,
         isError,
         error,
         isPlaceholderData,
     } = useGetQueries(userId, page, PAGE_SIZE);
 
-    // Support common paginated API response shapes.
-    const response = data?.data ?? data;
-
-    const analyses = useMemo(() => {
-        const items =
-            response?.items ??
-            response?.queries ??
-            response?.results ??
-            [];
-
-        return Array.isArray(items) ? items : [];
-    }, [response]);
-
-    const total = Number(
-        response?.total ??
-        response?.total_count ??
-        response?.count ??
-        analyses.length
-    );
-
+    const total = analyses.length;
     const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
-    const stats = useMemo(() => {
-        return {
-            total: analyses.length,
-            completed: analyses.filter(
-                (item) => item.status?.toLowerCase() === "completed"
-            ).length,
-            processing: analyses.filter((item) =>
-                ["created", "queued", "pending", "processing", "running"].includes(
-                    item.status?.toLowerCase()
-                )
-            ).length,
-        };
-    }, [analyses]);
+    const stats = useMemo(() => ({
+        total,
+        completed: analyses.filter((item) => item.status?.toLowerCase() === "completed").length,
+        processing: analyses.filter((item) =>
+            ["created", "queued", "pending", "processing", "running"].includes(item.status?.toLowerCase())
+        ).length,
+    }), [analyses, total]);
 
     const handleOpenAnalysis = (queryId, status) => {
         if (status?.toLowerCase() === "completed") {
