@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -14,6 +13,9 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import ProductHeader from "@/components/layout/ProductHeader";
 import { useCreateQuery } from "../../hooks/useCreateQuery";
+import { useAuthStore } from "@/store/authStore";
+import { useCreditStore } from "@/store/useCreditStore";
+import CreditPurchaseModal from "@/components/credits/CreditPurchaseModal";
 
 const insights = [
     {
@@ -41,23 +43,47 @@ export default function RedditHero() {
 
     const { mutateAsync: submitRedditQuery, isPending } = useCreateQuery();
 
+    const user = useAuthStore((state) => state.user);
+    const getCredits = useCreditStore((state) => state.getCredits);
+
+    const [showCreditPurchaseModal, setShowCreditPurchaseModal] = useState(false);
+    const [isCheckingCredits, setIsCheckingCredits] = useState(false);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         const trimmedQuery = query.trim();
 
         if (trimmedQuery.length < 10) {
-            setError("Your query must be atleast 10 characters long.");
+            setError("Your query must be at least 10 characters long.");
             return;
         }
 
         try {
             setError("");
+
+            if (user) {
+                setIsCheckingCredits(true);
+
+                await getCredits(true);
+
+                const { credits, hasFetched } = useCreditStore.getState();
+
+                if (!hasFetched) {
+                    throw new Error("Unable to verify your credit balance. Please try again.");
+                }
+
+                if (credits < 30) {
+                    setShowCreditPurchaseModal(true);
+                    return;
+                }
+            }
+
             const data = await submitRedditQuery(trimmedQuery);
 
             if (!data?.id) {
                 throw new Error("No query ID was returned from the server.");
-            };
+            }
 
             router.push(`/reddit/analysis/${data.id}`);
         } catch (err) {
@@ -66,6 +92,8 @@ export default function RedditHero() {
                 err.message ||
                 "Failed to start Reddit analysis."
             );
+        } finally {
+            setIsCheckingCredits(false);
         }
     };
 
@@ -118,11 +146,11 @@ export default function RedditHero() {
                         </div>
 
                         {/* Description */}
-                        <p className="mx-auto mt-5 max-w-[620px] text-sm leading-7 text-[#77716F] sm:text-base">
+                        {/* <p className="mx-auto mt-5 max-w-[620px] text-sm leading-7 text-[#77716F] sm:text-base">
                             Explore Reddit conversations to uncover real
                             opinions, customer pain points, and opportunities
                             hiding in your market.
-                        </p>
+                        </p> */}
 
                         {/* Query box with animated light effect */}
                         <div className="relative mx-auto mt-9 w-full max-w-[740px]">
@@ -237,10 +265,15 @@ export default function RedditHero() {
 
                                     <button
                                         type="submit"
-                                        disabled={isPending || !query.trim()}
+                                        disabled={isPending || isCheckingCredits || !query.trim()}
                                         className="flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-lg bg-[#FF4500] px-7 text-sm font-bold text-white shadow-md shadow-[#FF4500]/20 transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#E83F00] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
                                     >
-                                        {isPending ? (
+                                        {isCheckingCredits ? (
+                                            <>
+                                                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                                                Analyzing...
+                                            </>
+                                        ) : isPending ? (
                                             <>
                                                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                                                 Analyzing...
@@ -339,6 +372,14 @@ export default function RedditHero() {
                     </div>
                 </main>
             </section>
+
+            <CreditPurchaseModal
+                isOpen={showCreditPurchaseModal}
+                onClose={() => setShowCreditPurchaseModal(false)}
+                user={user}
+                onPurchaseSuccess={() => getCredits(true)}
+                redirectAfterPurchase={true}
+            />
         </>
     );
 }

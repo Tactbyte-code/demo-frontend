@@ -1,4 +1,3 @@
-
 import api from "@/lib/axios";
 import { create } from "zustand";
 
@@ -24,6 +23,7 @@ export const useCreditStore = create((set, get) => ({
 
         try {
             const response = await api.get("/credits/balance");
+            console.log('get credits: ', response);
 
             set({
                 credits: response.data?.balance ?? 0,
