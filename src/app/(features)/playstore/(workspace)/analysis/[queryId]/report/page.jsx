@@ -588,7 +588,7 @@ export default function PlaystoreReportPage() {
             <div className="flex min-h-[91vh] w-full flex-col items-center justify-center gap-4 px-4 text-center">
                 <p className="text-sm font-medium text-rose-600">We couldn&apos;t load this report.</p>
                 <button
-                    onClick={() => router.push("/dashboard/playstore")}
+                    onClick={() => router.push("/playstore")}
                     className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 hover:border-emerald-300"
                 >
                     <ArrowLeft size={16} /> Back
@@ -614,7 +614,7 @@ export default function PlaystoreReportPage() {
     return (
         <div className="mx-auto w-full max-w-5xl px-4 py-8">
             <button
-                onClick={() => router.push("/dashboard/playstore")}
+                onClick={() => router.push("/playstore")}
                 className="mb-5 flex cursor-pointer items-center gap-2 text-xs font-semibold uppercase tracking-widest text-slate-400 transition-colors hover:text-[#01875F]"
             >
                 <ArrowLeft className="h-3.5 w-3.5" /> Back
