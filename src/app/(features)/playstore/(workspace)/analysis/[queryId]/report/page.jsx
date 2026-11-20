@@ -27,7 +27,7 @@ import { useAuthStore } from "@/store/authStore";
 import { getQueryResult } from "@/lib/api/playstore";
 import { getReviews } from "@/features/playstore/api/getReviews";
 import { usePlaystoreQueryStatus } from "@/features/playstore/hooks/usePlaystoreAnalysis";
-import { PSTATUS } from "@/features/playstore/utils/status";
+import { PSTATUS } from "@/utils/playstore/status";
 
 // ── Data hooks ────────────────────────────────────────────────────────────
 const usePlaystoreResult = (queryId, enabled) =>
