@@ -23,6 +23,7 @@ import {
 } from "@/utils/reddit/status";
 import ClarifyPanel from "@/features/reddit/components/report/ClarifyPanel";
 import { useAuthStore } from "@/store/authStore";
+import { claimGuestReports } from "@/features/guest/guest.api";
 // import { SummaryResult } from "@/app/dashboard/reddit/query/[query_id]/_components/SummaryResult";
 // import { usePostApproval } from "@/app/dashboard/reddit/query/[query_id]/_hooks/usePostApproval";
 

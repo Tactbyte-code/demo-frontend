@@ -10,7 +10,7 @@ export default function RedditAnalysisHeader({ isAuthenticated, onNewAnalysis })
 
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-2xl">
-                        Reddit Analysis
+                        Your Analysis
                     </h1>
 
                     <p className="mt-0 max-w-xl text-sm leading-6 text-slate-600">

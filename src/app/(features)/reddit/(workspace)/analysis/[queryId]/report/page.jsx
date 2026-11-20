@@ -287,7 +287,7 @@ const ThemesTab = ({ data }) => {
                         <button
                             key={t.id}
                             onClick={() => setActiveId(t.id)}
-                            className={`flex w-[200px] shrink-0 cursor-pointer flex-col items-start rounded-xl border px-3.5 py-3 text-left transition-all lg:w-full ${active
+                            className={`flex w-50 shrink-0 cursor-pointer flex-col items-start rounded-xl border px-3.5 py-3 text-left transition-all lg:w-full ${active
                                     ? "border-[#FF4500] bg-orange-50 shadow-sm ring-1 ring-orange-200"
                                     : "border-orange-100 bg-white hover:border-orange-300 hover:bg-orange-50/40"
                                 }`}
@@ -562,13 +562,15 @@ export default function RedditReportPage() {
     const user = useAuthStore((s) => s.user);
     const authLoading = useAuthStore((s) => s.loading);
 
-    const analysisPath = `/dashboard/reddit/analysis/${queryId}`;
+    const analysisPath = `/reddit/analysis/${queryId}`;
 
     const { data: queryData, isLoading: queryLoading } = useRedditQueryStatus(queryId);
     const isCompleted = queryData?.status === RSTATUS.COMPLETED;
 
     const { data: summary, isLoading: resultLoading, isError: resultError } = useRedditResult(queryId, isCompleted && !!user);
     const { data: sources = [] } = useRedditPosts(queryId, isCompleted && !!user);
+
+    console.log('summary: ', summary);
 
     const [activeTab, setActiveTab] = useState("overview");
     const tabBarRef = useRef(null);
@@ -622,7 +624,7 @@ export default function RedditReportPage() {
             <div className="flex min-h-[91vh] w-full flex-col items-center justify-center gap-4 px-4 text-center">
                 <p className="text-sm font-medium text-rose-600">We couldn&apos;t load this report.</p>
                 <button
-                    onClick={() => router.push("/dashboard/reddit")}
+                    onClick={() => router.push("/reddit/analysis")}
                     className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 hover:border-orange-300"
                 >
                     <ArrowLeft size={16} /> Back
@@ -632,7 +634,7 @@ export default function RedditReportPage() {
     }
 
     return (
-        <div className="mx-auto w-full max-w-5xl px-4 py-8">
+        <div className="mx-auto w-full max-w-full px-8 py-8">
             <button
                 onClick={() => router.push("/dashboard/reddit")}
                 className="mb-5 flex cursor-pointer items-center gap-2 text-xs font-semibold uppercase tracking-widest text-slate-400 transition-colors hover:text-[#FF4500]"
@@ -641,8 +643,8 @@ export default function RedditReportPage() {
             </button>
 
             {/* Hero */}
-            <div className="overflow-hidden rounded-3xl border border-orange-100/80 bg-white shadow-[0_16px_60px_rgba(255,69,0,0.10)]">
-                <div className="h-1.5 w-full bg-gradient-to-r from-[#FF4500] via-[#FF6A33] to-[#FFA24D]" />
+            <div className="overflow-hidden rounded-lg border border-orange-100/80 bg-white shadow-[0_16px_60px_rgba(255,69,0,0.10)]">
+                <div className="h-1.5 w-full bg-linear-to-r from-[#FF4500] via-[#FF6A33] to-[#FFA24D]" />
                 <div className="flex flex-col gap-4 p-5 sm:p-7">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div className="min-w-0">
@@ -665,7 +667,7 @@ export default function RedditReportPage() {
             {/* Tab bar */}
             <div
                 ref={tabBarRef}
-                className="sticky top-0 z-20 mt-5 flex overflow-x-auto rounded-2xl border border-orange-100 bg-white/90 p-1.5 shadow-sm backdrop-blur"
+                className="sticky top-0 z-20 mt-5 flex overflow-x-auto rounded-lg border border-orange-100 bg-white/90 p-1.5 shadow-sm backdrop-blur"
             >
                 {TABS.map((tab) => {
                     const count = tab.id === "themes" ? counts.themes : tab.id === "actions" ? counts.actions : tab.id === "sources" ? counts.sources : 0;
@@ -681,7 +683,7 @@ export default function RedditReportPage() {
                             {active && (
                                 <motion.span
                                     layoutId="report-tab-pill"
-                                    className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#FF4500] to-[#FF6A33] shadow-md shadow-orange-200"
+                                    className="absolute inset-0 rounded-md bg-gradient-to-r from-[#FF4500] to-[#FF6A33] shadow-md shadow-orange-200"
                                     transition={{ type: "spring", stiffness: 320, damping: 30 }}
                                 />
                             )}
