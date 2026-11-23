@@ -1,11 +1,10 @@
-
 "use client";
 
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useAuthStore } from "@/store/authStore";
-import { ArrowUpRight, MessageSquare, Smartphone, Lightbulb, Sparkles, ArrowRight } from "lucide-react";
+import { ArrowUpRight, MessageSquare, Smartphone, Lightbulb, Sparkles, ArrowRight, User } from "lucide-react";
 import LoginModal from "@/components/auth/loginModal/LoginModal";
 
 const features = [
@@ -49,6 +48,11 @@ const features = [
 
 export default function HomePage() {
   const user = useAuthStore((state) => state.user);
+  const firebaseUser = useAuthStore((state) => state.firebaseUser);
+
+  console.log('user: ', user);
+  console.log('firebaseUser: ', firebaseUser);
+
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   const handleLoginSuccess = () => setShowLoginModal(false);
@@ -72,7 +76,11 @@ export default function HomePage() {
         {/* Navbar actions */}
         <div className="flex items-center gap-3">
           {user ? (
-            <Link href="/profile" className="rounded-lg bg-linear-to-r from-[#5F19C5] to-[#FA418B] px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-[#9326D5]/20 transition hover:opacity-90">
+            <Link
+              href="/my-account"
+              className="inline-flex items-center gap-2 rounded-lg bg-linear-to-r from-[#5F19C5] to-[#FA418B] px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-[#9326D5]/20 transition hover:opacity-90"
+            >
+              <User className="h-4 w-4" />
               My Account
             </Link>
           ) : (

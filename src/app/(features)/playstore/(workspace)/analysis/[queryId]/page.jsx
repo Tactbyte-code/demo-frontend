@@ -19,19 +19,29 @@ import { useCreditStore } from "@/store/useCreditStore";
 import { useAuthStore } from "@/store/authStore";
 import LoginModal from "@/components/auth/loginModal/LoginModal";
 import { claimGuestReports } from "@/features/guest/guest.api";
+// import {
+//   usePlaystoreQueryStatus,
+//   useTriggerFetch,
+//   useTriggerSummarize,
+//   useRetryFetch,
+//   useRetrySummarize,
+// } from "@/features/playstore/hooks/usePlaystoreAnalysis";
 import {
-  usePlaystoreQueryStatus,
-  useTriggerFetch,
-  useTriggerSummarize,
-  useRetryFetch,
-  useRetrySummarize,
-} from "@/features/playstore/hooks/usePlaystoreAnalysis";
+  getQuery,
+  getQueryStatus,
+  triggerFetch,
+  triggerSummarize,
+  retryFetch,
+  retrySummarize,
+} from "@/lib/api/playstore";
 import {
   PIPELINE_STEPS,
   PSTATUS,
   STAGE_LABELS,
   STATUS_PROGRESS,
   STATUS_TO_STEP,
+  POLL_INTERVAL_MS,
+  normalizeStatus,
 } from "@/utils/playstore/status";
 
 const reportPath = (queryId) => `/playstore/analysis/${queryId}/report`;
@@ -51,42 +61,197 @@ export default function PlaystoreAnalysisPage() {
   const [requiresLogin, setRequiresLogin] = useState(false);
   const [claimingReports, setClaimingReports] = useState(false);
 
-  const { data, isLoading, isError, refetch } = usePlaystoreQueryStatus(queryId);
-  const status = data?.status;
+  const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
+  const [retrying, setRetrying] = useState(false);
+  const [pollVersion, setPollVersion] = useState(0);
+
+  const status = normalizeStatus(data);
 
   const isCompleted = status === PSTATUS.COMPLETED;
   const isFailed = status === PSTATUS.FAILED;
 
-  const fetchMutation = useTriggerFetch(queryId);
-  const summarizeMutation = useTriggerSummarize(queryId);
-  const retryFetch = useRetryFetch(queryId);
-  const retrySummarize = useRetrySummarize(queryId);
-
-  // ── Status-driven pipeline actions: each fires at most once per query+status ─
   const firedRef = useRef(new Set());
 
-  useEffect(() => {
-    if (!status || !queryId) return;
+  const refetch = () => {
+    setIsError(false);
+    setIsLoading(true);
+    setPollVersion((version) => version + 1);
+  };
 
-    const once = (fn) => {
-      const key = `${queryId}:${status}`;
-      if (firedRef.current.has(key)) return;
-      firedRef.current.add(key);
-      fn();
+  // ── Status-driven pipeline polling ────────────────────────────────────────
+  useEffect(() => {
+    if (!queryId) return;
+
+    let cancelled = false;
+    let timeoutId = null;
+
+    firedRef.current = new Set();
+
+    const poll = async () => {
+      try {
+        const statusData = await getQueryStatus(queryId);
+
+        if (cancelled) return;
+
+        setData((previous) => ({
+          ...previous,
+          ...statusData,
+        }));
+
+        setIsLoading(false);
+        setIsError(false);
+
+        const currentStatus = normalizeStatus(statusData);
+
+        // Stop polling when the analysis reaches a terminal state.
+        if (
+          currentStatus === PSTATUS.COMPLETED ||
+          currentStatus === PSTATUS.FAILED
+        ) {
+          return;
+        }
+
+        // Step 1: Fetch Play Store reviews.
+        if (currentStatus === PSTATUS.CREATED) {
+          const key = `${queryId}:fetch`;
+
+          if (!firedRef.current.has(key)) {
+            firedRef.current.add(key);
+
+            try {
+              const result = await triggerFetch(queryId);
+
+              if (cancelled) return;
+
+              setData((previous) => ({
+                ...previous,
+                ...result,
+              }));
+            } catch (error) {
+              if (cancelled) return;
+
+              console.error("Failed to trigger Play Store fetch:", error);
+
+              setData((previous) => ({
+                ...previous,
+                status: PSTATUS.FAILED,
+                failure_reason:
+                  error?.response?.data?.detail || "UNKNOWN",
+                failed_at_step: "fetch",
+              }));
+
+              return;
+            }
+          }
+        }
+
+        // Step 2: Generate the summary after reviews are fetched.
+        if (currentStatus === PSTATUS.FETCH_COMPLETE) {
+          const key = `${queryId}:summarize`;
+
+          if (!firedRef.current.has(key)) {
+            firedRef.current.add(key);
+
+            try {
+              const result = await triggerSummarize(queryId);
+
+              if (cancelled) return;
+
+              setData((previous) => ({
+                ...previous,
+                ...result,
+              }));
+            } catch (error) {
+              if (cancelled) return;
+
+              console.error("Failed to trigger Play Store summary:", error);
+
+              setData((previous) => ({
+                ...previous,
+                status: PSTATUS.FAILED,
+                failure_reason:
+                  error?.response?.data?.detail || "UNKNOWN",
+                failed_at_step: "summarize",
+              }));
+
+              return;
+            }
+          }
+        }
+
+        // Schedule the next status check.
+        timeoutId = setTimeout(poll, POLL_INTERVAL_MS);
+      } catch (error) {
+        if (cancelled) return;
+
+        console.error("Failed to poll Play Store query status:", error);
+
+        setIsLoading(false);
+        setIsError(true);
+      }
     };
 
-    if (status === PSTATUS.CREATED) once(() => fetchMutation.mutate());
-    if (status === PSTATUS.FETCH_COMPLETE) once(() => summarizeMutation.mutate());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, queryId]);
+    // Fetch full query details once, so the app name remains available.
+    const initialize = async () => {
+      try {
+        const queryData = await getQuery(queryId);
 
-  const retrying = retryFetch.isPending || retrySummarize.isPending;
+        if (cancelled) return;
+
+        setData(queryData);
+        setIsLoading(false);
+
+        await poll();
+      } catch (error) {
+        if (cancelled) return;
+
+        console.error("Failed to initialize Play Store analysis:", error);
+
+        setIsLoading(false);
+        setIsError(true);
+      }
+    };
+
+    initialize();
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeoutId);
+    };
+  }, [queryId, pollVersion]);
+
+  // const retrying = retryFetch.isPending || retrySummarize.isPending;
 
   // Retry whichever step failed.
-  const handleRetry = () => {
-    firedRef.current.clear();
-    if (data?.failed_at_step === "summarize") retrySummarize.mutate();
-    else retryFetch.mutate();
+  const handleRetry = async () => {
+    if (retrying) return;
+
+    setRetrying(true);
+    setIsError(false);
+
+    try {
+      const result =
+        data?.failed_at_step === "summarize"
+          ? await retrySummarize(queryId)
+          : await retryFetch(queryId);
+
+      firedRef.current.clear();
+
+      setData((previous) => ({
+        ...previous,
+        ...result,
+      }));
+
+      // Restart the polling effect.
+      setPollVersion((version) => version + 1);
+    } catch (error) {
+      console.error("Failed to retry Play Store analysis:", error);
+      setIsError(true);
+    } finally {
+      setRetrying(false);
+    }
   };
 
   // Refresh credits once when the analysis completes.
@@ -155,7 +320,7 @@ export default function PlaystoreAnalysisPage() {
         </div>
       </Shell>
     );
-  }
+  };
 
   // ── Error / failed ─────────────────────────────────────────────────────────
   if (isError || isFailed) {
@@ -169,9 +334,8 @@ export default function PlaystoreAnalysisPage() {
           <p className="mt-3 text-sm leading-6 text-rose-600">
             {isError
               ? "Could not fetch the status of this analysis."
-              : `Reason: ${data?.failure_reason || "UNKNOWN"}${
-                  data?.failed_at_step ? ` (during ${data.failed_at_step})` : ""
-                }`}
+              : `Reason: ${data?.failure_reason || "UNKNOWN"}${data?.failed_at_step ? ` (during ${data.failed_at_step})` : ""
+              }`}
           </p>
           <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
             <button
@@ -227,9 +391,8 @@ export default function PlaystoreAnalysisPage() {
             {/* Header */}
             <div className="flex flex-col items-center gap-4 text-center">
               <div
-                className={`relative flex h-16 w-16 items-center justify-center rounded-2xl ${
-                  isCompleted ? "bg-emerald-50" : "bg-gradient-to-br from-emerald-50 to-sky-50"
-                }`}
+                className={`relative flex h-16 w-16 items-center justify-center rounded-2xl ${isCompleted ? "bg-emerald-50" : "bg-gradient-to-br from-emerald-50 to-sky-50"
+                  }`}
               >
                 {isCompleted ? (
                   <FaCheckCircle className="text-3xl text-emerald-500" />
@@ -241,9 +404,8 @@ export default function PlaystoreAnalysisPage() {
 
               <div className="w-full">
                 <div
-                  className={`mb-2 inline-flex items-center gap-2 rounded-full border px-3 py-1 ${
-                    isCompleted ? "border-emerald-200 bg-emerald-50" : "border-emerald-100 bg-[#F3FBF7]"
-                  }`}
+                  className={`mb-2 inline-flex items-center gap-2 rounded-full border px-3 py-1 ${isCompleted ? "border-emerald-200 bg-emerald-50" : "border-emerald-100 bg-[#F3FBF7]"
+                    }`}
                 >
                   <span
                     className={`h-1.5 w-1.5 rounded-full bg-[#01875F] ${isCompleted ? "" : "animate-pulse"}`}
@@ -314,7 +476,7 @@ export default function PlaystoreAnalysisPage() {
               </div>
             )}
 
-            <div className="h-px w-full bg-gradient-to-r from-transparent via-emerald-100 to-transparent" />
+            <div className="h-px w-full bg-linear-to-r from-transparent via-emerald-100 to-transparent" />
 
             {/* Steps */}
             <div className="flex flex-col gap-4">
@@ -378,9 +540,8 @@ export default function PlaystoreAnalysisPage() {
 
             {/* Footer note */}
             <div
-              className={`flex items-start gap-3 rounded-xl border px-4 py-3.5 ${
-                isCompleted ? "border-emerald-100 bg-emerald-50/70" : "border-emerald-100 bg-[#F3FBF7]"
-              }`}
+              className={`flex items-start gap-3 rounded-xl border px-4 py-3.5 ${isCompleted ? "border-emerald-100 bg-emerald-50/70" : "border-emerald-100 bg-[#F3FBF7]"
+                }`}
             >
               <Star
                 className={`mt-0.5 h-3.5 w-3.5 shrink-0 ${isCompleted ? "text-emerald-500" : "text-[#01875F]"}`}

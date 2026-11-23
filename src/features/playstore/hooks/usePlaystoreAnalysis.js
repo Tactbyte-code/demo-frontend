@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  getQuery,
+  getQueryStatus,
   triggerFetch,
   triggerSummarize,
   retryFetch,
@@ -23,7 +23,7 @@ export const playstoreKeys = {
 export const usePlaystoreQueryStatus = (queryId) =>
   useQuery({
     queryKey: playstoreKeys.query(queryId),
-    queryFn: () => getQuery(queryId),
+    queryFn: () => getQueryStatus(queryId),
     enabled: !!queryId,
     select: (data) => ({ ...data, status: normalizeStatus(data) }),
     refetchInterval: (query) => {

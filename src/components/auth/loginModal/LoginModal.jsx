@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -14,7 +13,6 @@ import {
     Mail,
     Lock,
     KeyRound,
-    Sparkles,
     ShieldCheck,
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -31,7 +29,7 @@ import {
     signOut,
 } from "firebase/auth";
 import { auth, googleProvider } from "@/lib/firebase";
-// import AuthUI from "./components/AuthUI";
+import { useAuthStore } from "@/store/authStore";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const FRONTEND_URL =
@@ -69,6 +67,7 @@ const SILENT_GOOGLE_ERRORS = [
 ];
 
 const STRENGTH_LABELS = ["Too weak", "Weak", "Fair", "Good", "Strong"];
+
 const STRENGTH_COLORS = [
     "#F0506E",
     "#F0506E",
@@ -99,19 +98,6 @@ async function postJson(url, token, body) {
     }
 
     return data;
-}
-
-function getPasswordStrength(password) {
-    if (!password) return 0;
-
-    let score = 0;
-
-    if (password.length >= 8) score++;
-    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++;
-    if (/\d/.test(password)) score++;
-    if (/[^A-Za-z0-9]/.test(password)) score++;
-
-    return score;
 }
 
 function getFriendlyError(error) {
@@ -148,6 +134,8 @@ export default function LoginModal({
     const [loginEmail, setLoginEmail] = useState("");
     const [loginPassword, setLoginPassword] = useState("");
     const [showLoginPassword, setShowLoginPassword] = useState(false);
+
+    const setAuthState = useAuthStore((state) => state.setAuthState);
 
     // Signup
     const [form, setForm] = useState({
@@ -187,10 +175,8 @@ export default function LoginModal({
     const { name, email, password, confirmPassword } = form;
 
     const busy = loading || googleLoading;
-    const passwordsMatch =
-        confirmPassword.length > 0 && confirmPassword === password;
-    const passwordsMismatch =
-        confirmPassword.length > 0 && confirmPassword !== password;
+    const passwordsMatch = confirmPassword.length > 0 && confirmPassword === password;
+    const passwordsMismatch = confirmPassword.length > 0 && confirmPassword !== password;
 
     const setField = (key) => (event) => {
         setForm((previous) => ({
@@ -316,27 +302,37 @@ export default function LoginModal({
     // ─────────────────────────────────────────────
     // Google login / signup
     // ─────────────────────────────────────────────
+
     const handleGoogleAuth = async () => {
         setError("");
         setGoogleLoading(true);
 
         try {
             const result = await signInWithPopup(auth, googleProvider);
-            const user = result.user;
-            const token = await user.getIdToken();
+            const firebaseUser = result.user;
+            const token = await firebaseUser.getIdToken();
 
             const data = await postJson(
                 `${API_URL}/auth/google`,
                 token,
                 {
-                    firebase_uid: user.uid,
-                    full_name: user.displayName,
-                    email: user.email,
-                    photo_url: user.photoURL,
+                    firebase_uid: firebaseUser.uid,
+                    full_name: firebaseUser.displayName,
+                    email: firebaseUser.email,
+                    photo_url: firebaseUser.photoURL,
                 }
             );
 
+            console.log("google login data: ", data);
+
+            // Save both backend and Firebase user objects
+            setAuthState({
+                user: data,
+                firebaseUser,
+            });
+
             await finishAuth(data);
+
         } catch (err) {
             if (!SILENT_GOOGLE_ERRORS.includes(err?.code)) {
                 setError(getFriendlyError(err));

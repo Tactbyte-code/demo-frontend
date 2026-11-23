@@ -2,7 +2,13 @@ import {
     LayoutDashboard,
     ChartNoAxesCombined,
     Target,
+    UserRound,
+    ShieldCheck,
+    Wallet,
+    Bell,
+    Database,
 } from 'lucide-react';
+import { Activity } from 'react';
 import { BsRobot } from "react-icons/bs";
 import { FaCheckCircle, FaReddit } from "react-icons/fa";
 import { FaGooglePlay } from "react-icons/fa";
@@ -802,5 +808,91 @@ export const validateMenuItems = [
         title: "Analysis",
         href: "/validate-idea/analysis",
         icon: ChartNoAxesCombined,
+    },
+];
+
+export const accountSections = [
+    {
+        icon: UserRound,
+        title: "Personal Information",
+        description: "Manage your name, email address, and profile photo.",
+        href: "/my-account/personal-information",
+        accent: "bg-violet-50 text-violet-700 ring-violet-100",
+        hoverGlow: "group-hover:shadow-violet-500/10 group-hover:border-violet-200",
+        badge: "Verified",
+        badgeStyle: "bg-emerald-50 text-emerald-700 border-emerald-200/60",
+    },
+    {
+        icon: ShieldCheck,
+        title: "Login & Security",
+        description: "Manage your password, OAuth connections, and 2FA.",
+        // href: "/profile/security",
+        href: "#",
+        accent: "bg-indigo-50 text-indigo-700 ring-indigo-100",
+        hoverGlow: "group-hover:shadow-indigo-500/10 group-hover:border-indigo-200",
+        badge: "Protected",
+        badgeStyle: "bg-indigo-50 text-indigo-700 border-indigo-200/60",
+    },
+    {
+        icon: Wallet,
+        title: "Credits & Billing",
+        description: "View your credit balance, top-ups, and invoices.",
+        // href: "/profile/billing",
+        href: "#",
+        accent: "bg-fuchsia-50 text-fuchsia-700 ring-fuchsia-100",
+        hoverGlow: "group-hover:shadow-fuchsia-500/10 group-hover:border-fuchsia-200",
+        badge: "240 Credits",
+        badgeStyle: "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200/60",
+    },
+    {
+        icon: Activity,
+        title: "Account Activity",
+        description: "Track your recent research runs, exports, and usage.",
+        // href: "/profile/activity",
+        href: "#",
+        accent: "bg-sky-50 text-sky-700 ring-sky-100",
+        hoverGlow: "group-hover:shadow-sky-500/10 group-hover:border-sky-200",
+        badge: "Active today",
+        badgeStyle: "bg-slate-100 text-slate-600 border-slate-200/60",
+    },
+    {
+        icon: Bell,
+        title: "Notifications",
+        description: "Configure trend alerts, digest emails, and updates.",
+        // href: "/profile/notifications",
+        href: "#",
+        accent: "bg-amber-50 text-amber-700 ring-amber-100",
+        hoverGlow: "group-hover:shadow-amber-500/10 group-hover:border-amber-200",
+        badge: "Digest On",
+        badgeStyle: "bg-amber-50 text-amber-700 border-amber-200/60",
+    },
+    {
+        icon: Database,
+        title: "Privacy & Data",
+        description: "Export your saved insights or manage data preferences.",
+        // href: "/profile/privacy",
+        href: "#",
+        accent: "bg-emerald-50 text-emerald-700 ring-emerald-100",
+        hoverGlow: "group-hover:shadow-emerald-500/10 group-hover:border-emerald-200",
+        badge: null,
+        badgeStyle: "",
+    },
+];
+
+export const featureShortcuts = [
+    {
+        name: "Reddit Analyzer",
+        desc: "Subreddit & keyword defaults",
+        href: "/settings/reddit",
+    },
+    {
+        name: "Play Store Insights",
+        desc: "Review scraping & region filters",
+        href: "/settings/play-store",
+    },
+    {
+        name: "Validate Idea",
+        desc: "Scoring weights & report format",
+        href: "/settings/validate",
     },
 ];
