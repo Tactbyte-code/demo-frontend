@@ -1,8 +1,11 @@
 import { create } from "zustand";
 
 export const useAuthStore = create((set) => ({
-    // Firebase user
+    // Backend application user
     user: null,
+
+    // Firebase authentication user
+    firebaseUser: null,
 
     // Authentication loading state
     loading: true,
@@ -11,9 +14,10 @@ export const useAuthStore = create((set) => ({
     authError: null,
 
     // Update authentication state
-    setAuthState: (user) =>
+    setAuthState: ({ user, firebaseUser }) =>
         set({
             user,
+            firebaseUser,
             loading: false,
             authError: null,
         }),
@@ -25,6 +29,7 @@ export const useAuthStore = create((set) => ({
     setAuthError: (error) =>
         set({
             user: null,
+            firebaseUser: null,
             loading: false,
             authError: error,
         }),
@@ -33,11 +38,14 @@ export const useAuthStore = create((set) => ({
     clearAuth: () =>
         set({
             user: null,
+            firebaseUser: null,
             loading: false,
             authError: null,
         }),
 }));
 
+// Firebase user – authentication identity.
+// Backend user – your application's user profile and account information.
 
 // how to use zustand store in a component
 

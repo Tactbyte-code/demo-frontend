@@ -527,7 +527,7 @@ export default function PlaystoreReportPage() {
     const user = useAuthStore((s) => s.user);
     const authLoading = useAuthStore((s) => s.loading);
 
-    const analysisPath = `/dashboard/playstore/analysis/${queryId}`;
+    const analysisPath = `/playstore/analysis/${queryId}`;
 
     const { data: queryData, isLoading: queryLoading } = usePlaystoreQueryStatus(queryId);
     const isCompleted = queryData?.status === PSTATUS.COMPLETED;
@@ -535,6 +535,8 @@ export default function PlaystoreReportPage() {
 
     const { data: summary, isLoading: resultLoading, isError: resultError } = usePlaystoreResult(queryId, canLoad);
     const { data: reviews = [], isLoading: reviewsLoading } = usePlaystoreReviews(queryId, canLoad);
+
+    console.log('summary: ', summary);
 
     const [activeTab, setActiveTab] = useState("overview");
     const [direction, setDirection] = useState(0);

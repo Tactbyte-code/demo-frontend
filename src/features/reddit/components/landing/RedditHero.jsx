@@ -49,6 +49,7 @@ export default function RedditHero() {
     const [showCreditPurchaseModal, setShowCreditPurchaseModal] = useState(false);
     const [isCheckingCredits, setIsCheckingCredits] = useState(false);
 
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -70,7 +71,9 @@ export default function RedditHero() {
                 const { credits, hasFetched } = useCreditStore.getState();
 
                 if (!hasFetched) {
-                    throw new Error("Unable to verify your credit balance. Please try again.");
+                    throw new Error(
+                        "Unable to verify your credit balance. Please try again."
+                    );
                 }
 
                 if (credits < 30) {

@@ -114,7 +114,7 @@ const PlaystoreHero = () => {
 
     const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
 
-    const { credits } = useCreditStore();
+    const getCredits = useCreditStore((state) => state.getCredits);
 
     const handleUrlChange = (e) => {
         setAppUrl(e.target.value);
@@ -153,36 +153,39 @@ const PlaystoreHero = () => {
             return;
         }
 
-        console.log('app id: ', appId);
-
         if (isSubmitting) return;
 
         try {
             setError("");
+            setIsSubmitting(true);
 
             const token = await getToken();
 
-            // Authenticated users must have at least 15 credits.
-            // Guest users can continue without a credit check.
+            // Fetch fresh credits before making analysis/session API requests.
+            if (token) {
+                await getCredits(true);
 
-            // if (token && credits < 15) {
-            //     setIsCreditModalOpen(true);
-            //     return;
-            // }
+                const freshCredits = useCreditStore.getState().credits;
 
-            setIsSubmitting(true);
+                if (freshCredits < 15) {
+                    setIsCreditModalOpen(true);
+                    return;
+                }
+            }
 
+            // Create guest session for unauthenticated users.
             if (!token) {
                 await api.post("/guest/session");
             }
 
             const body = {
                 app_id: appId,
-                max_review: 500
+                max_review: 500,
             };
 
             const response = await createQuery(body);
-            console.log('play query response: ', response);
+
+            console.log("play query response: ", response);
 
             const queryId = response?.id;
             const status = response?.status;
@@ -197,7 +200,7 @@ const PlaystoreHero = () => {
                 router.push(`/playstore/analysis/${queryId}`);
             } else if (status === "FAILED") {
                 setError(
-                    response.data?.failure_reason ||
+                    response.failure_reason ||
                     "Failed to create Play Store analysis."
                 );
             }
