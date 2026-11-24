@@ -67,8 +67,14 @@ export default function PlaystoreWorkspaceSidebar({
     const pathname = usePathname();
     const router = useRouter();
 
+    // Backend application user
     const user = useAuthStore((state) => state.user);
+
+    // Firebase user is kept separately
+    const firebaseUser = useAuthStore((state) => state.firebaseUser);
+
     const loading = useAuthStore((state) => state.loading);
+    const clearAuth = useAuthStore((state) => state.clearAuth);
 
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -85,6 +91,7 @@ export default function PlaystoreWorkspaceSidebar({
     const renderMenuItems = () =>
         menuItems.map((item) => {
             const Icon = item.icon;
+
             const isActive =
                 pathname === item.href ||
                 pathname.startsWith(`${item.href}/`);
@@ -96,8 +103,8 @@ export default function PlaystoreWorkspaceSidebar({
                     onClick={() => setMobileOpen(false)}
                     title={collapsed ? item.title : undefined}
                     className={`flex w-full min-w-0 items-center gap-3 overflow-hidden rounded-md px-[15px] py-3 text-sm font-medium transition-all duration-200 ${isActive
-                        ? "bg-gradient-to-r from-[#188038] to-[#34A853] text-white shadow-lg shadow-[0_4px_14px_rgba(24,128,56,0.22)]"
-                        : "text-[#C6DCCB] hover:bg-[#34A853]/10 hover:text-white"
+                            ? "bg-gradient-to-r from-[#188038] to-[#34A853] text-white shadow-lg shadow-[0_4px_14px_rgba(24,128,56,0.22)]"
+                            : "text-[#C6DCCB] hover:bg-[#34A853]/10 hover:text-white"
                         }`}
                 >
                     {Icon && (
@@ -124,6 +131,10 @@ export default function PlaystoreWorkspaceSidebar({
 
             await signOut(auth);
 
+            // Clear application auth state
+            clearAuth();
+
+            // Reset shared credit state
             useCreditStore.getState().resetCredits();
 
             setUserMenuOpen(false);
@@ -137,23 +148,48 @@ export default function PlaystoreWorkspaceSidebar({
         }
     };
 
-    const userName = user?.displayName || "My Account";
+    // Backend User model fields
+    const userName =
+        user?.display_name ||
+        user?.full_name ||
+        "My Account";
+
     const userEmail = user?.email || "";
+
+    const userPhoto = user?.photo_url || null;
+
     const userInitial = userName.charAt(0).toUpperCase();
 
     return (
         <>
+            {/* Mobile Header */}
             <div className="fixed top-0 left-0 right-0 z-40 flex h-16 items-center justify-between border-b border-[#FFE0D5] bg-white px-4 lg:hidden">
-                <Link href="/" className="group flex flex-row items-center gap-0 no-underline">
+                <Link
+                    href="/"
+                    className="group flex flex-row items-center gap-0 no-underline"
+                >
                     <div className="relative h-13 w-13 shrink-0">
-                        <Image src="/images/logo-new-no-bg.png" alt="Logo" fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-contain" priority />
+                        <Image
+                            src="/images/logo-new-no-bg.png"
+                            alt="Logo"
+                            fill
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            className="object-contain"
+                            priority
+                        />
                     </div>
+
                     <span className="bg-linear-to-r from-[#FF4500] via-[#FF5A1F] to-[#FF8A50] bg-clip-text text-xl font-bold tracking-tight whitespace-nowrap text-transparent">
                         ProblemPulse
                     </span>
                 </Link>
 
-                <button type="button" onClick={() => setMobileOpen(!mobileOpen)} className="rounded-lg p-2 text-[#B9380A] hover:bg-[#FFF1EB]" aria-label={mobileOpen ? "Close menu" : "Open menu"}>
+                <button
+                    type="button"
+                    onClick={() => setMobileOpen(!mobileOpen)}
+                    className="rounded-lg p-2 text-[#B9380A] hover:bg-[#FFF1EB]"
+                    aria-label={mobileOpen ? "Close menu" : "Open menu"}
+                >
                     {mobileOpen ? <X size={22} /> : <Menu size={22} />}
                 </button>
             </div>
@@ -183,23 +219,40 @@ export default function PlaystoreWorkspaceSidebar({
                     },
                 }}
                 className={`fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col overflow-visible bg-[#142B1B] max-lg:!w-[280px] ${mobileOpen
-                    ? "translate-x-0"
-                    : "-translate-x-full lg:translate-x-0"
+                        ? "translate-x-0"
+                        : "-translate-x-full lg:translate-x-0"
                     }`}
                 style={{ width: collapsed ? 72 : 280 }}
             >
                 {/* Brand */}
                 <div className="relative flex h-[73px] shrink-0 items-center px-3">
-                    <Link href="/playstore" className="group flex w-full min-w-0 items-center gap-3 overflow-hidden">
+                    <Link
+                        href="/playstore"
+                        className="group flex w-full min-w-0 items-center gap-3 overflow-hidden"
+                    >
                         <div className="relative flex h-12 w-12 shrink-0 items-center justify-center">
-                            <Image src="/images/logo-new-no-bg.png" alt="ProblemPulse" fill className="object-contain p-1" priority />
+                            <Image
+                                src="/images/logo-new-no-bg.png"
+                                alt="ProblemPulse"
+                                fill
+                                className="object-contain p-1"
+                                priority
+                            />
                         </div>
 
-                        <div aria-hidden={collapsed} className={`min-w-0 ${labelClass(collapsed)}`}>
-                            <span className="block text-[15px] font-bold tracking-tight text-white">ProblemPulse</span>
+                        <div
+                            aria-hidden={collapsed}
+                            className={`min-w-0 ${labelClass(collapsed)}`}
+                        >
+                            <span className="block text-[15px] font-bold tracking-tight text-white">
+                                ProblemPulse
+                            </span>
+
                             <div className="mt-1 flex items-center gap-1.5">
                                 <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#FF4500]" />
-                                <span className="text-[10px] font-semibold uppercase tracking-[0.13em] text-orange-100/65">Playstore Workspace</span>
+                                <span className="text-[10px] font-semibold uppercase tracking-[0.13em] text-orange-100/65">
+                                    Playstore Workspace
+                                </span>
                             </div>
                         </div>
                     </Link>
@@ -277,12 +330,12 @@ export default function PlaystoreWorkspaceSidebar({
                                             }}
                                             transition={{ duration: 0.18 }}
                                             className={`absolute z-50 ${collapsed
-                                                ? "bottom-0 left-full ml-3 w-56 origin-bottom-left"
-                                                : "bottom-full left-0 right-0 mb-2 origin-bottom"
+                                                    ? "bottom-0 left-full ml-3 w-56 origin-bottom-left"
+                                                    : "bottom-full left-0 right-0 mb-2 origin-bottom"
                                                 } overflow-hidden rounded-lg bg-gradient-to-br from-[#24432D] via-[#1B3524] to-[#142B1B] p-1.5 shadow-[0_0_0_1px_rgba(52,168,83,0.22),0_0_18px_2px_rgba(0,0,0,0.4),0_0_30px_5px_rgba(52,168,83,0.12)]`}
                                         >
                                             <Link
-                                                href="#"
+                                                href="/account"
                                                 onClick={() => {
                                                     setUserMenuOpen(false);
                                                     setMobileOpen(false);
@@ -290,11 +343,11 @@ export default function PlaystoreWorkspaceSidebar({
                                                 className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[#E5F5E9] transition-colors hover:bg-white/10 hover:text-white"
                                             >
                                                 <Settings size={17} />
-                                                <span>Settings</span>
+                                                <span>My Account</span>
                                             </Link>
 
                                             <Link
-                                                href="#"
+                                                href="/support"
                                                 onClick={() => {
                                                     setUserMenuOpen(false);
                                                     setMobileOpen(false);
@@ -343,9 +396,9 @@ export default function PlaystoreWorkspaceSidebar({
                                     className="flex w-full items-center gap-3 overflow-hidden rounded-lg px-1.5 py-3 text-left transition-colors hover:bg-white/10"
                                 >
                                     <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#34A853]/40 bg-gradient-to-br from-[#188038] to-[#34A853] text-sm font-bold text-white">
-                                        {user?.photoURL ? (
+                                        {userPhoto ? (
                                             <img
-                                                src={user.photoURL}
+                                                src={userPhoto}
                                                 alt={userName}
                                                 className="h-full w-full object-cover"
                                             />
@@ -375,8 +428,8 @@ export default function PlaystoreWorkspaceSidebar({
                                         }}
                                         transition={{ duration: 0.2 }}
                                         className={`shrink-0 transition-opacity duration-200 ${collapsed
-                                            ? "opacity-0"
-                                            : "opacity-100 delay-100"
+                                                ? "opacity-0"
+                                                : "opacity-100 delay-100"
                                             }`}
                                     >
                                         <ChevronUp
