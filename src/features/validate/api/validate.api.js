@@ -48,9 +48,7 @@ export const getSummary = async (queryId) => {
 };
 
 export const getQueries = async (page = 1, pageSize = 10) => {
-    console.log('func called')
     const response = await api.get(`/validate/query?page=${page}&page_size=${pageSize}`);
-    console.log('validate queries: ', response);
     return response?.data;
 };
 

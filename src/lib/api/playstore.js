@@ -76,6 +76,7 @@ export const triggerSummarize = async (queryId) => {
  */
 export const getQueryResult = async (queryId) => {
     const response = await api.get(`/playstore/query/${queryId}/result`);
+    console.log('play summary: ', response);
     return response.data;
 };
 

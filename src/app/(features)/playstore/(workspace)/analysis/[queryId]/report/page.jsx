@@ -536,7 +536,7 @@ export default function PlaystoreReportPage() {
     const { data: summary, isLoading: resultLoading, isError: resultError } = usePlaystoreResult(queryId, canLoad);
     const { data: reviews = [], isLoading: reviewsLoading } = usePlaystoreReviews(queryId, canLoad);
 
-    console.log('summary: ', summary);
+    console.log('pl summary: ', summary);
 
     const [activeTab, setActiveTab] = useState("overview");
     const [direction, setDirection] = useState(0);

@@ -21,7 +21,7 @@ export default function AnalysisPage() {
 
     // Firebase UID for authenticated users; null for guests.
     // The backend identifies guests using their guest session cookie.
-    const userId = user?.uid ?? null;
+    const userId = user?.id ?? null;
 
     const {
         data,
