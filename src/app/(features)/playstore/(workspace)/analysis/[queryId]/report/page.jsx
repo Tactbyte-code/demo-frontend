@@ -28,6 +28,7 @@ import { getQueryResult } from "@/lib/api/playstore";
 import { getReviews } from "@/features/playstore/api/getReviews";
 import { usePlaystoreQueryStatus } from "@/features/playstore/hooks/usePlaystoreAnalysis";
 import { PSTATUS } from "@/utils/playstore/status";
+import { useCreditStore } from "@/store/useCreditStore";
 
 // ── Data hooks ────────────────────────────────────────────────────────────
 const usePlaystoreResult = (queryId, enabled) =>
@@ -482,8 +483,8 @@ const ReviewsTab = ({ reviews, loading }) => {
                             key={c.id}
                             onClick={() => setFilter(c.id)}
                             className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${active
-                                    ? "border-[#01875F] bg-[#01875F] text-white shadow-md shadow-emerald-200"
-                                    : "border-emerald-100 bg-white text-slate-500 hover:border-emerald-300"
+                                ? "border-[#01875F] bg-[#01875F] text-white shadow-md shadow-emerald-200"
+                                : "border-emerald-100 bg-white text-slate-500 hover:border-emerald-300"
                                 }`}
                         >
                             {c.label}
@@ -527,6 +528,8 @@ export default function PlaystoreReportPage() {
     const user = useAuthStore((s) => s.user);
     const authLoading = useAuthStore((s) => s.loading);
 
+    const getCredits = useCreditStore((s) => s.getCredits);
+
     const analysisPath = `/playstore/analysis/${queryId}`;
 
     const { data: queryData, isLoading: queryLoading } = usePlaystoreQueryStatus(queryId);
@@ -536,12 +539,16 @@ export default function PlaystoreReportPage() {
     const { data: summary, isLoading: resultLoading, isError: resultError } = usePlaystoreResult(queryId, canLoad);
     const { data: reviews = [], isLoading: reviewsLoading } = usePlaystoreReviews(queryId, canLoad);
 
-    console.log('pl summary: ', summary);
-
     const [activeTab, setActiveTab] = useState("overview");
     const [direction, setDirection] = useState(0);
     const tabBarRef = useRef(null);
     const tabRefs = useRef({});
+
+    useEffect(() => {
+        if (summary) {
+            getCredits(true);
+        }
+    }, [summary, getCredits]);
 
     // Guests go back to the analysis page (login prompt); unfinished analyses go back to progress.
     useEffect(() => {

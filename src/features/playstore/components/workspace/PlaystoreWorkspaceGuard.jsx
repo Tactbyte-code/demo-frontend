@@ -11,18 +11,16 @@ export default function PlaystoreWorkspaceGuard({ children }) {
     const user = useAuthStore((state) => state.user);
     const loading = useAuthStore((state) => state.loading);
 
-    // Guests can access the analysis list and individual analysis progress pages.
-    const isGuestAllowedRoute =
-        pathname === "/dashboard/playstore" ||
-        /^\/dashboard\/playstore\/query\/[^/]+$/.test(pathname);
+    // Only the report page requires authentication.
+    const isProtectedRoute = /^\/playstore\/analysis\/[^/]+\/report$/.test(pathname);
 
     useEffect(() => {
         if (loading) return;
 
-        if (!user && !isGuestAllowedRoute) {
-            router.replace("/dashboard/playstore");
+        if (!user && isProtectedRoute) {
+            router.replace("/playstore/analysis");
         }
-    }, [user, loading, isGuestAllowedRoute, router]);
+    }, [user, loading, isProtectedRoute, router]);
 
     // Show only a loading spinner while authentication is resolving.
     if (loading) {
@@ -34,7 +32,7 @@ export default function PlaystoreWorkspaceGuard({ children }) {
     }
 
     // Prevent protected content from briefly appearing before redirect.
-    if (!user && !isGuestAllowedRoute) return null;
+    if (!user && isProtectedRoute) return null;
 
     return children;
 }

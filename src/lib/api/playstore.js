@@ -63,13 +63,11 @@ export const triggerFetch = async (queryId) => {
  * Call only when status === "FETCHED".
  */
 export const triggerSummarize = async (queryId) => {
-    console.log('trigger summarize called');
     const response = await api.post(`/playstore/query/${queryId}/summarize`);
     return response.data;
 };
 
-// ─── Results ───────────────────────────────────────────────────────────────────
-
+// ───────────────────────────── Results ─────────────────────────────
 /**
  * GET /playstore/query/:id/result
  * Fetch final summary/analysis. Only call when status === "COMPLETED".
@@ -89,7 +87,7 @@ export const getQueryReviews = async (queryId) => {
     return response.data;
 };
 
-// ─── Retries ───────────────────────────────────────────────────────────────────
+// ───────────────────────────── Retries ─────────────────────────────
 
 /**
  * POST /playstore/query/:id/retry-fetch

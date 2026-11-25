@@ -19,13 +19,6 @@ import { useCreditStore } from "@/store/useCreditStore";
 import { useAuthStore } from "@/store/authStore";
 import LoginModal from "@/components/auth/loginModal/LoginModal";
 import { claimGuestReports } from "@/features/guest/guest.api";
-// import {
-//   usePlaystoreQueryStatus,
-//   useTriggerFetch,
-//   useTriggerSummarize,
-//   useRetryFetch,
-//   useRetrySummarize,
-// } from "@/features/playstore/hooks/usePlaystoreAnalysis";
 import {
   getQuery,
   getQueryStatus,
@@ -254,11 +247,11 @@ export default function PlaystoreAnalysisPage() {
     }
   };
 
-  // Refresh credits once when the analysis completes.
+  // Refresh credits once when the analysis completes, only for authenticated users.
   useEffect(() => {
-    if (isCompleted) getCredits?.(true);
+    if (isCompleted && user) getCredits?.(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isCompleted]);
+  }, [isCompleted, user]);
 
   // After completion: signed-in users go straight to the report, guests get the login modal.
   useEffect(() => {
@@ -282,6 +275,7 @@ export default function PlaystoreAnalysisPage() {
     try {
       await claimGuestReports();
       setShowLoginModal(false);
+      
       router.replace(reportPath(queryId));
     } catch (error) {
       console.error("Failed to claim guest reports:", error);
