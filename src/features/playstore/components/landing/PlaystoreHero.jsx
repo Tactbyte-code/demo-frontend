@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -7,17 +6,17 @@ import {
     Sparkles,
     Link2,
     Search,
-    BarChart3,
     ChartNoAxesCombined,
     ShieldCheck,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import ProductHeader from "@/components/layout/ProductHeader";
 import { getToken } from "@/lib/getToken";
-import api from "@/lib/axios";
 import { useCreditStore } from "@/store/useCreditStore";
 import CreditPurchaseModal from "@/components/credits/CreditPurchaseModal";
 import { createQuery } from "@/lib/api/playstore";
+import { initializeGuestSession } from "@/lib/api/guest";
+import LoginModal from "@/components/auth/loginModal/LoginModal";
 
 const steps = [
     {
@@ -112,6 +111,9 @@ const PlaystoreHero = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
 
+    const [showLoginModal, setShowLoginModal] = useState(false);
+    const [pendingAppId, setPendingAppId] = useState(null);
+
     const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
 
     const getCredits = useCreditStore((state) => state.getCredits);
@@ -121,6 +123,47 @@ const PlaystoreHero = () => {
 
         if (error) {
             setError("");
+        }
+    };
+
+    const submitAnalysis = async (appId) => {
+        const token = await getToken();
+
+        // Authenticated users must have sufficient credits.
+        if (token) {
+            await getCredits(true);
+
+            const freshCredits = useCreditStore.getState().credits;
+
+            if (freshCredits < 15) {
+                setIsCreditModalOpen(true);
+                return;
+            }
+        }
+
+        const body = {
+            app_id: appId,
+            max_review: 500,
+        };
+
+        const response = await createQuery(body);
+
+        const queryId = response?.id;
+        const status = response?.status;
+
+        if (!queryId || !status) {
+            throw new Error(
+                "No analysis ID was returned from the server."
+            );
+        }
+
+        if (status === "CREATED") {
+            router.push(`/playstore/analysis/${queryId}`);
+        } else if (status === "FAILED") {
+            setError(
+                response.failure_reason ||
+                "Failed to create Play Store analysis."
+            );
         }
     };
 
@@ -161,49 +204,62 @@ const PlaystoreHero = () => {
 
             const token = await getToken();
 
-            // Fetch fresh credits before making analysis/session API requests.
-            if (token) {
-                await getCredits(true);
+            // --------------------------------------------------
+            // 1. Anonymous visitor
+            // --------------------------------------------------
 
-                const freshCredits = useCreditStore.getState().credits;
+            if (!token) {
+                const guestSession = await initializeGuestSession();
 
-                if (freshCredits < 15) {
-                    setIsCreditModalOpen(true);
+                // Returning anonymous visitor.
+                // Require login before processing the analysis.
+                if (guestSession?.guest_session_created === false) {
+                    setPendingAppId(appId);
+                    setShowLoginModal(true);
+
                     return;
                 }
+
+                // First-time anonymous visitor.
+                // Allow the analysis to proceed without login.
             }
 
-            // Create guest session for unauthenticated users.
-            if (!token) {
-                await api.post("/guest/session");
-            }
+            // --------------------------------------------------
+            // 2. Submit analysis
+            // --------------------------------------------------
 
-            const body = {
-                app_id: appId,
-                max_review: 500,
-            };
+            await submitAnalysis(appId);
 
-            const response = await createQuery(body);
+        } catch (err) {
+            setError(
+                err.response?.data?.detail ||
+                err.message ||
+                "Failed to submit Play Store analysis."
+            );
 
-            console.log("play query response: ", response);
+            console.error("Play Store submission error:", err);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
-            const queryId = response?.id;
-            const status = response?.status;
+    const handleLoginSuccess = async () => {
+        const appId = pendingAppId;
 
-            if (!queryId || !status) {
-                throw new Error(
-                    "No analysis ID was returned from the server."
-                );
-            }
+        setShowLoginModal(false);
+        setPendingAppId(null);
 
-            if (status === "CREATED") {
-                router.push(`/playstore/analysis/${queryId}`);
-            } else if (status === "FAILED") {
-                setError(
-                    response.failure_reason ||
-                    "Failed to create Play Store analysis."
-                );
-            }
+        if (!appId) return;
+
+        try {
+            setError("");
+            setIsSubmitting(true);
+
+            // Automatically resume the pending analysis.
+            // submitAnalysis will now detect the authenticated user
+            // and perform the credit check.
+            await submitAnalysis(appId);
+
         } catch (err) {
             setError(
                 err.response?.data?.detail ||
@@ -429,6 +485,13 @@ const PlaystoreHero = () => {
                 onClose={() => setIsCreditModalOpen(false)}
                 redirectAfterPurchase={false}
             />
+
+            {showLoginModal && (
+                <LoginModal
+                    onClose={() => setShowLoginModal(false)}
+                    onLoginSuccess={handleLoginSuccess}
+                />
+            )}
         </>
     );
 };
