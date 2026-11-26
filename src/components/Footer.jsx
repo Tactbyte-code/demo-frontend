@@ -7,9 +7,7 @@ import {
     Github,
     Linkedin,
     Instagram,
-    Youtube,
-    ArrowUpRight,
-    Mail
+    Youtube
 } from 'lucide-react';
 
 const footerLinks = {
@@ -39,17 +37,17 @@ const socialLinks = [
 
 export default function Footer() {
     return (
-        <footer className="border-t pt-16 pb-8 overflow-hidden"
+        <footer className="border-t pt-12 pb-8 overflow-hidden sm:pt-16"
             style={{
                 backgroundColor: 'var(--surface)',
                 borderColor: 'var(--glass-border)',
             }}
         >
-            <div className="max-w-7xl mx-auto px-6">
-                <div className="flex flex-col lg:flex-row gap-5 lg:gap-20">
+            <div className="max-w-7xl mx-auto px-5 sm:px-6">
+                <div className="flex flex-col gap-10 lg:flex-row lg:gap-16 xl:gap-20">
 
                     {/* Left: Brand Section */}
-                    <div className="lg:w-1/3 flex flex-col justify-center space-y-6">
+                    <div className="flex flex-col space-y-5 lg:w-1/3 lg:shrink-0">
                         <Link href="/" className="flex items-center gap-0 group w-fit">
                             <div className="relative h-14 w-14 shrink-0">
                                 <Image
@@ -104,93 +102,14 @@ export default function Footer() {
                     </div>
 
                     {/* Right: Stacked Newsletter and Links */}
-                    <div className="lg:w-2/3 flex flex-col gap-12">
-
-                        {/* Top: Newsletter Container */}
-                        <div
-                            className="p-6 flex flex-col md:flex-row items-center justify-between gap-6"
-                            style={{
-                                backgroundColor: 'var(--background)',
-                                border: '1px solid var(--glass-border)',
-                            }}
-                        >
-                            <div className="flex items-center gap-4">
-                                <div
-                                    className="w-10 h-10 flex items-center justify-center"
-                                    style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 10%, transparent)' }}
-                                >
-                                    <Mail className="w-5 h-5" style={{ color: 'var(--primary)' }} />
-                                </div>
-                                <div>
-                                    <h4
-                                        className="font-bold text-sm"
-                                        style={{ color: 'var(--text-main)' }}
-                                    >
-                                        Join the pulse
-                                    </h4>
-                                    <p
-                                        className="text-[11px] uppercase tracking-widest font-semibold"
-                                        style={{ color: 'var(--text-muted)' }}
-                                    >
-                                        Weekly market insights
-                                    </p>
-                                </div>
-                            </div>
-
-                            <form className="relative flex-1 max-w-md w-full">
-                                <input
-                                    type="email"
-                                    placeholder="your@email.com"
-                                    className="w-full px-4 py-3 text-sm focus:outline-none transition-all"
-                                    style={{
-                                        backgroundColor: 'var(--surface)',
-                                        border: '1px solid var(--glass-border)',
-                                        color: 'var(--text-main)',
-                                        caretColor: 'var(--primary)',
-                                    }}
-                                    onFocus={e => {
-                                        e.currentTarget.style.boxShadow = '0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent)';
-                                        e.currentTarget.style.borderColor = 'var(--primary)';
-                                    }}
-                                    onBlur={e => {
-                                        e.currentTarget.style.boxShadow = 'none';
-                                        e.currentTarget.style.borderColor = 'var(--glass-border)';
-                                    }}
-                                />
-
-                                <div
-                                    type="submit"
-                                    className="absolute right-1.75 top-2.25 px-4 py-1.5 text-xs font-bold flex items-center gap-1 transition-all hover:brightness-110"
-                                    style={{
-                                        backgroundColor: 'var(--primary)',
-                                        color: '#ffffff',
-                                    }}
-                                >
-                                    Join
-                                    <ArrowUpRight className="w-3.5 h-3.5" />
-                                </div>
-
-                                {/* <button
-                                    type="submit"
-                                    className="absolute right-1.75 top-2.25 px-4 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all hover:brightness-110"
-                                    style={{
-                                        backgroundColor: 'var(--primary)',
-                                        color: '#ffffff',
-                                    }}
-                                >
-                                    Join
-                                    <ArrowUpRight className="w-3.5 h-3.5" />
-                                </button> */}
-
-                            </form>
-                        </div>
+                    <div className="flex min-w-0 flex-col gap-8 lg:w-2/3 lg:gap-10">
 
                         {/* Bottom: Links Container */}
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-8 pb-4 justify-items-end">
+                        <div className="grid grid-cols-2 justify-items-start gap-x-6 gap-y-8 pb-2 sm:grid-cols-3">
                             {Object.entries(footerLinks).map(([category, links]) => (
                                 <div key={category} className="space-y-5">
                                     <h4
-                                        className="font-bold text-[16px] uppercase tracking-widest opacity-80"
+                                        className="font-bold text-sm uppercase tracking-widest opacity-80 sm:text-[16px]"
                                         style={{ color: 'var(--text-main)' }}
                                     >
                                         {category}
@@ -223,7 +142,7 @@ export default function Footer() {
 
                 {/* Final Bottom Bar */}
                 <div
-                    className="mt-5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 border-t"
+                    className="mt-5 pt-6 flex flex-col md:flex-row justify-between items-center gap-4 border-t"
                     style={{ borderColor: 'var(--glass-border)' }}
                 >
                     <p

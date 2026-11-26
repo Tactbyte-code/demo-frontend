@@ -1,50 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useAuthStore } from "@/store/authStore";
-import { ArrowUpRight, MessageSquare, Smartphone, Lightbulb, Sparkles, ArrowRight, User } from "lucide-react";
-import LoginModal from "@/components/auth/loginModal/LoginModal";
-
-const features = [
-  {
-    number: "01",
-    title: "Validate Idea",
-    description: "Evaluate your startup idea through market demand, customer pain points, competition, and economics.",
-    href: "/validate-idea",
-    icon: Lightbulb,
-    iconColor: "text-[#FA418B]",
-    iconBg: "bg-[#FA418B]/10",
-    hoverBorder: "hover:border-[#FA418B]/50",
-    hoverIcon: "group-hover:bg-[#FA418B] group-hover:text-white",
-    tag: "Validate your thinking",
-  },
-  {
-    number: "02",
-    title: "Reddit Analysis",
-    description: "Discover real user frustrations, recurring problems, and unmet needs through conversations across Reddit.",
-    href: "/reddit",
-    icon: MessageSquare,
-    iconColor: "text-[#7138D5]",
-    iconBg: "bg-[#7138D5]/10",
-    hoverBorder: "hover:border-[#9326D5]/50",
-    hoverIcon: "group-hover:bg-[#7138D5] group-hover:text-white",
-    tag: "Explore communities",
-  },
-  {
-    number: "03",
-    title: "Play Store Analysis",
-    description: "Understand what users love, dislike, and wish existed by analyzing app reviews and feedback.",
-    href: "/playstore",
-    icon: Smartphone,
-    iconColor: "text-[#C12AAE]",
-    iconBg: "bg-[#C12AAE]/10",
-    hoverBorder: "hover:border-[#D82C9E]/50",
-    hoverIcon: "group-hover:bg-[#C12AAE] group-hover:text-white",
-    tag: "Analyze app reviews",
-  },
-];
+import { ArrowUpRight, Sparkles } from "lucide-react";
+import ProblemSection from "@/components/ProblemSection";
+import SolutionSection from "@/components/SolutionSection";
+import TargetAudience from "@/components/TargetAudience";
+import SiteHeader from "@/components/layout/SiteHeader";
+import Footer from "@/components/Footer";
+import { features, purpleTheme } from "@/components/layout/siteNav";
 
 export default function HomePage() {
   const user = useAuthStore((state) => state.user);
@@ -53,47 +17,17 @@ export default function HomePage() {
   console.log('user: ', user);
   console.log('firebaseUser: ', firebaseUser);
 
-  const [showLoginModal, setShowLoginModal] = useState(false);
-
-  const handleLoginSuccess = () => setShowLoginModal(false);
 
   return (
-    <main className="relative flex min-h-screen flex-col overflow-hidden bg-[#FDFBFF] text-[#292333] lg:h-screen lg:min-h-0">
+    <main className="relative flex min-h-screen flex-col overflow-clip bg-[#FDFBFF] text-[#292333]">
       {/* Background decoration */}
       <div className="pointer-events-none absolute -right-32 -top-40 h-[450px] w-[450px] rounded-full bg-[#D82C9E]/10 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-40 -left-32 h-[450px] w-[450px] rounded-full bg-[#5F19C5]/10 blur-3xl" />
 
-      {/* Navbar */}
-      <header className="relative z-10 flex h-[88px] shrink-0 items-center justify-between border-b border-[#EAE2F1] px-5 sm:px-10 lg:px-16">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-0">
-          <div className="relative h-18 w-18 shrink-0">
-            <Image src="/images/logo-new-no-bg.png" alt="ProblemPulse Logo" fill className="object-contain transition-all" priority />
-          </div>
-          <span className="bg-linear-to-r from-[#5F19C5] via-[#9326D5] to-[#FA418B] bg-clip-text text-2xl font-bold tracking-tight whitespace-nowrap text-transparent">ProblemPulse</span>
-        </Link>
-
-        {/* Navbar actions */}
-        <div className="flex items-center gap-3">
-          {user ? (
-            <Link
-              href="/my-account"
-              className="inline-flex items-center gap-2 rounded-lg bg-linear-to-r from-[#5F19C5] to-[#FA418B] px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-[#9326D5]/20 transition hover:opacity-90"
-            >
-              <User className="h-4 w-4" />
-              My Account
-            </Link>
-          ) : (
-            <button onClick={() => setShowLoginModal(true)} className="flex items-center justify-center gap-2 rounded-lg bg-linear-to-r from-[#5F19C5] via-[#9326D5] to-[#FA418B] px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-[#9326D5]/20 transition hover:scale-[1.02] hover:shadow-lg">
-              Get Started
-              <ArrowRight className="size-4" />
-            </button>
-          )}
-        </div>
-      </header>
+      <SiteHeader />
 
       {/* Main content */}
-      <section className="relative z-10 flex flex-1 flex-col justify-center px-6 py-12 sm:px-10 lg:px-16 lg:py-8">
+      <section className="relative z-10 flex min-h-[calc(100svh-88px)] flex-1 flex-col justify-center px-6 py-12 sm:px-10 lg:px-16 lg:py-8">
         {/* Hero */}
         <div className="mx-auto mb-10 max-w-3xl text-center lg:mb-12">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#D82C9E]/20 bg-linear-to-r from-[#5F19C5]/5 via-[#9326D5]/5 to-[#FA418B]/10 px-4 py-2 text-xs font-semibold tracking-wide text-[#9326D5]">
@@ -146,14 +80,17 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="relative z-10 flex shrink-0 flex-col items-center justify-between gap-2 border-t border-[#EAE2F1] px-6 py-4 text-xs text-[#968AA3] sm:flex-row sm:px-10 lg:px-16">
-        <p>© {new Date().getFullYear()} ProblemPulse. All rights reserved.</p>
-        <p>Built for founders, builders, and curious minds.</p>
-      </footer>
+      {/* Landing sections (nav targets) */}
+      <div className="relative z-10" style={purpleTheme}>
+        <ProblemSection />
+        <SolutionSection />
+        <TargetAudience />
+      </div>
 
-      {/* Login Modal */}
-      {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} onLoginSuccess={handleLoginSuccess} />}
+      {/* Footer */}
+      <div className="relative z-10" style={purpleTheme}>
+        <Footer />
+      </div>
     </main>
   );
 }
