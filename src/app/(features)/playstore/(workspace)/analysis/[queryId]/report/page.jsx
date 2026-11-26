@@ -621,21 +621,21 @@ export default function PlaystoreReportPage() {
     };
 
     return (
-        <div className="mx-auto w-full max-w-5xl px-4 py-8">
+        <div className="mx-auto w-full max-w-full px-9 py-8">
             <button
-                onClick={() => router.push("/playstore")}
+                onClick={() => router.push("/playstore/analysis")}
                 className="mb-5 flex cursor-pointer items-center gap-2 text-xs font-semibold uppercase tracking-widest text-slate-400 transition-colors hover:text-[#01875F]"
             >
-                <ArrowLeft className="h-3.5 w-3.5" /> Back
+                <ArrowLeft className="h-3.5 w-3.5" />Back
             </button>
 
             {/* Hero */}
-            <div className="overflow-hidden rounded-3xl border border-emerald-100/80 bg-white shadow-[0_16px_60px_rgba(1,135,95,0.10)]">
-                <div className="h-1.5 w-full bg-gradient-to-r from-[#00A0FF] via-[#00D95F] to-[#FFD500]" />
+            <div className="overflow-hidden rounded-lg border border-emerald-100/80 bg-white shadow-[0_16px_60px_rgba(1,135,95,0.10)]">
+                <div className="h-1.5 w-full bg-linear-to-r from-[#00A0FF] via-[#00D95F] to-[#FFD500]" />
 
                 <div className="flex flex-col gap-6 p-5 sm:p-7 md:flex-row md:items-center md:justify-between">
                     <div className="flex min-w-0 items-center gap-4">
-                        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#01875F] to-[#00B67A] text-white shadow-lg shadow-emerald-200">
+                        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#01875F] to-[#00B67A] text-white shadow-lg shadow-emerald-200">
                             <Smartphone size={26} />
                         </div>
                         <div className="min-w-0">
@@ -660,18 +660,18 @@ export default function PlaystoreReportPage() {
 
                     {/* Key stats */}
                     <div className="grid shrink-0 grid-cols-3 gap-3 sm:gap-5">
-                        <div className="rounded-2xl border border-emerald-100 bg-[#F7FCF9] px-4 py-3 text-center">
+                        <div className="rounded-lg border border-emerald-100 bg-[#F7FCF9] px-4 py-3 text-center">
                             <p className="text-2xl font-bold leading-none text-[#0F2A22]">{avg != null ? avg.toFixed(1) : "—"}</p>
                             <div className="mt-1.5 flex justify-center">
                                 <Stars score={avg ?? 0} size={10} />
                             </div>
                             <p className="mt-1 text-[10px] text-slate-400">{totalRatings} reviews</p>
                         </div>
-                        <div className="rounded-2xl border border-emerald-100 bg-[#F7FCF9] px-4 py-3 text-center">
+                        <div className="rounded-lg border border-emerald-100 bg-[#F7FCF9] px-4 py-3 text-center">
                             <p className="text-2xl font-bold leading-none text-[#0F2A22]">{summary.total_signals ?? "—"}</p>
                             <p className="mt-2.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">Signals</p>
                         </div>
-                        <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-emerald-100 bg-[#F7FCF9] px-4 py-3">
+                        <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-emerald-100 bg-[#F7FCF9] px-4 py-3">
                             <SentimentBadge sentiment={summary.overall_sentiment} small />
                             <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Overall</p>
                         </div>
@@ -682,7 +682,7 @@ export default function PlaystoreReportPage() {
             {/* Tab bar */}
             <div
                 ref={tabBarRef}
-                className="sticky top-0 z-20 mt-5 flex overflow-x-auto rounded-2xl border border-emerald-100 bg-white/90 p-1.5 shadow-sm backdrop-blur"
+                className="sticky top-0 z-20 mt-5 flex overflow-x-auto rounded-md border border-emerald-100 bg-white/90 p-1.5 shadow-sm backdrop-blur"
             >
                 {TABS.map((tab) => {
                     const active = activeTab === tab.id;
@@ -693,13 +693,13 @@ export default function PlaystoreReportPage() {
                             key={tab.id}
                             ref={(el) => (tabRefs.current[tab.id] = el)}
                             onClick={() => changeTab(tab.id)}
-                            className={`relative flex shrink-0 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-4 py-2.5 text-xs font-semibold transition-colors md:flex-1 ${active ? "text-white" : "text-slate-500 hover:text-[#01875F]"
+                            className={`relative flex shrink-0 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-4 py-2.5 text-xs font-semibold transition-colors md:flex-1 ${active ? "text-white" : "text-slate-500 hover:text-[#01875F]"
                                 }`}
                         >
                             {active && (
                                 <motion.span
                                     layoutId="playstore-report-tab"
-                                    className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#01875F] to-[#00B67A] shadow-md shadow-emerald-200"
+                                    className="absolute inset-0 rounded-md bg-linear-to-r from-[#01875F] to-[#00B67A] shadow-md shadow-emerald-200"
                                     transition={{ type: "spring", stiffness: 320, damping: 30 }}
                                 />
                             )}
