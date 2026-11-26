@@ -63,21 +63,38 @@ export default function RedditAnalysisPage() {
 
     useEffect(() => {
         if (!status) return;
-        const once = (key, fn) => {
-            if (firedRef.current.has(key)) return;
-            firedRef.current.add(key);
-            fn();
-        };
 
         if (status === RSTATUS.CLARIFIED) {
-            once(RSTATUS.CLARIFIED, () => searchMutation.mutate());
+            const key = `${queryId}:${RSTATUS.CLARIFIED}`;
+
+            if (firedRef.current.has(key)) return;
+
+            firedRef.current.add(key);
+
+            searchMutation.mutate(undefined, {
+                onError: (error) => {
+                    firedRef.current.delete(key);
+                    console.error("Reddit search trigger failed:", error);
+                },
+            });
         }
 
         if (status === RSTATUS.SEARCH_COMPLETE) {
-            once(RSTATUS.SEARCH_COMPLETE, () => summarizeMutation.mutate());
+            const key = `${queryId}:${RSTATUS.SEARCH_COMPLETE}`;
+
+            if (firedRef.current.has(key)) return;
+
+            firedRef.current.add(key);
+
+            summarizeMutation.mutate(undefined, {
+                onError: (error) => {
+                    firedRef.current.delete(key);
+                    console.error("Reddit summarize trigger failed:", error);
+                },
+            });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [status]);
+    }, [status, queryId]);
 
     // Allow the actions to fire again after a retry resets the status.
     const handleRetry = () => {
