@@ -323,8 +323,8 @@ export default function PlaystoreWorkspaceSidebar({
                                                 onClick={() => setMobileOpen(false)}
                                                 title={collapsed ? item.title : undefined}
                                                 className={`flex w-full min-w-0 items-center gap-3 overflow-hidden rounded-md border px-[14px] py-2.5 text-sm font-medium transition-all duration-200 ${isActive
-                                                        ? "border-white/15 bg-white/10 text-white"
-                                                        : "border-transparent text-[#B9DCC2]/70 hover:border-white/10 hover:bg-white/5 hover:text-white"
+                                                    ? "border-white/15 bg-white/10 text-white"
+                                                    : "border-transparent text-[#B9DCC2]/70 hover:border-white/10 hover:bg-white/5 hover:text-white"
                                                     } ${collapsed ? "justify-center px-0" : ""}`}
                                             >
                                                 <Icon
