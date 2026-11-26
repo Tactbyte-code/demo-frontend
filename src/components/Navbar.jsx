@@ -11,6 +11,7 @@ import {
   Zap,
   Search,
   Briefcase,
+  Home,
   LayoutGrid,
   Menu,
   X,
@@ -110,6 +111,7 @@ export default function Navbar() {
   }, [isFeaturesOpen, isMobileMenuOpen]);
 
   const navItems = [
+    { name: "Home", href: "/home", icon: Home },
     { name: "How It Works", path: "how-it-works", href: "/#how-it-works", icon: Briefcase },
     { name: "Market Friction", path: "market-friction", href: "/#market-friction", icon: AlertTriangle },
     { name: "Who Is It For", path: "who-for", href: "/#who-for", icon: Users },
@@ -199,7 +201,7 @@ export default function Navbar() {
             {/* Center nav */}
             <div className="flex items-center gap-2 text-[13px] font-medium">
               {navItems.map((item) =>
-                item.name != "Pricing" ? (
+                item.path ? (
                   <div
                     key={item.name}
                     // href={item.href}

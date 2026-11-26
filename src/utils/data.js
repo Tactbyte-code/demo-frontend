@@ -348,7 +348,7 @@ export const plans = [
         yearlyPrice: 39,
         description: "For teams scaling fast and needing enterprise-grade tools.",
         accent: "var(--accent)",
-        accentBg: "rgba(0, 229, 255, 0.06)",
+        accentBg: "rgba(216, 44, 158, 0.08)",
         cta: "Upgrade to Plus",
         popular: true,
         credits: {
