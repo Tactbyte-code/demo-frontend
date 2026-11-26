@@ -9,14 +9,12 @@ import {
     BrainCircuit,
     ChartNoAxesCombined,
 } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { getToken } from "@/lib/getToken";
-import api from "@/lib/axios";
-import { useCreateQuery } from "../../hooks/useCreateQuery";
 import { useRouter } from "next/navigation";
-import ValidateIdeaHeader from "./ValidateIdeaHeader";
+import { getToken } from "@/lib/getToken";
+import { initializeGuestSession } from "@/lib/api/guest";
+import { useCreateQuery } from "../../hooks/useCreateQuery";
 import ProductHeader from "@/components/layout/ProductHeader";
+import LoginModal from "@/components/auth/loginModal/LoginModal";
 
 const steps = [
     {
@@ -45,6 +43,8 @@ const ValidateIdeaHero = () => {
     const [idea, setIdea] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
+    const [showLoginModal, setShowLoginModal] = useState(false);
+    const [pendingIdea, setPendingIdea] = useState(null);
 
     const { mutateAsync: submitIdea } = useCreateQuery();
 
@@ -54,6 +54,28 @@ const ValidateIdeaHero = () => {
 
         e.target.style.height = "auto";
         e.target.style.height = `${e.target.scrollHeight}px`;
+    };
+
+    // Submit the validation query and navigate to its analysis page.
+    const submitValidation = async (ideaText) => {
+        const payload = {
+            idea: ideaText,
+        };
+
+        const data = await submitIdea(payload);
+
+        const queryId = data?.id;
+        const status = data?.status;
+
+        if (!queryId || !status) {
+            throw new Error("No query ID was returned from the server.");
+        }
+
+        if (status === "CREATED") {
+            router.push(`/validate-idea/analysis/${queryId}`);
+        } else {
+            throw new Error("Failed to start idea validation. Please try again.");
+        }
     };
 
     const handleValidate = async (e) => {
@@ -66,9 +88,49 @@ const ValidateIdeaHero = () => {
             return;
         }
 
-        const payload = {
-            idea: trimmedIdea,
-        };
+        if (isSubmitting) return;
+
+        try {
+            setError("");
+            setIsSubmitting(true);
+
+            const token = await getToken();
+
+            // Initialize a guest session only when an anonymous
+            // visitor submits a validation request.
+            if (!token) {
+                const guestSession = await initializeGuestSession();
+
+                if (guestSession?.guest_session_created === false) {
+                    setPendingIdea(trimmedIdea);
+                    setShowLoginModal(true);
+                    return;
+                }
+            }
+
+            await submitValidation(trimmedIdea);
+
+        } catch (err) {
+            setError(
+                err.response?.data?.detail ||
+                err.message ||
+                "Failed to submit validation query"
+            );
+
+            console.error("Query submission error:", err);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    // Resume the pending validation after successful login.
+    const handleLoginSuccess = async () => {
+        const ideaText = pendingIdea;
+
+        setShowLoginModal(false);
+        setPendingIdea(null);
+
+        if (!ideaText) return;
 
         try {
             setError("");
@@ -77,28 +139,19 @@ const ValidateIdeaHero = () => {
             const token = await getToken();
 
             if (!token) {
-                await api.post("/guest/session");
+                throw new Error("Authentication failed. Please try again.");
             }
 
-            const data = await submitIdea(payload);
+            await submitValidation(ideaText);
 
-            const queryId = data?.id;
-            const status = data?.status;
-
-            if (!queryId || !status) {
-                throw new Error("No query ID was returned from the server.");
-            }
-
-            if (status === "CREATED") {
-                router.push(`/validate-idea/analysis/${queryId}`);
-            }
         } catch (err) {
             setError(
                 err.response?.data?.detail ||
                 err.message ||
                 "Failed to submit validation query"
             );
-            console.log("Query submission error: ", err);
+
+            console.error("Validation submission error:", err);
         } finally {
             setIsSubmitting(false);
         }
@@ -156,13 +209,6 @@ const ValidateIdeaHero = () => {
                                     validation.
                                 </span>
                             </h1>
-
-                            {/* Description */}
-                            {/* <p className="mx-auto mt-5 max-w-4xl text-[15px] font-medium leading-7 text-[#81709b] sm:text-base lg:text-[17px]">
-                            Don't spend months building something nobody wants.
-                            Discover market demand, customer pain points, and
-                            opportunities before you invest your time and money.
-                        </p> */}
 
                             {/* Idea form */}
                             <form
@@ -238,7 +284,6 @@ const ValidateIdeaHero = () => {
                     <footer className="w-full shrink-0 pb-3 pt-5 lg:pt-3">
                         <div className="mx-auto max-w-[1050px]">
 
-                            {/* Section heading */}
                             <div className="mb-5 flex items-center justify-center gap-3">
                                 <div className="h-px w-10 bg-gradient-to-r from-transparent to-[#D8B9F5]" />
 
@@ -249,7 +294,6 @@ const ValidateIdeaHero = () => {
                                 <div className="h-px w-10 bg-gradient-to-l from-transparent to-[#D8B9F5]" />
                             </div>
 
-                            {/* Steps */}
                             <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto_1fr_auto_1fr] md:items-center md:gap-4">
                                 {steps.map((step, index) => {
                                     const Icon = step.icon;
@@ -257,10 +301,8 @@ const ValidateIdeaHero = () => {
                                     return (
                                         <div key={step.number} className="contents">
 
-                                            {/* Step card */}
                                             <div className="group relative flex items-center gap-4 rounded-2xl border border-[#E9DDF5] bg-white px-5 py-4 shadow-[0_4px_18px_rgba(75,35,120,0.045)] transition-all duration-300 hover:-translate-y-1 hover:border-[#D2B4F0] hover:shadow-[0_12px_28px_rgba(113,56,213,0.11)]">
 
-                                                {/* Icon */}
                                                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#F3E8FF] to-[#FCE7F3] transition-transform duration-300 group-hover:scale-105">
                                                     <Icon
                                                         className="h-6 w-6 text-[#8528DF]"
@@ -268,7 +310,6 @@ const ValidateIdeaHero = () => {
                                                     />
                                                 </div>
 
-                                                {/* Content */}
                                                 <div className="min-w-0">
                                                     <div className="mb-1 flex items-center gap-2">
                                                         <span className="text-[10px] font-bold uppercase tracking-widest text-[#A27BC8]">
@@ -286,7 +327,6 @@ const ValidateIdeaHero = () => {
                                                 </div>
                                             </div>
 
-                                            {/* Connector */}
                                             {index !== steps.length - 1 && (
                                                 <div className="hidden items-center justify-center md:flex">
                                                     <ArrowRight
@@ -301,9 +341,19 @@ const ValidateIdeaHero = () => {
                             </div>
                         </div>
                     </footer>
-
                 </div>
             </section>
+
+            {/* Login modal for returning guest visitors */}
+            {showLoginModal && (
+                <LoginModal
+                    onClose={() => {
+                        setShowLoginModal(false);
+                        setPendingIdea(null);
+                    }}
+                    onLoginSuccess={handleLoginSuccess}
+                />
+            )}
         </>
     );
 };

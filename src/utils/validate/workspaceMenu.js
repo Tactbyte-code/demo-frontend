@@ -13,11 +13,11 @@ export const workspaceMenu = {
     ],
 
     authenticated: [
-        {
-            title: "Dashboard",
-            href: "/validate-idea/dashboard",
-            icon: LayoutDashboard,
-        },
+        // {
+        //     title: "Dashboard",
+        //     href: "/validate-idea/dashboard",
+        //     icon: LayoutDashboard,
+        // },
         {
             title: "Analysis",
             href: "/validate-idea/analysis",

@@ -15,6 +15,9 @@ import {
     ChevronUp,
     UserRound,
     ChevronRight,
+    MessageCircle,
+    Lightbulb,
+    Plus,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
@@ -103,8 +106,8 @@ export default function PlaystoreWorkspaceSidebar({
                     onClick={() => setMobileOpen(false)}
                     title={collapsed ? item.title : undefined}
                     className={`flex w-full min-w-0 items-center gap-3 overflow-hidden rounded-md px-[15px] py-3 text-sm font-medium transition-all duration-200 ${isActive
-                            ? "bg-gradient-to-r from-[#188038] to-[#34A853] text-white shadow-lg shadow-[0_4px_14px_rgba(24,128,56,0.22)]"
-                            : "text-[#C6DCCB] hover:bg-[#34A853]/10 hover:text-white"
+                        ? "bg-gradient-to-r from-[#188038] to-[#34A853] text-white shadow-lg shadow-[0_4px_14px_rgba(24,128,56,0.22)]"
+                        : "text-[#C6DCCB] hover:bg-[#34A853]/10 hover:text-white"
                         }`}
                 >
                     {Icon && (
@@ -180,7 +183,7 @@ export default function PlaystoreWorkspaceSidebar({
                     </div>
 
                     <span className="bg-linear-to-r from-[#FF4500] via-[#FF5A1F] to-[#FF8A50] bg-clip-text text-xl font-bold tracking-tight whitespace-nowrap text-transparent">
-                        ProblemPulse
+                        ProblemPulseAI
                     </span>
                 </Link>
 
@@ -219,8 +222,8 @@ export default function PlaystoreWorkspaceSidebar({
                     },
                 }}
                 className={`fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col overflow-visible bg-[#142B1B] max-lg:!w-[280px] ${mobileOpen
-                        ? "translate-x-0"
-                        : "-translate-x-full lg:translate-x-0"
+                    ? "translate-x-0"
+                    : "-translate-x-full lg:translate-x-0"
                     }`}
                 style={{ width: collapsed ? 72 : 280 }}
             >
@@ -245,15 +248,15 @@ export default function PlaystoreWorkspaceSidebar({
                             className={`min-w-0 ${labelClass(collapsed)}`}
                         >
                             <span className="block text-[15px] font-bold tracking-tight text-white">
-                                ProblemPulse
+                                ProblemPulseAI
                             </span>
 
-                            <div className="mt-1 flex items-center gap-1.5">
+                            {/* <div className="mt-1 flex items-center gap-1.5">
                                 <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#FF4500]" />
                                 <span className="text-[10px] font-semibold uppercase tracking-[0.13em] text-orange-100/65">
                                     Playstore Workspace
                                 </span>
-                            </div>
+                            </div> */}
                         </div>
                     </Link>
 
@@ -277,7 +280,6 @@ export default function PlaystoreWorkspaceSidebar({
                         </motion.span>
                     </button>
                 </div>
-
                 {/* Navigation */}
                 <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-3 py-3">
                     {loading ? (
@@ -285,9 +287,100 @@ export default function PlaystoreWorkspaceSidebar({
                             <Loader2 size={18} className="animate-spin" />
                         </div>
                     ) : (
-                        <nav className="flex flex-col gap-2">
-                            {renderMenuItems()}
-                        </nav>
+                        <div className="flex flex-col gap-5">
+
+                            {/* Other Workspaces */}
+                            <div>
+                                <p
+                                    className={`mb-2 px-3 text-[9px] font-bold uppercase tracking-[0.16em] text-[#B9DCC2]/45 ${labelClass(collapsed)}`}
+                                    aria-hidden={collapsed}
+                                >
+                                    Other Workspaces
+                                </p>
+
+                                <nav className="flex flex-col gap-1">
+                                    {[
+                                        {
+                                            title: "Reddit Analysis",
+                                            href: "/reddit",
+                                            icon: MessageCircle,
+                                        },
+                                        {
+                                            title: "Validate Idea",
+                                            href: "/validate-idea",
+                                            icon: Lightbulb,
+                                        },
+                                    ].map((item) => {
+                                        const Icon = item.icon;
+                                        const isActive =
+                                            pathname === item.href ||
+                                            pathname.startsWith(`${item.href}/`);
+
+                                        return (
+                                            <Link
+                                                key={item.href}
+                                                href={item.href}
+                                                onClick={() => setMobileOpen(false)}
+                                                title={collapsed ? item.title : undefined}
+                                                className={`flex w-full min-w-0 items-center gap-3 overflow-hidden rounded-md border px-[14px] py-2.5 text-sm font-medium transition-all duration-200 ${isActive
+                                                        ? "border-white/15 bg-white/10 text-white"
+                                                        : "border-transparent text-[#B9DCC2]/70 hover:border-white/10 hover:bg-white/5 hover:text-white"
+                                                    } ${collapsed ? "justify-center px-0" : ""}`}
+                                            >
+                                                <Icon
+                                                    size={17}
+                                                    strokeWidth={1.8}
+                                                    className="shrink-0"
+                                                />
+
+                                                <span
+                                                    aria-hidden={collapsed}
+                                                    className={labelClass(collapsed)}
+                                                >
+                                                    {item.title}
+                                                </span>
+                                            </Link>
+                                        );
+                                    })}
+                                </nav>
+                            </div>
+
+                            {/* New Analysis */}
+                            <Link
+                                href="/playstore"
+                                onClick={() => setMobileOpen(false)}
+                                title={collapsed ? "Start New Analysis" : undefined}
+                                className={`flex items-center justify-center gap-2.5 rounded-md bg-gradient-to-r from-[#188038] to-[#34A853] px-3 py-3 text-sm font-semibold text-white shadow-md shadow-green-950/20 transition-all hover:brightness-110 ${collapsed ? "px-0" : ""
+                                    }`}
+                            >
+                                <Plus size={18} strokeWidth={2.5} className="shrink-0" />
+
+                                <span
+                                    aria-hidden={collapsed}
+                                    className={labelClass(collapsed)}
+                                >
+                                    Start New Analysis
+                                </span>
+                            </Link>
+
+                            {/* Divider */}
+                            <div className="border-t border-white/10" />
+
+                            {/* Play Store Menu */}
+                            <div>
+                                <p
+                                    className={`mb-2 px-3 text-[9px] font-bold uppercase tracking-[0.16em] text-[#B9DCC2]/45 ${labelClass(collapsed)}`}
+                                    aria-hidden={collapsed}
+                                >
+                                    Play Store
+                                </p>
+
+                                <nav className="flex flex-col gap-2">
+                                    {renderMenuItems()}
+                                </nav>
+                            </div>
+
+                        </div>
                     )}
                 </div>
 
@@ -330,8 +423,8 @@ export default function PlaystoreWorkspaceSidebar({
                                             }}
                                             transition={{ duration: 0.18 }}
                                             className={`absolute z-50 ${collapsed
-                                                    ? "bottom-0 left-full ml-3 w-56 origin-bottom-left"
-                                                    : "bottom-full left-0 right-0 mb-2 origin-bottom"
+                                                ? "bottom-0 left-full ml-3 w-56 origin-bottom-left"
+                                                : "bottom-full left-0 right-0 mb-2 origin-bottom"
                                                 } overflow-hidden rounded-lg bg-gradient-to-br from-[#24432D] via-[#1B3524] to-[#142B1B] p-1.5 shadow-[0_0_0_1px_rgba(52,168,83,0.22),0_0_18px_2px_rgba(0,0,0,0.4),0_0_30px_5px_rgba(52,168,83,0.12)]`}
                                         >
                                             <Link
@@ -428,8 +521,8 @@ export default function PlaystoreWorkspaceSidebar({
                                         }}
                                         transition={{ duration: 0.2 }}
                                         className={`shrink-0 transition-opacity duration-200 ${collapsed
-                                                ? "opacity-0"
-                                                : "opacity-100 delay-100"
+                                            ? "opacity-0"
+                                            : "opacity-100 delay-100"
                                             }`}
                                     >
                                         <ChevronUp

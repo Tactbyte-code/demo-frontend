@@ -204,30 +204,32 @@ const PlaystoreHero = () => {
 
             const token = await getToken();
 
-            // --------------------------------------------------
-            // 1. Anonymous visitor
-            // --------------------------------------------------
+            console.log("Authenticated token exists: ", !!token);
 
             if (!token) {
                 const guestSession = await initializeGuestSession();
 
-                // Returning anonymous visitor.
-                // Require login before processing the analysis.
+                console.log("Guest session response:", guestSession);
+                console.log(
+                    "Guest session created:",
+                    guestSession?.guest_session_created
+                );
+
                 if (guestSession?.guest_session_created === false) {
+                    console.log("Returning anonymous visitor - showing login modal");
+
                     setPendingAppId(appId);
                     setShowLoginModal(true);
 
                     return;
                 }
 
-                // First-time anonymous visitor.
-                // Allow the analysis to proceed without login.
+                console.log("First-time anonymous visitor - proceeding");
             }
 
             // --------------------------------------------------
             // 2. Submit analysis
             // --------------------------------------------------
-
             await submitAnalysis(appId);
 
         } catch (err) {
