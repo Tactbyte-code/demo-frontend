@@ -84,7 +84,7 @@ export default function ProductHeader() {
                             <Image src="/images/logo-new-no-bg.png" alt="ProblemPulse" fill priority sizes="56px" className="object-contain" />
                         </motion.div>
                         <span className="hidden whitespace-nowrap bg-linear-to-r from-[#7138D5] via-[#C12AAE] to-[#FF4D83] bg-clip-text text-xl font-bold tracking-tight text-transparent sm:inline">
-                            ProblemPulse
+                            ProblemPulseAI
                         </span>
                     </Link>
 

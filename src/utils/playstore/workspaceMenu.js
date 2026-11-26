@@ -1,7 +1,4 @@
-import {
-    LayoutDashboard,
-    ChartNoAxesCombined,
-} from "lucide-react";
+import { ChartNoAxesCombined } from "lucide-react";
 
 export const workspaceMenu = {
     guest: [
@@ -11,7 +8,6 @@ export const workspaceMenu = {
             icon: ChartNoAxesCombined,
         },
     ],
-
     authenticated: [
         // {
         //     title: "Dashboard",

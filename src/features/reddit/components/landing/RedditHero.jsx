@@ -16,6 +16,9 @@ import { useCreateQuery } from "../../hooks/useCreateQuery";
 import { useAuthStore } from "@/store/authStore";
 import { useCreditStore } from "@/store/useCreditStore";
 import CreditPurchaseModal from "@/components/credits/CreditPurchaseModal";
+import { getToken } from "@/lib/getToken";
+import { initializeGuestSession } from "@/lib/api/guest";
+import LoginModal from "@/components/auth/loginModal/LoginModal";
 
 const insights = [
     {
@@ -49,6 +52,9 @@ export default function RedditHero() {
     const [showCreditPurchaseModal, setShowCreditPurchaseModal] = useState(false);
     const [isCheckingCredits, setIsCheckingCredits] = useState(false);
 
+    const [showLoginModal, setShowLoginModal] = useState(false);
+    const [pendingQuery, setPendingQuery] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -60,10 +66,39 @@ export default function RedditHero() {
             return;
         }
 
+        if (isSubmitting) return;
+
         try {
             setError("");
+            setIsSubmitting(true);
 
-            if (user) {
+            const token = await getToken();
+
+            console.log("Authenticated token exists:", !!token);
+
+            if (!token) {
+                const guestSession = await initializeGuestSession();
+
+                console.log("Guest session response:", guestSession);
+                console.log(
+                    "Guest session created:",
+                    guestSession?.guest_session_created
+                );
+
+                if (guestSession?.guest_session_created === false) {
+                    console.log("Returning anonymous visitor - showing login modal");
+
+                    setPendingQuery(trimmedQuery);
+                    setShowLoginModal(true);
+
+                    return;
+                }
+
+                console.log("First-time anonymous visitor - proceeding");
+            }
+
+            // Check credits for authenticated users.
+            if (token) {
                 setIsCheckingCredits(true);
 
                 await getCredits(true);
@@ -82,6 +117,7 @@ export default function RedditHero() {
                 }
             }
 
+            // Submit Reddit analysis.
             const data = await submitRedditQuery(trimmedQuery);
 
             if (!data?.id) {
@@ -89,13 +125,74 @@ export default function RedditHero() {
             }
 
             router.push(`/reddit/analysis/${data.id}`);
+
         } catch (err) {
             setError(
                 err.response?.data?.detail ||
                 err.message ||
                 "Failed to start Reddit analysis."
             );
+
+            console.error("Reddit submission error:", err);
         } finally {
+            setIsSubmitting(false);
+            setIsCheckingCredits(false);
+        }
+    };
+
+    const handleLoginSuccess = async () => {
+        const queryText = pendingQuery;
+
+        setShowLoginModal(false);
+        setPendingQuery(null);
+
+        if (!queryText) return;
+
+        try {
+            setError("");
+            setIsSubmitting(true);
+
+            // Resume the pending Reddit analysis after login.
+            const token = await getToken();
+
+            if (!token) {
+                throw new Error("Authentication failed. Please try again.");
+            }
+
+            await getCredits(true);
+
+            const { credits, hasFetched } = useCreditStore.getState();
+
+            if (!hasFetched) {
+                throw new Error(
+                    "Unable to verify your credit balance. Please try again."
+                );
+            }
+
+            if (credits < 30) {
+                setShowCreditPurchaseModal(true);
+                return;
+            }
+
+            const data = await submitRedditQuery(queryText);
+
+            if (!data?.id) {
+                throw new Error("No query ID was returned from the server.");
+            }
+
+            // Navigate to the newly created Reddit analysis.
+            router.push(`/reddit/analysis/${data.id}`);
+
+        } catch (err) {
+            setError(
+                err.response?.data?.detail ||
+                err.message ||
+                "Failed to start Reddit analysis."
+            );
+
+            console.error("Reddit submission error:", err);
+        } finally {
+            setIsSubmitting(false);
             setIsCheckingCredits(false);
         }
     };
@@ -268,8 +365,12 @@ export default function RedditHero() {
 
                                     <button
                                         type="submit"
-                                        disabled={isPending || isCheckingCredits || !query.trim()}
-                                        className="flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-lg bg-[#FF4500] px-7 text-sm font-bold text-white shadow-md shadow-[#FF4500]/20 transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#E83F00] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
+                                        disabled={
+                                            isPending ||
+                                            isCheckingCredits ||
+                                            isSubmitting ||
+                                            !query.trim()
+                                        } className="flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-lg bg-[#FF4500] px-7 text-sm font-bold text-white shadow-md shadow-[#FF4500]/20 transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#E83F00] hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
                                     >
                                         {isCheckingCredits ? (
                                             <>
@@ -383,6 +484,16 @@ export default function RedditHero() {
                 onPurchaseSuccess={() => getCredits(true)}
                 redirectAfterPurchase={true}
             />
+
+            {showLoginModal && (
+                <LoginModal
+                    onClose={() => {
+                        setShowLoginModal(false);
+                        setPendingQuery(null);
+                    }}
+                    onLoginSuccess={handleLoginSuccess}
+                />
+            )}
         </>
     );
 }

@@ -14,6 +14,9 @@ import {
     ChevronUp,
     UserRound,
     ChevronRight,
+    MessageCircle,
+    Smartphone,
+    Plus,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/store/authStore";
@@ -43,9 +46,9 @@ export default function WorkspaceSidebar({
     const router = useRouter();
 
     const user = useAuthStore((state) => state.user);
-    console.log('user; ', user);
-
+    const firebaseUser = useAuthStore((state) => state.firebaseUser);
     const loading = useAuthStore((state) => state.loading);
+    const clearAuth = useAuthStore((state) => state.clearAuth);
 
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -107,7 +110,7 @@ export default function WorkspaceSidebar({
             setIsLoggingOut(true);
 
             await signOut(auth);
-
+            clearAuth();
             useCreditStore.getState().resetCredits();
 
             setUserMenuOpen(false);
@@ -121,8 +124,9 @@ export default function WorkspaceSidebar({
         }
     };
 
-    const userName = user?.displayName || "My Account";
+    const userName = user?.display_name || user?.full_name || "My Account";
     const userEmail = user?.email || "";
+    const userPhoto = user?.photo_url || null;
     const userInitial = userName.charAt(0).toUpperCase();
 
     return (
@@ -221,16 +225,16 @@ export default function WorkspaceSidebar({
                             className={`min-w-0 ${labelClass(collapsed)}`}
                         >
                             <span className="block text-[15px] font-bold tracking-tight text-white">
-                                ProblemPulse
+                                ProblemPulseAI
                             </span>
 
-                            <div className="mt-1 flex items-center gap-1.5">
+                            {/* <div className="mt-1 flex items-center gap-1.5">
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shrink-0" />
 
                                 <span className="text-[10px] font-semibold uppercase tracking-[0.13em] text-purple-200/80">
                                     Validate Idea Workspace
                                 </span>
-                            </div>
+                            </div> */}
                         </div>
                     </Link>
 
@@ -268,9 +272,117 @@ export default function WorkspaceSidebar({
                             <Loader2 size={18} className="animate-spin" />
                         </div>
                     ) : (
-                        <nav className="flex flex-col gap-2">
-                            {renderMenuItems()}
-                        </nav>
+                        <div className="flex flex-col gap-5">
+                            {/* Other Workspaces */}
+                            <div>
+                                <p
+                                    className={`mb-2 px-3 text-[9px] font-bold uppercase tracking-[0.15em] text-purple-300/50 ${labelClass(collapsed)}`}
+                                    aria-hidden={collapsed}
+                                >
+                                    Other Workspaces
+                                </p>
+
+                                <nav className="flex flex-col gap-1">
+                                    {[
+                                        {
+                                            title: "Reddit Analysis",
+                                            href: "/reddit",
+                                            icon: MessageCircle,
+                                        },
+                                        {
+                                            title: "Play Store Analysis",
+                                            href: "/playstore",
+                                            icon: Smartphone,
+                                        },
+                                    ].map((item) => {
+                                        const Icon = item.icon;
+
+                                        const isActive =
+                                            pathname === item.href ||
+                                            pathname.startsWith(`${item.href}/`);
+
+                                        return (
+                                            <Link
+                                                key={item.href}
+                                                href={item.href}
+                                                onClick={() => setMobileOpen(false)}
+                                                title={collapsed ? item.title : undefined}
+                                                className={`
+                                    flex w-full min-w-0 items-center gap-3
+                                    overflow-hidden
+                                    rounded-md border border-transparent
+                                    px-[15px] py-3
+                                    text-sm font-medium
+                                    transition-colors duration-200
+                                    ${isActive
+                                                        ? "border-white/15 bg-white/10 text-white"
+                                                        : "text-purple-200/70 hover:border-white/10 hover:bg-white/5 hover:text-white"
+                                                    }
+                                    ${collapsed ? "justify-center px-0" : ""}
+                                `}
+                                            >
+                                                <Icon
+                                                    size={17}
+                                                    strokeWidth={2}
+                                                    className="shrink-0"
+                                                />
+
+                                                <span
+                                                    aria-hidden={collapsed}
+                                                    className={labelClass(collapsed)}
+                                                >
+                                                    {item.title}
+                                                </span>
+                                            </Link>
+                                        );
+                                    })}
+                                </nav>
+                            </div>
+
+                            {/* New Analysis */}
+                            <Link
+                                href="/validate-idea"
+                                onClick={() => setMobileOpen(false)}
+                                title={collapsed ? "Start New Analysis" : undefined}
+                                className={`
+                    flex w-full min-w-0 items-center gap-3
+                    overflow-hidden rounded-md
+                    bg-linear-to-r from-[#7138D5] to-[#9326D5]
+                    px-[15px] py-3
+                    text-sm font-semibold text-white
+                    shadow-lg shadow-purple-950/20
+                    transition-all duration-200
+                    hover:brightness-110
+                    ${collapsed ? "justify-center px-0" : ""}
+                `}
+                            >
+                                <Plus size={18} strokeWidth={2.5} className="shrink-0" />
+
+                                <span
+                                    aria-hidden={collapsed}
+                                    className={labelClass(collapsed)}
+                                >
+                                    Start New Analysis
+                                </span>
+                            </Link>
+
+                            {/* Divider */}
+                            <div className="border-t border-white/10" />
+
+                            {/* Validate Idea Menu */}
+                            <div>
+                                <p
+                                    className={`mb-2 px-3 text-[9px] font-bold uppercase tracking-[0.15em] text-purple-300/50 ${labelClass(collapsed)}`}
+                                    aria-hidden={collapsed}
+                                >
+                                    Validate Idea
+                                </p>
+
+                                <nav className="flex flex-col gap-2">
+                                    {renderMenuItems()}
+                                </nav>
+                            </div>
+                        </div>
                     )}
                 </div>
 
@@ -334,15 +446,15 @@ export default function WorkspaceSidebar({
                                                     setMobileOpen(false);
                                                 }}
                                                 className="
-                    flex items-center gap-3
-                    rounded-lg px-3 py-2.5
-                    text-sm font-medium text-purple-50
-                    transition-colors
-                    hover:bg-white/10 hover:text-white
-                "
+        flex items-center gap-3
+        rounded-lg px-3 py-2.5
+        text-sm font-medium text-purple-50
+        transition-colors
+        hover:bg-white/10 hover:text-white
+    "
                                             >
                                                 <Settings size={17} />
-                                                <span>Settings</span>
+                                                <span>My Account</span>
                                             </Link>
 
                                             <Link
@@ -352,12 +464,12 @@ export default function WorkspaceSidebar({
                                                     setMobileOpen(false);
                                                 }}
                                                 className="
-                    flex items-center gap-3
-                    rounded-lg px-3 py-2.5
-                    text-sm font-medium text-purple-50
-                    transition-colors
-                    hover:bg-white/10 hover:text-white
-                "
+        flex items-center gap-3
+        rounded-lg px-3 py-2.5
+        text-sm font-medium text-purple-50
+        transition-colors
+        hover:bg-white/10 hover:text-white
+    "
                                             >
                                                 <Headset size={17} />
                                                 <span>Support</span>
@@ -409,15 +521,15 @@ export default function WorkspaceSidebar({
                                 >
                                     {/* Avatar */}
                                     <div className="
-                                        flex h-9 w-9 shrink-0 items-center justify-center
-                                        overflow-hidden rounded-full
-                                        border border-purple-300/30
-                                        bg-linear-to-br from-[#8B5CF6] to-[#C026D3]
-                                        text-sm font-bold text-white
-                                    ">
-                                        {user?.photoURL ? (
+    flex h-9 w-9 shrink-0 items-center justify-center
+    overflow-hidden rounded-full
+    border border-purple-300/30
+    bg-linear-to-br from-[#8B5CF6] to-[#C026D3]
+    text-sm font-bold text-white
+">
+                                        {userPhoto ? (
                                             <img
-                                                src={user.photoURL}
+                                                src={userPhoto}
                                                 alt={userName}
                                                 className="h-full w-full object-cover"
                                             />
