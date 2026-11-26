@@ -122,7 +122,6 @@ export const useTriggerSearch = (queryId) => {
 };
 
 /** Summarization is streamed; the stream pushes status updates into the cache. */
-
 export const useTriggerSummarize = (queryId) => {
   const queryClient = useQueryClient();
   const invalidateLists = useInvalidateLists();
@@ -132,44 +131,27 @@ export const useTriggerSummarize = (queryId) => {
       streamRequest({
         queryId,
         endpoint: "summarize",
-
         onStatus: (status) =>
           queryClient.setQueryData(redditKeys.query(queryId), (old) =>
             old ? { ...old, status } : old
           ),
-
-        onAnswer: () => { },
-
+        onAnswer: () => {},
         onFailureReason: (failure_reason) =>
           queryClient.setQueryData(redditKeys.query(queryId), (old) =>
             old ? { ...old, failure_reason } : old
           ),
-
         onFailedAtStep: (failed_at_step) =>
           queryClient.setQueryData(redditKeys.query(queryId), (old) =>
             old ? { ...old, failed_at_step } : old
           ),
-
-        onResults: () => { },
-
+        onResults: () => {},
         onFetchPosts: () =>
-          queryClient.invalidateQueries({
-            queryKey: redditKeys.posts(queryId),
-          }),
-
-        onChunk: () => { },
+          queryClient.invalidateQueries({ queryKey: redditKeys.posts(queryId) }),
+        onChunk: () => {},
       }),
-
-    onError: (error) => {
-      console.error("Reddit summarization failed:", error);
-    },
-
     onSettled: () => {
       invalidateLists();
-
-      queryClient.invalidateQueries({
-        queryKey: redditKeys.query(queryId),
-      });
+      queryClient.invalidateQueries({ queryKey: redditKeys.query(queryId) });
     },
   });
 };

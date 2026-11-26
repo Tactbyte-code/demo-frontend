@@ -19,6 +19,7 @@ import {
 } from "@/features/reddit/hooks/useRedditAnalysis";
 import { RSTATUS } from "@/utils/reddit/status";
 import { useAuthStore } from "@/store/authStore";
+import { useCreditStore } from "@/store/useCreditStore";
 
 // ── Config ────────────────────────────────────────────────────────────────
 const TABS = [
@@ -81,8 +82,8 @@ const SentimentBadge = ({ sentiment, small = false }) => {
 const Pill = ({ label, muted = false }) => (
     <span
         className={`rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${muted
-                ? "border-slate-200 bg-slate-50 text-slate-600"
-                : "border-orange-200 bg-orange-50 text-[#C23B00]"
+            ? "border-slate-200 bg-slate-50 text-slate-600"
+            : "border-orange-200 bg-orange-50 text-[#C23B00]"
             }`}
     >
         {label}
@@ -288,8 +289,8 @@ const ThemesTab = ({ data }) => {
                             key={t.id}
                             onClick={() => setActiveId(t.id)}
                             className={`flex w-50 shrink-0 cursor-pointer flex-col items-start rounded-xl border px-3.5 py-3 text-left transition-all lg:w-full ${active
-                                    ? "border-[#FF4500] bg-orange-50 shadow-sm ring-1 ring-orange-200"
-                                    : "border-orange-100 bg-white hover:border-orange-300 hover:bg-orange-50/40"
+                                ? "border-[#FF4500] bg-orange-50 shadow-sm ring-1 ring-orange-200"
+                                : "border-orange-100 bg-white hover:border-orange-300 hover:bg-orange-50/40"
                                 }`}
                         >
                             <span className={`w-full text-xs font-semibold leading-snug ${active ? "text-[#C23B00]" : "text-[#1A1A1B]"}`}>
@@ -561,6 +562,7 @@ export default function RedditReportPage() {
 
     const user = useAuthStore((s) => s.user);
     const authLoading = useAuthStore((s) => s.loading);
+    const getCredits = useCreditStore((s) => s.getCredits);
 
     const analysisPath = `/reddit/analysis/${queryId}`;
 
@@ -571,6 +573,12 @@ export default function RedditReportPage() {
     const { data: sources = [] } = useRedditPosts(queryId, isCompleted && !!user);
 
     console.log('summary: ', summary);
+
+    useEffect(() => {
+        if (summary) {
+            getCredits(true);
+        }
+    }, [summary, getCredits]);
 
     const [activeTab, setActiveTab] = useState("overview");
     const tabBarRef = useRef(null);
@@ -636,7 +644,7 @@ export default function RedditReportPage() {
     return (
         <div className="mx-auto w-full max-w-full px-8 py-8">
             <button
-                onClick={() => router.push("/dashboard/reddit")}
+                onClick={() => router.push("/reddit")}
                 className="mb-5 flex cursor-pointer items-center gap-2 text-xs font-semibold uppercase tracking-widest text-slate-400 transition-colors hover:text-[#FF4500]"
             >
                 <ArrowLeft className="h-3.5 w-3.5" /> Back
