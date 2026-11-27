@@ -27,7 +27,7 @@ export default function PricingPage() {
     const [user, setUser] = useState(null);
     const [hoveredPlan, setHoveredPlan] = useState(null);
     const [purchasingPlan, setPurchasingPlan] = useState(null);
-    const [isProcessing, setIsProcessing] = useState(false); // full-screen blocking spinner
+    const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState("");
     const [showLoginModal, setShowLoginModal] = useState(false);
 
@@ -70,13 +70,21 @@ export default function PricingPage() {
             }
 
             return;
-        }
+        };
 
         // Existing payment flow for paid plans
         setPurchasingPlan(plan.id);
 
+        let price;
+
+        if (yearly) {
+            price = plan.yearlyPrice;
+        } else {
+            price = plan.monthlyPrice;
+        }
+
         initiatePayment({
-            amount: 1900,
+            amount: price * 100,
             userEmail: user?.email,
             userName: user?.full_name,
             onProcessing: () => setIsProcessing(true),
