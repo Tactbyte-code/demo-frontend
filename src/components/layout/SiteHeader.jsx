@@ -1,26 +1,28 @@
+
 "use client";
 
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useAuthStore } from "@/store/authStore";
+import { signOut } from "firebase/auth";
+import { AnimatePresence, motion } from "framer-motion";
 import {
     ArrowRight,
-    User,
     Zap,
     ChevronDown,
     Menu,
     X,
     Tag,
     LogOut,
-    Settings,
-} from "lucide-react"; import LoginModal from "@/components/auth/loginModal/LoginModal";
-import { scrollToSection } from "@/lib/scrollToSection";
-import { features, navItems, navButtonClass } from "@/components/layout/siteNav";
-import { signOut } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+} from "lucide-react";
+
+import { useAuthStore } from "@/store/authStore";
 import { useCreditStore } from "@/store/useCreditStore";
+import { auth } from "@/lib/firebase";
+import LoginModal from "@/components/auth/loginModal/LoginModal";
+import { scrollToSection } from "@/lib/scrollToSection";
+import { features, navItems } from "@/components/layout/siteNav";
 
 export default function SiteHeader() {
     const user = useAuthStore((state) => state.user);
@@ -31,10 +33,12 @@ export default function SiteHeader() {
     const [featuresOpen, setFeaturesOpen] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
     const [profileOpen, setProfileOpen] = useState(false);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     const profileName = user?.full_name || user?.name || "User";
     const profileEmail = user?.email || "";
-    const profileImage = user?.profile_image_url || user?.photo_url || user?.photoURL;
+    const profileImage =
+        user?.profile_image_url || user?.photo_url || user?.photoURL;
 
     const initials = profileName
         .split(" ")
@@ -44,23 +48,32 @@ export default function SiteHeader() {
         .join("")
         .toUpperCase();
 
-    const handleLoginSuccess = () => setShowLoginModal(false);
-
-    // Sections live on the home page; from any other page, go there first.
-    const goToSection = (id) => {
-        if (pathname === "/") scrollToSection(id);
-        else router.push(`/#${id}`);
+    const handleLoginSuccess = () => {
+        setShowLoginModal(false);
     };
 
-    const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const closeMenus = () => {
+        setFeaturesOpen(false);
+        setProfileOpen(false);
+        setMobileOpen(false);
+    };
+
+    const goToSection = (id) => {
+        closeMenus();
+
+        if (pathname === "/") {
+            scrollToSection(id);
+        } else {
+            router.push(`/#${id}`);
+        }
+    };
 
     const handleLogout = async () => {
         try {
             setIsLoggingOut(true);
-            setProfileOpen(false);
+            closeMenus();
 
             await signOut(auth);
-
             useCreditStore.getState().resetCredits();
 
             router.replace("/");
@@ -71,207 +84,61 @@ export default function SiteHeader() {
         }
     };
 
+    const avatar = (size = "h-9 w-9") => (
+        profileImage ? (
+            <div className={`relative ${size} shrink-0 overflow-hidden rounded-full border border-[#E9DDF5] bg-[#F5EDFF]`}>
+                <Image
+                    src={profileImage}
+                    alt={profileName}
+                    fill
+                    sizes="48px"
+                    className="object-cover"
+                />
+            </div>
+        ) : (
+            <div className={`flex ${size} shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#7628ED] to-[#F02D83] font-bold text-white shadow-sm`}>
+                <span className="text-xs">{initials}</span>
+            </div>
+        )
+    );
+
     return (
         <>
-            <header className="sticky top-0 z-30 flex h-[88px] shrink-0 items-center justify-between border-b border-[#EAE2F1] bg-[#FDFBFF]/85 px-4 backdrop-blur-md sm:px-10 lg:px-16">
-                {/* Logo */}
-                <Link href="/" className="flex min-w-0 items-center gap-0">
-                    <div className="relative h-10 w-10 shrink-0 sm:h-18 sm:w-18">
-                        <Image src="/images/logo-new-no-bg.png" alt="ProblemPulse Logo" fill className="object-contain transition-all" priority />
-                    </div>
-                    <span className="bg-linear-to-r from-[#5F19C5] via-[#9326D5] to-[#FA418B] bg-clip-text text-base font-bold tracking-tight whitespace-nowrap sm:text-2xl text-transparent">ProblemPulse</span>
-                </Link>
+            <header className="sticky top-0 z-50 h-[76px] border-b border-[#EEE7F5] bg-white/90 backdrop-blur-xl">
+                <div className="mx-auto flex h-full max-w-[1600px] items-center justify-between px-4 sm:px-8 lg:px-12">
 
-                {/* Navigation links */}
-                <nav className="hidden items-center gap-1 lg:flex">
-                    {navItems.map((item) => {
-                        const NavIcon = item.icon;
-                        return (
-                            <button key={item.id} type="button" onClick={() => goToSection(item.id)} className={navButtonClass}>
-                                <NavIcon className="h-4 w-4 opacity-70" />
-                                {item.name}
-                            </button>
-                        );
-                    })}
-
-                    <div className="relative" onMouseEnter={() => setFeaturesOpen(true)} onMouseLeave={() => setFeaturesOpen(false)}>
-                        <button type="button" aria-haspopup="true" aria-expanded={featuresOpen} onClick={() => setFeaturesOpen((open) => !open)} className={navButtonClass}>
-                            <Zap className="h-4 w-4 opacity-70" />
-                            Features
-                            <ChevronDown className={`h-3.5 w-3.5 transition-transform ${featuresOpen ? "rotate-180" : ""}`} />
-                        </button>
-
-                        {featuresOpen && (
-                            <div className="absolute left-1/2 top-full w-80 -translate-x-1/2 pt-2">
-                                <div className="rounded-2xl border border-[#EAE2F1] bg-white p-2 shadow-[0_18px_40px_rgba(95,25,197,0.10)]">
-                                    {features.map((feature) => {
-                                        const FeatureIcon = feature.icon;
-                                        return (
-                                            <Link key={feature.number} href={feature.href} className="flex items-start gap-3 rounded-xl p-3 transition hover:bg-[#F4EFFA]">
-                                                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${feature.iconBg} ${feature.iconColor}`}>
-                                                    <FeatureIcon size={20} />
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-semibold text-[#292333]">{feature.title}</p>
-                                                    <p className="mt-0.5 text-xs leading-5 text-[#756B80]">{feature.tag}</p>
-                                                </div>
-                                            </Link>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    <Link href="/pricing" className={navButtonClass}>
-                        <Tag className="h-4 w-4 opacity-70" />
-                        Pricing
-                    </Link>
-                </nav>
-
-                {/* Navbar actions */}
-                <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-                    {user ? (
-                        <div className="relative">
-                            <button
-                                type="button"
-                                onClick={() => setProfileOpen((open) => !open)}
-                                aria-expanded={profileOpen}
-                                aria-label="Open profile menu"
-                                className="group flex items-center gap-2 rounded-xl border border-[#E9DDF5] bg-white/90 px-2 py-1.5 shadow-[0_2px_10px_rgba(113,56,213,0.04)] transition-all duration-200 hover:border-[#D2B4F0] hover:bg-[#FCFAFF] hover:shadow-[0_4px_14px_rgba(113,56,213,0.10)] sm:gap-3 sm:px-3"
-                            >
-                                {profileImage ? (
-                                    <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-full border border-[#E9DDF5]">
-                                        <Image
-                                            src={profileImage}
-                                            alt={profileName}
-                                            fill
-                                            sizes="36px"
-                                            className="object-cover"
-                                        />
-                                    </div>
-                                ) : (
-                                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#7628ED] to-[#F02D83] text-xs font-bold text-white shadow-sm shadow-[#9326D5]/20">
-                                        {initials}
-                                    </div>
-                                )}
-
-                                <div className="hidden min-w-0 text-left sm:block">
-                                    <p className="max-w-[130px] truncate text-sm font-bold text-[#29154F]">
-                                        {profileName}
-                                    </p>
-                                    <p className="max-w-[150px] truncate text-[11px] font-medium text-[#88769F]">
-                                        {profileEmail}
-                                    </p>
-                                </div>
-
-                                <ChevronDown
-                                    className={`hidden h-4 w-4 shrink-0 text-[#A27BC8] transition-transform duration-200 sm:block ${profileOpen ? "rotate-180" : ""
-                                        }`}
-                                />
-                            </button>
-
-                            {profileOpen && (
-                                <>
-                                    <button
-                                        type="button"
-                                        aria-label="Close profile menu"
-                                        onClick={() => setProfileOpen(false)}
-                                        className="fixed inset-0 z-30 cursor-default"
-                                    />
-
-                                    <div className="absolute right-0 top-full z-40 mt-3 w-[280px] overflow-hidden rounded-2xl border border-[#E9DDF5] bg-white shadow-[0_18px_45px_rgba(75,35,120,0.13)]">
-                                        {/* Profile details */}
-                                        <div className="relative overflow-hidden border-b border-[#F0E7F8] bg-gradient-to-br from-[#FCF8FF] via-white to-[#FFF5FA] px-4 py-5">
-                                            <div className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-[#E9D5FF]/30 blur-2xl" />
-                                            <div className="relative flex items-center gap-3">
-                                                {profileImage ? (
-                                                    <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full border-2 border-white shadow-[0_2px_10px_rgba(113,56,213,0.15)]">
-                                                        <Image
-                                                            src={profileImage}
-                                                            alt={profileName}
-                                                            fill
-                                                            sizes="48px"
-                                                            className="object-cover"
-                                                        />
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#7628ED] to-[#F02D83] text-sm font-bold text-white shadow-[0_3px_12px_rgba(147,38,213,0.22)]">
-                                                        {initials}
-                                                    </div>
-                                                )}
-
-                                                <div className="min-w-0">
-                                                    <p className="truncate text-sm font-bold text-[#29154F]">
-                                                        {profileName}
-                                                    </p>
-                                                    <p className="mt-1 truncate text-xs font-medium text-[#88769F]">
-                                                        {profileEmail}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Menu items */}
-                                        <div className="p-2">
-                                            <button
-                                                type="button"
-                                                onClick={handleLogout}
-                                                disabled={isLoggingOut}
-                                                className="group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-all duration-200 hover:bg-[#FFF1F5] disabled:cursor-not-allowed disabled:opacity-60"
-                                            >
-                                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#FFF0F5] text-[#E33D78] transition-colors group-hover:bg-[#FFE1EC]">
-                                                    {isLoggingOut ? (
-                                                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#E33D78]/30 border-t-[#E33D78]" />
-                                                    ) : (
-                                                        <LogOut className="h-[18px] w-[18px]" />
-                                                    )}
-                                                </div>
-
-                                                <div className="min-w-0 flex-1">
-                                                    <p className="text-sm font-bold text-[#35204F]">
-                                                        {isLoggingOut ? "Logging out..." : "Logout"}
-                                                    </p>
-                                                    <p className="mt-0.5 text-[11px] font-medium text-[#9887AC]">
-                                                        Sign out of your account
-                                                    </p>
-                                                </div>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </>
-                            )}
+                    {/* Logo */}
+                    <Link
+                        href="/"
+                        onClick={closeMenus}
+                        className="group flex shrink-0 items-center gap-1"
+                    >
+                        <div className="relative h-11 w-11 sm:h-12 sm:w-12">
+                            <Image
+                                src="/images/logo-new-no-bg.png"
+                                alt="ProblemPulse Logo"
+                                fill
+                                className="object-contain transition-transform duration-300 group-hover:scale-105"
+                                priority
+                            />
                         </div>
-                    ) : (
-                        <button
-                            onClick={() => setShowLoginModal(true)}
-                            className="flex items-center justify-center gap-2 rounded-lg bg-linear-to-r from-[#7628ED] via-[#B22AE1] to-[#F02D83] px-3 py-2 text-xs font-bold whitespace-nowrap text-white shadow-md shadow-[#9326D5]/20 transition hover:scale-[1.02] hover:shadow-lg sm:px-5 sm:py-2.5 sm:text-sm"
-                        >
-                            Get Started
-                            <ArrowRight className="hidden size-4 sm:block" />
-                        </button>
-                    )}
 
+                        <span className="bg-linear-to-r from-[#5F19C5] via-[#9326D5] to-[#FA418B] bg-clip-text text-[17px] font-bold tracking-tight text-transparent sm:text-xl">
+                            ProblemPulseAI
+                        </span>
+                    </Link>
 
-                    <button type="button" aria-label={mobileOpen ? "Close menu" : "Open menu"} onClick={() => setMobileOpen((open) => !open)} className="shrink-0 rounded-lg border border-[#EAE2F1] p-2.5 text-[#5F19C5] transition hover:bg-[#F4EFFA] lg:hidden">
-                        {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-                    </button>
-                </div>
-
-                {/* Mobile menu */}
-                {mobileOpen && (
-                    <div className="absolute left-0 right-0 top-full border-b border-[#EAE2F1] bg-[#FDFBFF] px-5 pb-5 pt-3 shadow-[0_18px_40px_rgba(95,25,197,0.08)] sm:px-10 lg:hidden">
+                    {/* Desktop navigation */}
+                    <nav className="hidden items-center gap-1 lg:flex">
                         {navItems.map((item) => {
                             const NavIcon = item.icon;
+
                             return (
                                 <button
                                     key={item.id}
                                     type="button"
-                                    onClick={() => {
-                                        goToSection(item.id);
-                                        setMobileOpen(false);
-                                    }}
-                                    className={`${navButtonClass} w-full`}
+                                    onClick={() => goToSection(item.id)}
+                                    className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-[13px] font-semibold text-[#655B72] transition-all duration-200 hover:bg-[#F6F0FC] hover:text-[#7628ED]"
                                 >
                                     <NavIcon className="h-4 w-4 opacity-70" />
                                     {item.name}
@@ -279,27 +146,344 @@ export default function SiteHeader() {
                             );
                         })}
 
-                        <Link href="/pricing" onClick={() => setMobileOpen(false)} className={`${navButtonClass} w-full`}>
+                        {/* Features dropdown */}
+                        <div
+                            className="relative"
+                            onMouseEnter={() => setFeaturesOpen(true)}
+                            onMouseLeave={() => setFeaturesOpen(false)}
+                        >
+                            <button
+                                type="button"
+                                aria-haspopup="true"
+                                aria-expanded={featuresOpen}
+                                onClick={() => setFeaturesOpen((open) => !open)}
+                                className={`flex items-center gap-2 rounded-lg px-3 py-2.5 text-[13px] font-semibold transition-all duration-200 ${featuresOpen
+                                        ? "bg-[#F6F0FC] text-[#7628ED]"
+                                        : "text-[#655B72] hover:bg-[#F6F0FC] hover:text-[#7628ED]"
+                                    }`}
+                            >
+                                <Zap className="h-4 w-4 opacity-70" />
+                                Features
+                                <ChevronDown
+                                    className={`h-3.5 w-3.5 transition-transform duration-200 ${featuresOpen ? "rotate-180" : ""
+                                        }`}
+                                />
+                            </button>
+
+                            <AnimatePresence>
+                                {featuresOpen && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                                        transition={{ duration: 0.16 }}
+                                        className="absolute left-1/2 top-full z-50 w-[340px] -translate-x-1/2 pt-3"
+                                    >
+                                        <div className="rounded-2xl border border-[#EDE4F5] bg-white p-2 shadow-[0_18px_50px_rgba(67,35,105,0.14)]">
+                                            <div className="px-3 pb-2 pt-2">
+                                                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#A08EBA]">
+                                                    Explore ProblemPulse
+                                                </p>
+                                            </div>
+
+                                            {features.map((feature) => {
+                                                const FeatureIcon = feature.icon;
+
+                                                return (
+                                                    <Link
+                                                        key={feature.number}
+                                                        href={feature.href}
+                                                        onClick={closeMenus}
+                                                        className="group flex items-center gap-3 rounded-xl p-3 transition-all duration-200 hover:bg-[#F8F4FC]"
+                                                    >
+                                                        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-transform duration-200 group-hover:scale-105 ${feature.iconBg} ${feature.iconColor}`}>
+                                                            <FeatureIcon size={19} />
+                                                        </div>
+
+                                                        <div className="min-w-0 flex-1">
+                                                            <p className="text-[13px] font-bold text-[#30233D] transition-colors group-hover:text-[#7628ED]">
+                                                                {feature.title}
+                                                            </p>
+                                                            <p className="mt-0.5 text-[11px] leading-4 text-[#8A7E96]">
+                                                                {feature.tag}
+                                                            </p>
+                                                        </div>
+
+                                                        <ArrowRight className="h-4 w-4 text-[#B7A5C8] opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
+                                                    </Link>
+                                                );
+                                            })}
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+
+                        {/* Pricing */}
+                        <Link
+                            href="/pricing"
+                            className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-[13px] font-semibold text-[#655B72] transition-all duration-200 hover:bg-[#F6F0FC] hover:text-[#7628ED]"
+                        >
                             <Tag className="h-4 w-4 opacity-70" />
                             Pricing
                         </Link>
+                    </nav>
 
-                        <p className="mt-3 px-3 text-[11px] font-semibold uppercase tracking-widest text-[#968AA3]">Features</p>
-                        {features.map((feature) => {
-                            const FeatureIcon = feature.icon;
-                            return (
-                                <Link key={feature.number} href={feature.href} onClick={() => setMobileOpen(false)} className={`${navButtonClass} w-full`}>
-                                    <FeatureIcon className={`h-4 w-4 ${feature.iconColor}`} />
-                                    {feature.title}
-                                </Link>
-                            );
-                        })}
+                    {/* Right actions */}
+                    <div className="flex shrink-0 items-center gap-3">
+
+                        {/* Authenticated profile */}
+                        {user ? (
+                            <div className="relative hidden sm:block">
+                                <button
+                                    type="button"
+                                    onClick={() => setProfileOpen((open) => !open)}
+                                    aria-expanded={profileOpen}
+                                    aria-label="Open profile menu"
+                                    className={`flex items-center gap-2.5 rounded-xl border py-1.5 pl-1.5 pr-3 transition-all duration-200 ${profileOpen
+                                            ? "border-[#DCC7F2] bg-[#FAF6FF] shadow-[0_3px_12px_rgba(95,25,197,0.08)]"
+                                            : "border-[#EEE7F5] bg-white hover:border-[#DCC7F2] hover:bg-[#FCFAFF]"
+                                        }`}
+                                >
+                                    {avatar()}
+
+                                    <div className="max-w-[130px] text-left">
+                                        <p className="truncate text-[12px] font-bold text-[#352448]">
+                                            {profileName}
+                                        </p>
+                                        <p className="truncate text-[10px] font-medium text-[#9586A4]">
+                                            {profileEmail}
+                                        </p>
+                                    </div>
+
+                                    <ChevronDown
+                                        className={`h-3.5 w-3.5 text-[#9B82B6] transition-transform duration-200 ${profileOpen ? "rotate-180" : ""
+                                            }`}
+                                    />
+                                </button>
+
+                                <AnimatePresence>
+                                    {profileOpen && (
+                                        <>
+                                            <motion.button
+                                                type="button"
+                                                aria-label="Close profile menu"
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                exit={{ opacity: 0 }}
+                                                onClick={() => setProfileOpen(false)}
+                                                className="fixed inset-0 z-40 cursor-default"
+                                            />
+
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 8, scale: 0.97 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, y: 6, scale: 0.97 }}
+                                                transition={{ duration: 0.16 }}
+                                                className="absolute right-0 top-full z-50 mt-3 w-[280px] overflow-hidden rounded-2xl border border-[#EDE4F5] bg-white shadow-[0_18px_50px_rgba(67,35,105,0.15)]"
+                                            >
+                                                <div className="border-b border-[#F0E9F6] bg-gradient-to-br from-[#FAF6FF] via-white to-[#FFF7FA] p-4">
+                                                    <div className="flex items-center gap-3">
+                                                        {avatar("h-11 w-11")}
+
+                                                        <div className="min-w-0">
+                                                            <p className="truncate text-[13px] font-bold text-[#352448]">
+                                                                {profileName}
+                                                            </p>
+                                                            <p className="mt-0.5 truncate text-[11px] text-[#9586A4]">
+                                                                {profileEmail}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="p-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleLogout}
+                                                        disabled={isLoggingOut}
+                                                        className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-[#FFF2F5] disabled:opacity-60"
+                                                    >
+                                                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#FFF0F4] text-[#E04479] transition-colors group-hover:bg-[#FFE4EC]">
+                                                            {isLoggingOut ? (
+                                                                <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#E04479]/30 border-t-[#E04479]" />
+                                                            ) : (
+                                                                <LogOut className="h-[17px] w-[17px]" />
+                                                            )}
+                                                        </div>
+
+                                                        <div>
+                                                            <p className="text-[12px] font-bold text-[#48364F]">
+                                                                {isLoggingOut ? "Logging out..." : "Logout"}
+                                                            </p>
+                                                            <p className="mt-0.5 text-[10px] text-[#A092A9]">
+                                                                Sign out of your account
+                                                            </p>
+                                                        </div>
+                                                    </button>
+                                                </div>
+                                            </motion.div>
+                                        </>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={() => setShowLoginModal(true)}
+                                className="hidden items-center gap-2 rounded-xl bg-gradient-to-r from-[#7628ED] to-[#D52BBE] px-5 py-2.5 text-[13px] font-bold text-white shadow-[0_4px_14px_rgba(118,40,237,0.20)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_7px_20px_rgba(118,40,237,0.28)] sm:flex"
+                            >
+                                Get Started
+                                <ArrowRight className="h-4 w-4" />
+                            </button>
+                        )}
+
+                        {/* Mobile menu button */}
+                        <button
+                            type="button"
+                            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+                            aria-expanded={mobileOpen}
+                            onClick={() => setMobileOpen((open) => !open)}
+                            className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#EDE5F4] bg-white text-[#6D36B5] transition-colors hover:bg-[#F7F1FC] lg:hidden"
+                        >
+                            {mobileOpen ? (
+                                <X className="h-5 w-5" />
+                            ) : (
+                                <Menu className="h-5 w-5" />
+                            )}
+                        </button>
                     </div>
-                )}
+                </div>
+
+                {/* Mobile navigation */}
+                <AnimatePresence>
+                    {mobileOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -8 }}
+                            transition={{ duration: 0.18 }}
+                            className="absolute left-0 right-0 top-full z-50 border-b border-[#EDE5F4] bg-white px-4 pb-5 pt-3 shadow-[0_16px_35px_rgba(67,35,105,0.10)] lg:hidden sm:px-8"
+                        >
+                            {/* Mobile profile */}
+                            {user && (
+                                <div className="mb-3 flex items-center gap-3 rounded-xl bg-[#FAF6FF] p-3">
+                                    {avatar("h-10 w-10")}
+
+                                    <div className="min-w-0 flex-1">
+                                        <p className="truncate text-[13px] font-bold text-[#352448]">
+                                            {profileName}
+                                        </p>
+                                        <p className="truncate text-[11px] text-[#9586A4]">
+                                            {profileEmail}
+                                        </p>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={handleLogout}
+                                        disabled={isLoggingOut}
+                                        aria-label="Logout"
+                                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-[#E04479] transition-colors hover:bg-[#FFF0F4] disabled:opacity-50"
+                                    >
+                                        {isLoggingOut ? (
+                                            <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#E04479]/30 border-t-[#E04479]" />
+                                        ) : (
+                                            <LogOut className="h-4 w-4" />
+                                        )}
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Main navigation */}
+                            <div className="space-y-1">
+                                {navItems.map((item) => {
+                                    const NavIcon = item.icon;
+
+                                    return (
+                                        <button
+                                            key={item.id}
+                                            type="button"
+                                            onClick={() => goToSection(item.id)}
+                                            className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-[13px] font-semibold text-[#655B72] transition-colors hover:bg-[#F7F2FC] hover:text-[#7628ED]"
+                                        >
+                                            <NavIcon className="h-4 w-4 opacity-75" />
+                                            {item.name}
+                                        </button>
+                                    );
+                                })}
+
+                                <Link
+                                    href="/pricing"
+                                    onClick={closeMenus}
+                                    className="flex items-center gap-3 rounded-xl px-3 py-3 text-[13px] font-semibold text-[#655B72] transition-colors hover:bg-[#F7F2FC] hover:text-[#7628ED]"
+                                >
+                                    <Tag className="h-4 w-4 opacity-75" />
+                                    Pricing
+                                </Link>
+                            </div>
+
+                            {/* Mobile features */}
+                            <div className="mt-4 border-t border-[#F0E9F6] pt-4">
+                                <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-[#A08EBA]">
+                                    Explore Features
+                                </p>
+
+                                <div className="space-y-1">
+                                    {features.map((feature) => {
+                                        const FeatureIcon = feature.icon;
+
+                                        return (
+                                            <Link
+                                                key={feature.number}
+                                                href={feature.href}
+                                                onClick={closeMenus}
+                                                className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-[#F7F2FC]"
+                                            >
+                                                <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${feature.iconBg} ${feature.iconColor}`}>
+                                                    <FeatureIcon size={17} />
+                                                </div>
+
+                                                <div>
+                                                    <p className="text-[12px] font-bold text-[#352448]">
+                                                        {feature.title}
+                                                    </p>
+                                                    <p className="mt-0.5 text-[10px] text-[#9586A4]">
+                                                        {feature.tag}
+                                                    </p>
+                                                </div>
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Mobile CTA */}
+                            {!user && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setMobileOpen(false);
+                                        setShowLoginModal(true);
+                                    }}
+                                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#7628ED] to-[#D52BBE] px-5 py-3 text-[13px] font-bold text-white shadow-[0_4px_14px_rgba(118,40,237,0.18)]"
+                                >
+                                    Get Started
+                                    <ArrowRight className="h-4 w-4" />
+                                </button>
+                            )}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </header>
 
-            {/* Login Modal */}
-            {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} onLoginSuccess={handleLoginSuccess} />}
+            {/* Login modal */}
+            {showLoginModal && (
+                <LoginModal
+                    onClose={() => setShowLoginModal(false)}
+                    onLoginSuccess={handleLoginSuccess}
+                />
+            )}
         </>
     );
 }

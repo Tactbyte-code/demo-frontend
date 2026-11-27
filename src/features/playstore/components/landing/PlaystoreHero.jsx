@@ -194,7 +194,7 @@ const PlaystoreHero = () => {
         if (!appId || !/^[a-zA-Z0-9_]+(\.[a-zA-Z0-9_]+)+$/.test(appId)) {
             setError("Please enter a valid Google Play Store app ID.");
             return;
-        }
+        };
 
         if (isSubmitting) return;
 
