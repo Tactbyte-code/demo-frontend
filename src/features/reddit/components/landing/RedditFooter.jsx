@@ -44,11 +44,11 @@ export default function RedditFooter() {
                         <Link href="/" className="inline-flex items-center gap-3">
                             <img
                                 src="/images/logo-new-no-bg.png"
-                                alt="ProblemPulse"
+                                alt="ProblemPulseAI"
                                 className="h-10 w-auto object-contain"
                             />
                             <span className="text-xl font-semibold tracking-tight">
-                                Problem<span className="text-[#E85D2A]">Pulse</span>
+                                Problem<span className="text-[#E85D2A]">PulseAI</span>
                             </span>
                         </Link>
 
@@ -122,7 +122,7 @@ export default function RedditFooter() {
                 {/* Bottom bar */}
                 <div className="flex flex-col gap-5 py-7 sm:flex-row sm:items-center sm:justify-between">
                     <p className="text-xs text-[#A58A7D]">
-                        © {new Date().getFullYear()} ProblemPulse. All rights reserved.
+                        © {new Date().getFullYear()} ProblemPulseAI. All rights reserved.
                     </p>
 
                     <div className="flex flex-wrap items-center gap-5 text-xs text-[#A58A7D]">

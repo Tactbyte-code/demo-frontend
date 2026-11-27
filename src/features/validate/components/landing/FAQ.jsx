@@ -12,14 +12,14 @@ import Link from "next/link";
 
 const faqs = [
     {
-        question: "What exactly does ProblemPulse help me validate?",
+        question: "What exactly does ProblemPulseAI help me validate?",
         answer:
-            "ProblemPulse helps you understand whether your idea addresses a meaningful problem, whether people are actively looking for solutions, what alternatives already exist, and whether there may be a viable business opportunity. It turns scattered research signals into a structured starting point for making decisions.",
+            "ProblemPulseAI helps you understand whether your idea addresses a meaningful problem, whether people are actively looking for solutions, what alternatives already exist, and whether there may be a viable business opportunity. It turns scattered research signals into a structured starting point for making decisions.",
     },
     {
-        question: "How does ProblemPulse research my idea?",
+        question: "How does ProblemPulseAI research my idea?",
         answer:
-            "ProblemPulse analyzes relevant research signals, including discussions and user feedback from sources such as Reddit and the Play Store where applicable. It organizes those findings into insights around customer pain points, demand, competition, and business potential.",
+            "ProblemPulseAI analyzes relevant research signals, including discussions and user feedback from sources such as Reddit and the Play Store where applicable. It organizes those findings into insights around customer pain points, demand, competition, and business potential.",
     },
     {
         question: "Do I need to have a fully developed business idea?",
@@ -32,19 +32,19 @@ const faqs = [
             "Analysis runs in the background, so you don't have to keep the page open and wait. You can revisit your analysis workspace to check its progress and open the report once it is ready.",
     },
     {
-        question: "Can I try ProblemPulse without creating an account?",
+        question: "Can I try ProblemPulseAI without creating an account?",
         answer:
             "Yes. You can submit an idea and start an analysis as a guest. When the analysis is complete, you'll be asked to sign in to access the full report. Your guest analysis can then be associated with your account.",
     },
     {
         question: "How reliable are the results?",
         answer:
-            "ProblemPulse is designed to support your research, not replace real-world validation. Its findings are based on available data and AI-generated analysis, so use them as evidence to guide your next steps rather than as a guarantee that an idea will succeed.",
+            "ProblemPulseAI is designed to support your research, not replace real-world validation. Its findings are based on available data and AI-generated analysis, so use them as evidence to guide your next steps rather than as a guarantee that an idea will succeed.",
     },
     {
-        question: "Will ProblemPulse tell me whether my idea will succeed?",
+        question: "Will ProblemPulseAI tell me whether my idea will succeed?",
         answer:
-            "No tool can guarantee the success of a business idea. ProblemPulse helps you identify promising signals, potential risks, and unanswered questions so you can make a more informed decision before investing further.",
+            "No tool can guarantee the success of a business idea. ProblemPulseAI helps you identify promising signals, potential risks, and unanswered questions so you can make a more informed decision before investing further.",
     },
     {
         question: "Can I revisit my previous reports?",
@@ -177,7 +177,7 @@ export default function FAQ() {
                                 </p>
 
                                 <Link
-                                    href="mailto:support@problempulse.site"
+                                    href="mailto:support@ProblemPulseAI.site"
                                     className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-[#7138D5] transition-all hover:gap-3"
                                 >
                                     Talk to our team

@@ -22,12 +22,12 @@ const footerLinks = {
     ],
     explore: [
         { label: "How it works", href: "/validate-idea#how-it-works" },
-        { label: "Why ProblemPulse", href: "/validate-idea#why-validate" },
+        { label: "Why ProblemPulseAI", href: "/validate-idea#why-validate" },
         { label: "FAQs", href: "/validate-idea#faq" },
     ],
     company: [
         { label: "About us", href: "/about" },
-        { label: "Contact", href: "mailto:support@problempulse.site" },
+        { label: "Contact", href: "mailto:support@ProblemPulseAI.site" },
         { label: "Privacy policy", href: "/privacy-policy" },
         { label: "Terms & conditions", href: "/terms-and-conditions" },
     ],
@@ -141,7 +141,7 @@ export default function Footer() {
                             </div>
 
                             <span className="text-xl font-bold tracking-tight text-white">
-                                Problem<span className="text-[#D8B4FE]">Pulse</span>
+                                Problem<span className="text-[#D8B4FE]">PulseAI</span>
                             </span>
                         </Link>
 
@@ -152,11 +152,11 @@ export default function Footer() {
                         </p>
 
                         <a
-                            href="mailto:support@problempulse.site"
+                            href="mailto:support@ProblemPulseAI.site"
                             className="mt-6 inline-flex items-center gap-2 text-[13px] font-semibold text-[#D8B4FE] transition-colors hover:text-white"
                         >
                             <Mail className="h-4 w-4" />
-                            support@problempulse.site
+                            support@problempusle.site
                         </a>
                     </div>
 
@@ -170,7 +170,7 @@ export default function Footer() {
                 <div className="border-t border-white/10 py-7">
                     <div className="flex flex-col items-center justify-between gap-5 sm:flex-row">
                         <p className="text-center text-xs text-[#887999] sm:text-left">
-                            © {new Date().getFullYear()} ProblemPulse. All rights reserved.
+                            © {new Date().getFullYear()} ProblemPulseAI. All rights reserved.
                         </p>
 
                         <div className="flex items-center gap-2">
