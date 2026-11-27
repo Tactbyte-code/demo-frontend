@@ -387,7 +387,7 @@ export const plans = [
         description: "For large organizations with custom needs and SLA guarantees.",
         accent: "var(--warning)",
         accentBg: "var(--warning-bg)",
-        cta: "Contact Sales",
+        cta: "Upgrade to Pro",
         credits: {
             monthly: 10000,
             yearly: 15000,
