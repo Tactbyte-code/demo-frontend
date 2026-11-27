@@ -61,7 +61,7 @@ export default function Footer() {
                             </div>
 
                             <span className="bg-gradient-to-r from-[#7138D5] via-[#C12AAE] to-[#FF4D83] bg-clip-text text-transparent text-xl font-bold tracking-tight whitespace-nowrap">
-                                ProblemPulse
+                                ProblemPulseAI
                             </span>
                         </Link>
                         <p
