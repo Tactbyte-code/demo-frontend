@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -105,7 +104,7 @@ const ValidateIdeaHero = () => {
                     setPendingIdea(trimmedIdea);
                     setShowLoginModal(true);
                     return;
-                }
+                };
             }
 
             await submitValidation(trimmedIdea);
