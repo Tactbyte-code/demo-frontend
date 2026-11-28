@@ -57,6 +57,7 @@ export default function RedditAnalysisPage() {
 
     // ── Status-driven pipeline actions: each fires at most once per status ──────
     const firedRef = useRef(new Set());
+
     useEffect(() => {
         firedRef.current = new Set();
     }, [queryId]);
@@ -133,8 +134,12 @@ export default function RedditAnalysisPage() {
         if (claimingReports || !isCompleted) return;
         setClaimingReports(true);
 
-        try {
-            await claimGuestReports();
+        try {   
+            await claimGuestReports({
+                feature: "reddit",
+                reportId: queryId,
+            });
+
             setShowLoginModal(false);
             router.replace(reportPath(queryId));
         } catch (error) {
@@ -174,7 +179,7 @@ export default function RedditAnalysisPage() {
                 </div>
             </Shell>
         );
-    }
+    };
 
     if (isError || isFailed) {
         const retrying = retrySearch.isPending || retrySummarize.isPending;
@@ -212,7 +217,7 @@ export default function RedditAnalysisPage() {
                 </div>
             </Shell>
         );
-    }
+    };
 
     // ── Pipeline / clarify card ─────────────────────────────────────────────────
     return (

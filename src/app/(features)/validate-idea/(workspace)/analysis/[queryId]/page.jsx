@@ -471,7 +471,11 @@ const ValidateQueryIdPage = () => {
         setClaimingReports(true);
 
         try {
-            await claimGuestReports();
+            await claimGuestReports({
+                feature: "validate",
+                reportId: completedQueryId,
+            });
+
             setShowLoginModal(false);
 
             router.replace(
@@ -479,7 +483,7 @@ const ValidateQueryIdPage = () => {
             );
         } catch (error) {
             console.error(
-                "Failed to claim guest reports:",
+                "Failed to claim guest report:",
                 error
             );
 
@@ -541,8 +545,8 @@ const ValidateQueryIdPage = () => {
                         <div className="flex flex-col items-center space-y-4 text-center">
                             <div
                                 className={`relative flex h-16 w-16 items-center justify-center rounded-2xl ${isCompleted
-                                        ? "bg-emerald-50"
-                                        : "bg-gradient-to-br from-purple-50 to-pink-50"
+                                    ? "bg-emerald-50"
+                                    : "bg-gradient-to-br from-purple-50 to-pink-50"
                                     }`}
                             >
                                 {isCompleted ? (
@@ -553,8 +557,8 @@ const ValidateQueryIdPage = () => {
 
                                 <div
                                     className={`absolute inset-0 rounded-2xl ring-1 ${isCompleted
-                                            ? "ring-emerald-200"
-                                            : "ring-purple-200/60"
+                                        ? "ring-emerald-200"
+                                        : "ring-purple-200/60"
                                         }`}
                                 />
                             </div>
@@ -562,21 +566,21 @@ const ValidateQueryIdPage = () => {
                             <div>
                                 <div
                                     className={`mb-2 inline-flex items-center gap-2 rounded-full border px-3 py-1 ${isCompleted
-                                            ? "border-emerald-200 bg-emerald-50"
-                                            : "border-purple-100 bg-purple-50"
+                                        ? "border-emerald-200 bg-emerald-50"
+                                        : "border-purple-100 bg-purple-50"
                                         }`}
                                 >
                                     <span
                                         className={`h-1.5 w-1.5 rounded-full ${isCompleted
-                                                ? "bg-emerald-500"
-                                                : "animate-pulse bg-[#A43AC2]"
+                                            ? "bg-emerald-500"
+                                            : "animate-pulse bg-[#A43AC2]"
                                             }`}
                                     />
 
                                     <span
                                         className={`text-[10px] font-bold uppercase tracking-[0.16em] ${isCompleted
-                                                ? "text-emerald-700"
-                                                : "text-[#7138D5]"
+                                            ? "text-emerald-700"
+                                            : "text-[#7138D5]"
                                             }`}
                                     >
                                         {isCompleted
@@ -658,8 +662,8 @@ const ValidateQueryIdPage = () => {
 
                                 <span
                                     className={`text-xs font-semibold ${isCompleted
-                                            ? "text-emerald-600"
-                                            : "text-[#8B42CC]"
+                                        ? "text-emerald-600"
+                                        : "text-[#8B42CC]"
                                         }`}
                                 >
                                     {
@@ -740,14 +744,14 @@ const ValidateQueryIdPage = () => {
                         {/* Footer Note */}
                         <div
                             className={`flex items-start gap-3 rounded-xl border px-4 py-3.5 ${isCompleted
-                                    ? "border-emerald-100 bg-emerald-50/70"
-                                    : "border-purple-100 bg-[#FAF7FF]"
+                                ? "border-emerald-100 bg-emerald-50/70"
+                                : "border-purple-100 bg-[#FAF7FF]"
                                 }`}
                         >
                             <div
                                 className={`mt-1 h-2 w-2 shrink-0 rounded-full ${isCompleted
-                                        ? "bg-emerald-500"
-                                        : "bg-[#A43AC2]"
+                                    ? "bg-emerald-500"
+                                    : "bg-[#A43AC2]"
                                     }`}
                             />
 
