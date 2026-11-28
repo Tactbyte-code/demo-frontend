@@ -273,9 +273,13 @@ export default function PlaystoreAnalysisPage() {
     setClaimingReports(true);
 
     try {
-      await claimGuestReports();
+      await claimGuestReports({
+        feature: "playstore",
+        reportId: queryId,
+      });
+
       setShowLoginModal(false);
-      
+
       router.replace(reportPath(queryId));
     } catch (error) {
       console.error("Failed to claim guest reports:", error);
